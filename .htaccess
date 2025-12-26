@@ -1,0 +1,16 @@
+RewriteEngine On
+RewriteBase /serieslist/
+
+# 1. Remove .php extension from links (e.g., allow /trivia instead of /trivia.php)
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_FILENAME}\.php -f
+RewriteRule ^([^\/]+)\/?$ $1.php [L]
+
+# 2. Map /home/ to index.php
+RewriteRule ^home\/?$ index.php [L,QSA]
+
+# 3. Map /trivia/ to trivia.php
+RewriteRule ^trivia\/?$ trivia.php [L,QSA]
+
+# 4. Handle show details (e.g., /show/10/ -> index.php?view=show-detail&id=10)
+RewriteRule ^show/([0-9]+)\/?$ index.php?view=show-detail&id=$1 [L,QSA]
