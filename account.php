@@ -1,163 +1,193 @@
-<?php
-// Mock Data Structure representing your current list
-$mySeries = [
-    [
-        "id" => 1,
-        "title" => "The Rookie",
-        "status" => "Watching",
-        "progress" => "S6 E02",
-        "image" => "https://images.unsplash.com/photo-1594909122845-11baa439b7bf?q=80&w=300&h=450&fit=crop",
-        "rating" => 5
-    ],
-    [
-        "id" => 2,
-        "title" => "The Rookie: Feds",
-        "status" => "Completed",
-        "progress" => "S1 E22",
-        "image" => "https://images.unsplash.com/photo-1536440136628-849c177e76a1?q=80&w=300&h=450&fit=crop",
-        "rating" => 4
-    ],
-    [
-        "id" => 3,
-        "title" => "The Bear",
-        "status" => "Plan to Watch",
-        "progress" => "S1 E01",
-        "image" => "https://images.unsplash.com/photo-1559339352-11d035aa65de?q=80&w=300&h=450&fit=crop",
-        "rating" => 0
-    ]
-];
-
-// Calculate actual stats
-$totalSeries = count($mySeries);
-$completedCount = count(array_filter($mySeries, fn($s) => $s['status'] === 'Completed'));
-$watchingCount = count(array_filter($mySeries, fn($s) => $s['status'] === 'Watching'));
-
-$username = "John Doe";
-$joinDate = "December 2025";
-?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?php echo $username; ?>'s Profile - SeriesList</title>
+    <title>SeriesList - Account Settings</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <style> 
-        body { background-color: #14181c; color: #9ab; font-family: sans-serif; } 
-        .glass { background: rgba(44, 52, 64, 0.5); backdrop-filter: blur(4px); }
-        .stat-box { border-left: 1px solid #2c3440; }
-        .stat-box:first-child { border-left: none; }
+    <!-- React and Babel for browser-side compilation -->
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        body { background-color: #14181c; color: #9ab; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+        .lb-input { background: #1b2228; border: 1px solid #2c3440; transition: all 0.2s; }
+        .lb-input:focus { border-color: #00e054; outline: none; box-shadow: 0 0 0 1px #00e054; }
+        .animate-spin-custom { animation: spin 1s linear infinite; }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
     </style>
 </head>
-<body class="min-h-screen pb-20">
-    <!-- Navigation -->
-    <nav class="fixed top-0 w-full bg-[#14181c] border-b border-[#2c3440] z-[100] h-16 flex items-center px-4">
-        <div class="max-w-6xl mx-auto w-full flex justify-between items-center">
-            <a href="index.php?mock_login=true" class="flex items-center gap-2 flex-shrink-0">
-                <div class="bg-[#00e054] p-1 rounded">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#14181c" stroke-width="2"><path d="M2 8a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8Z"/><polyline points="7 21 12 16 17 21"/></svg>
-                </div>
-                <span class="text-xl font-black text-white italic uppercase tracking-tighter">SeriesList</span>
-            </a>
-            <div class="flex items-center gap-6 text-[10px] uppercase tracking-widest font-bold">
-                <a href="index.php?mock_login=true" class="hover:text-white transition-colors">Browse</a>
-                <a href="trivia.php" class="text-[#00e054] hover:opacity-80 transition-colors">Play Trivia</a>
-                <a href="index.php" class="text-[#ff4b4b] hover:opacity-80 transition-colors">Sign Out</a>
-            </div>
-        </div>
-    </nav>
+<body>
+    <div id="root"></div>
 
-    <main class="max-w-5xl mx-auto px-4 pt-28">
-        <!-- Header -->
-        <header class="flex flex-col md:flex-row items-center md:items-end gap-6 mb-12">
-            <div class="w-32 h-32 rounded-full bg-gradient-to-tr from-[#00e054] to-blue-500 flex items-center justify-center text-[#14181c] text-4xl font-black ring-4 ring-[#2c3440]">
-                JD
-            </div>
-            <div class="text-center md:text-left flex-1">
-                <h1 class="text-4xl font-black text-white uppercase italic tracking-tighter mb-1"><?php echo $username; ?></h1>
-                <p class="text-xs uppercase tracking-widest font-bold text-[#678]">Member since <?php echo $joinDate; ?></p>
-            </div>
-            <div class="flex flex-col sm:flex-row gap-3">
-                <!-- Restored Trivia Button -->
-                <a href="trivia.php" class="bg-[#00e054] hover:bg-[#00c048] text-[#14181c] text-[10px] font-black uppercase tracking-widest px-6 py-3 rounded text-center transition-all transform hover:scale-105 shadow-lg shadow-[#00e054]/20">
-                    The Rookie Trivia
-                </a>
-                <button class="bg-[#2c3440] hover:bg-[#456] text-white text-[10px] font-bold uppercase tracking-widest px-6 py-3 rounded transition-colors">
-                    Edit Profile
-                </button>
-            </div>
-        </header>
+    <script type="text/babel">
+        const { useState, useEffect } = React;
 
-        <!-- Dynamic Stats Bar -->
-        <section class="grid grid-cols-3 border-y border-[#2c3440] py-6 mb-12">
-            <div class="stat-box text-center">
-                <span class="block text-2xl font-black text-white leading-none mb-1"><?php echo $totalSeries; ?></span>
-                <span class="text-[10px] uppercase tracking-widest font-bold text-[#678]">Total Shows</span>
-            </div>
-            <div class="stat-box text-center">
-                <span class="block text-2xl font-black text-white leading-none mb-1"><?php echo $watchingCount; ?></span>
-                <span class="text-[10px] uppercase tracking-widest font-bold text-[#678]">Currently Watching</span>
-            </div>
-            <div class="stat-box text-center">
-                <span class="block text-2xl font-black text-white leading-none mb-1"><?php echo $completedCount; ?></span>
-                <span class="text-[10px] uppercase tracking-widest font-bold text-[#678]">Completed</span>
-            </div>
-        </section>
+        // Firebase Mocking / Integration Logic
+        // In a real environment, __firebase_config would be injected.
+        // For the sake of this file working immediately, we handle the config.
+        const firebaseConfig = window.__firebase_config ? JSON.parse(window.__firebase_config) : {
+            apiKey: "mock-key",
+            authDomain: "mock-domain",
+            projectId: "mock-project",
+        };
 
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-12">
-            <!-- Left Column: Your Actual List -->
-            <div class="lg:col-span-2">
-                <h2 class="text-white uppercase tracking-widest text-xs font-bold mb-6 border-b border-[#2c3440] pb-2 flex justify-between">
-                    <span>Your Collection</span>
-                    <span class="text-[#678]"><?php echo count($mySeries); ?> Entries</span>
-                </h2>
-                
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <?php foreach ($mySeries as $show): ?>
-                        <div class="glass rounded-lg overflow-hidden border border-[#2c3440] flex h-24 hover:border-[#00e054]/50 transition-colors">
-                            <img src="<?php echo $show['image']; ?>" class="w-16 h-full object-cover" alt="Poster">
-                            <div class="p-3 flex-1 flex flex-col justify-between">
-                                <div>
-                                    <div class="flex justify-between items-start">
-                                        <h3 class="text-white font-bold text-sm leading-tight"><?php echo $show['title']; ?></h3>
-                                        <span class="text-[10px] text-[#00e054] font-black uppercase tracking-tighter bg-[#00e054]/10 px-1.5 rounded">
-                                            <?php echo $show['status']; ?>
-                                        </span>
-                                    </div>
-                                    <p class="text-[10px] text-[#678] font-bold uppercase"><?php echo $show['progress']; ?></p>
+        const App = () => {
+            const [loading, setLoading] = useState(false);
+            const [status, setStatus] = useState({ type: '', message: '' });
+            const [isModalOpen, setIsModalOpen] = useState(false);
+            const [profile, setProfile] = useState({
+                username: 'SeriesFan99',
+                email: 'fan@example.com',
+                bio: 'Obsessed with prestige drama and sci-fi series. Always looking for the next binge.',
+                avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=200&h=200&fit=crop'
+            });
+
+            const handleSave = (e) => {
+                e.preventDefault();
+                setLoading(true);
+                // Simulate Firestore Save
+                setTimeout(() => {
+                    setLoading(false);
+                    setStatus({ type: 'success', message: 'Profile updated successfully!' });
+                    setTimeout(() => setStatus({ type: '', message: '' }), 3000);
+                }, 800);
+            };
+
+            return (
+                <div className="min-h-screen pb-20">
+                    {/* Header */}
+                    <nav className="bg-[#14181c] border-b border-[#2c3440] h-16 flex items-center sticky top-0 z-50">
+                        <div className="max-w-5xl mx-auto w-full px-4 flex justify-between items-center">
+                            <div className="flex items-center gap-8">
+                                <h1 className="text-white font-black text-2xl tracking-tighter">SERIESLIST</h1>
+                                <div className="hidden md:flex gap-6 text-[11px] font-bold uppercase tracking-widest">
+                                    <a href="#" className="hover:text-white">Profile</a>
+                                    <a href="#" className="hover:text-white">Activity</a>
+                                    <a href="#" className="text-white border-b-2 border-[#00e054] pb-1">Settings</a>
                                 </div>
-                                <div class="text-[#00e054] text-[10px]">
-                                    <?php echo str_repeat('★', $show['rating']) . str_repeat('☆', 5 - $show['rating']); ?>
+                            </div>
+                            <div className="flex items-center gap-4">
+                                <img src={profile.avatar} className="w-8 h-8 rounded-full border border-[#2c3440]" />
+                            </div>
+                        </div>
+                    </nav>
+
+                    <div className="max-w-5xl mx-auto px-4 pt-12">
+                        <div className="flex flex-col lg:flex-row gap-12">
+                            
+                            {/* Left Col */}
+                            <aside className="w-full lg:w-64 space-y-6">
+                                <div className="bg-[#1b2228] border border-[#2c3440] rounded-lg p-6 text-center">
+                                    <div className="relative inline-block group cursor-pointer" onClick={() => setIsModalOpen(true)}>
+                                        <img src={profile.avatar} className="w-24 h-24 rounded-full border-4 border-[#2c3440] group-hover:border-[#00e054] transition-all object-cover" />
+                                        <div className="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <i data-lucide="camera" className="text-white w-6 h-6"></i>
+                                        </div>
+                                    </div>
+                                    <h2 className="text-white font-bold text-lg mt-4">{profile.username}</h2>
+                                    <p className="text-[10px] text-[#678] font-bold uppercase tracking-widest mt-1">PRO MEMBER</p>
+                                </div>
+
+                                <nav className="flex flex-col text-xs font-bold uppercase tracking-widest">
+                                    <a href="#" className="bg-[#2c3440] text-white px-4 py-3 rounded-t-lg border-b border-[#14181c]">Profile Settings</a>
+                                    <a href="#" className="bg-[#1b2228] hover:bg-[#232a31] px-4 py-3 border-b border-[#14181c]">Avatar & Cover</a>
+                                    <a href="#" className="bg-[#1b2228] hover:bg-[#232a31] px-4 py-3 border-b border-[#14181c]">Security</a>
+                                    <a href="#" className="bg-[#1b2228] hover:bg-[#232a31] px-4 py-3 rounded-b-lg">Connections</a>
+                                </nav>
+                            </aside>
+
+                            {/* Main Col */}
+                            <section className="flex-1">
+                                <div className="flex justify-between items-center mb-8">
+                                    <h1 className="text-white text-2xl font-serif italic">Settings</h1>
+                                    {status.message && (
+                                        <div className="text-[#00e054] text-xs font-bold animate-pulse">
+                                            {status.message}
+                                        </div>
+                                    )}
+                                </div>
+
+                                <form onSubmit={handleSave} className="space-y-8 bg-[#1b2228] border border-[#2c3440] p-8 rounded-lg shadow-xl">
+                                    <div className="grid md:grid-cols-2 gap-6">
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] font-bold uppercase tracking-widest text-[#678]">Username</label>
+                                            <input 
+                                                type="text" 
+                                                className="lb-input w-full p-3 rounded text-white text-sm"
+                                                value={profile.username}
+                                                onChange={e => setProfile({...profile, username: e.target.value})}
+                                            />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] font-bold uppercase tracking-widest text-[#678]">Email</label>
+                                            <input 
+                                                type="email" 
+                                                className="lb-input w-full p-3 rounded text-white text-sm"
+                                                value={profile.email}
+                                                onChange={e => setProfile({...profile, email: e.target.value})}
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-bold uppercase tracking-widest text-[#678]">Bio</label>
+                                        <textarea 
+                                            className="lb-input w-full p-3 rounded text-white text-sm min-h-[120px]"
+                                            value={profile.bio}
+                                            onChange={e => setProfile({...profile, bio: e.target.value})}
+                                        ></textarea>
+                                        <p className="text-[10px] text-[#456]">Markdown is supported for formatting your biography.</p>
+                                    </div>
+
+                                    <div className="pt-6 border-t border-[#2c3440] flex justify-end">
+                                        <button 
+                                            disabled={loading}
+                                            className="bg-[#00e054] hover:bg-[#00c54a] text-[#14181c] font-black uppercase text-[11px] tracking-widest px-8 py-3 rounded transition-all disabled:opacity-50"
+                                        >
+                                            {loading ? 'Saving...' : 'Save Changes'}
+                                        </button>
+                                    </div>
+                                </form>
+                            </section>
+                        </div>
+                    </div>
+
+                    {/* Modal Overlay */}
+                    {isModalOpen && (
+                        <div className="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-[100]">
+                            <div className="bg-[#1b2228] border border-[#2c3440] p-8 rounded-xl max-w-md w-full">
+                                <div className="flex justify-between mb-6">
+                                    <h3 className="text-white font-bold">Select Avatar</h3>
+                                    <button onClick={() => setIsModalOpen(false)} className="text-[#678] hover:text-white">✕</button>
+                                </div>
+                                <div className="grid grid-cols-4 gap-4">
+                                    {[1, 2, 3, 4, 5, 6, 7, 8].map(i => (
+                                        <img 
+                                            key={i}
+                                            src={`https://i.pravatar.cc/150?img=${i+10}`} 
+                                            className="rounded-full cursor-pointer hover:ring-2 ring-[#00e054] transition-all"
+                                            onClick={() => {
+                                                setProfile({...profile, avatar: `https://i.pravatar.cc/150?img=${i+10}`});
+                                                setIsModalOpen(false);
+                                            }}
+                                        />
+                                    ))}
                                 </div>
                             </div>
                         </div>
-                    <?php endforeach; ?>
+                    )}
                 </div>
-            </div>
+            );
+        };
 
-            <!-- Right Column: Settings & Shortcuts -->
-            <div>
-                <h2 class="text-white uppercase tracking-widest text-xs font-bold mb-6 border-b border-[#2c3440] pb-2">Shortcuts</h2>
-                <div class="space-y-3">
-                    <a href="index.php?mock_login=true" class="block w-full text-center py-3 border border-[#2c3440] rounded text-xs font-bold hover:bg-[#2c3440] transition-colors">Back to Dashboard</a>
-                    <a href="trivia.php" class="block w-full text-center py-3 border border-[#00e054]/20 bg-[#00e054]/5 rounded text-xs font-bold text-[#00e054] hover:bg-[#00e054]/10 transition-colors">Play Rookie Trivia</a>
-                </div>
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
 
-                <div class="mt-12">
-                    <h2 class="text-white uppercase tracking-widest text-xs font-bold mb-6 border-b border-[#2c3440] pb-2">Settings</h2>
-                    <ul class="space-y-4 text-xs font-bold uppercase tracking-widest">
-                        <li><a href="#" class="text-[#678] hover:text-white transition-colors">Privacy & Security</a></li>
-                        <li><a href="#" class="text-[#678] hover:text-white transition-colors">Notification Settings</a></li>
-                        <li><a href="#" class="text-[#678] hover:text-white transition-colors">Linked Accounts</a></li>
-                    </ul>
-                </div>
-                
-                <div class="mt-12 p-4 bg-[#ff4b4b]/5 border border-[#ff4b4b]/20 rounded-lg">
-                    <p class="text-[10px] text-[#ff4b4b] uppercase font-black mb-2 tracking-widest">Danger Zone</p>
-                    <button class="text-xs text-[#ff4b4b] hover:underline font-bold uppercase">Log Out & Clear History</button>
-                </div>
-            </div>
-        </div>
-    </main>
+        // Initialize icons
+        setTimeout(() => lucide.createIcons(), 100);
+    </script>
 </body>
 </html>
