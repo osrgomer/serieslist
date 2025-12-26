@@ -1,4 +1,16 @@
 <?php
+// Mock Session Check
+// In a real application, you would use session_start() and check $_SESSION['user']
+// For this preview, we'll simulate a redirect if a "login" hasn't happened.
+$isLoggedIn = isset($_GET['mock_login']) && $_GET['mock_login'] === 'true';
+
+if (!$isLoggedIn && !isset($_GET['view'])) {
+    // If not logged in and not looking at a specific public view, 
+    // we redirect to the login page.
+    header("Location: login.php");
+    exit;
+}
+
 // INITIAL_SHOWS Data Array
 $INITIAL_SHOWS = [
     [
@@ -66,7 +78,6 @@ if ($showId) {
     }
 }
 
-// Helper for clean URLs
 function url($path) {
     return "/serieslist/" . ltrim($path, '/');
 }
@@ -105,7 +116,6 @@ function url($path) {
                     <div class="absolute left-3 top-2.5 text-[#678]"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div>
                 </form>
 
-                <!-- Updated Account Link: Higher Z-Index and Relative Position to ensure clickability -->
                 <a href="login.php" class="relative z-[110] p-2 hover:text-[#00e054] text-white transition-colors flex items-center justify-center rounded-full hover:bg-[#2c3440]" title="Account Info">
                     <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-user-circle"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="10" r="3"/><path d="M7 20.662V19a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v1.662"/></svg>
                 </a>
@@ -145,10 +155,9 @@ function url($path) {
                 </div>
 
                 <aside class="w-full lg:w-64 space-y-8">
-                    <div class="bg-[#2c3440] p-6 rounded-lg">
-                        <h3 class="text-white text-xs font-bold uppercase tracking-widest mb-4">Did you know?</h3>
-                        <p class="text-sm leading-relaxed mb-4 italic">Aaron Thorsen is the only officer at Mid-Wilshire with a specialized Cat Translator app.</p>
-                        <a href="<?php echo url('trivia/'); ?>" class="block text-center bg-[#00e054] text-[#14181c] text-xs font-bold py-2 rounded uppercase hover:scale-105 transition-transform">Test your knowledge</a>
+                    <div class="bg-[#2c3440] p-6 rounded-lg text-center">
+                        <p class="text-xs text-[#00e054] mb-2 uppercase font-bold tracking-widest">Logged In</p>
+                        <a href="index.php" class="text-[10px] text-[#678] hover:text-white underline">Sign Out</a>
                     </div>
                 </aside>
             </div>
