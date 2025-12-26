@@ -54,7 +54,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </div>
                 <span class="text-xl font-black text-white italic uppercase">SeriesList</span>
             </a>
-            <a href="index.php" class="text-xs uppercase font-bold tracking-widest text-[#678] hover:text-white">Back to Home</a>
+            <a href="/" class="text-xs uppercase font-bold tracking-widest text-[#678] hover:text-white">Back to Home</a>
         </div>
     </nav>
 
