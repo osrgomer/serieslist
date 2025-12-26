@@ -99,10 +99,17 @@ function url($path) {
                 </div>
             </div>
             
-            <form action="<?php echo url('home/'); ?>" method="GET" class="relative hidden sm:block">
-                <input type="text" name="search" value="<?php echo htmlspecialchars($search); ?>" class="bg-[#2c3440] text-white pl-8 pr-4 py-1.5 rounded-full text-sm outline-none w-64 focus:ring-1 focus:ring-[#00e054]" placeholder="Search series...">
-                <div class="absolute left-3 top-2.5 text-[#678]"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div>
-            </form>
+            <div class="flex items-center gap-4">
+                <form action="<?php echo url('home/'); ?>" method="GET" class="relative hidden sm:block">
+                    <input type="text" name="search" value="<?php echo htmlspecialchars($search); ?>" class="bg-[#2c3440] text-white pl-8 pr-4 py-1.5 rounded-full text-sm outline-none w-48 lg:w-64 focus:ring-1 focus:ring-[#00e054]" placeholder="Search series...">
+                    <div class="absolute left-3 top-2.5 text-[#678]"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div>
+                </form>
+
+                <!-- Account Icon -->
+                <button class="p-1 hover:text-white transition-colors" title="Account Info">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-user-circle"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="10" r="3"/><path d="M7 20.662V19a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v1.662"/></svg>
+                </button>
+            </div>
         </div>
     </nav>
 
