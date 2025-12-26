@@ -8,7 +8,7 @@ $INITIAL_SHOWS = [
         "seasons" => 7,
         "rating" => 4.8,
         "genre" => "Crime Drama",
-        "poster" => "https://images.unsplash.com/photo-1599508411083-d97f2670732e?w=400&h=600&fit=crop",
+        "poster" => "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS_4Xm5yN16H09jxneLuDToqdRFXTgnaJsBRg&s",
         "description" => "John Nolan, a man in his 40s, becomes the oldest rookie at the LAPD. Based on a true story of pursuing a fresh start and helping the community."
     ],
     [
@@ -18,7 +18,7 @@ $INITIAL_SHOWS = [
         "seasons" => 1,
         "rating" => 4.2,
         "genre" => "Crime Drama",
-        "poster" => "https://images.unsplash.com/photo-1585007600263-ad126256759c?w=400&h=600&fit=crop",
+        "poster" => "https://m.media-amazon.com/images/M/MV5BNGQyYTc3OGQtZWU5MS00MTgwLWFhYTAtYzZmYjc2N2ZiODk2XkEyXkFqcGc@._V1_.jpg",
         "description" => "Simone Clark, a former guidance counselor, becomes the oldest rookie at the FBI Academy and brings her unique perspective to the Bureau."
     ],
     [
