@@ -43,6 +43,13 @@ $INITIAL_SHOWS = [
     ]
 ];
 
+$CHARACTERS = [
+    ["name" => "John Nolan", "role" => "The Rookie", "actor" => "Nathan Fillion"],
+    ["name" => "Tim Bradford", "role" => "Training Officer", "actor" => "Eric Winter"],
+    ["name" => "Lucy Chen", "role" => "Undercover Specialist", "actor" => "Melissa O'Neil"],
+    ["name" => "Angela Lopez", "role" => "Detective", "actor" => "Alyssa Diaz"]
+];
+
 $view = isset($_GET['view']) ? $_GET['view'] : 'home';
 $showId = isset($_GET['id']) ? (int)$_GET['id'] : null;
 $search = isset($_GET['search']) ? $_GET['search'] : '';
@@ -57,33 +64,41 @@ if ($showId) {
         if ($show['id'] === $showId) { $selectedShow = $show; break; }
     }
 }
+
+// Helper for clean URLs based on your .htaccess
+function url($path) {
+    return "/serieslist/" . ltrim($path, '/');
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SeriesList</title>
+    <title>SeriesList - Discovery</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <style> body { background-color: #14181c; color: #9ab; font-family: sans-serif; } </style>
+    <style> 
+        body { background-color: #14181c; color: #9ab; font-family: sans-serif; } 
+        .glass { background: rgba(44, 52, 64, 0.5); backdrop-filter: blur(4px); }
+    </style>
 </head>
 <body class="min-h-screen pb-20">
     <nav class="fixed top-0 w-full bg-[#14181c] border-b border-[#2c3440] z-50 h-16 flex items-center px-4">
         <div class="max-w-6xl mx-auto w-full flex justify-between items-center">
             <div class="flex items-center gap-8">
-                <a href="index.php" class="flex items-center gap-2">
+                <a href="<?php echo url('home/'); ?>" class="flex items-center gap-2">
                     <div class="bg-[#00e054] p-1 rounded">
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#14181c" stroke-width="2"><path d="M2 8a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8Z"/><polyline points="7 21 12 16 17 21"/></svg>
                     </div>
-                    <span class="text-xl font-black text-white italic uppercase">SeriesList</span>
+                    <span class="text-xl font-black text-white italic uppercase tracking-tighter">SeriesList</span>
                 </a>
                 <div class="hidden md:flex gap-6 text-[10px] uppercase tracking-widest font-bold">
-                    <a href="index.php" class="text-white border-b-2 border-[#00e054] pb-1">Browse</a>
-                    <a href="trivia.php" class="hover:text-white transition-colors">Trivia Quiz</a>
+                    <a href="<?php echo url('home/'); ?>" class="text-white border-b-2 border-[#00e054] pb-1">Browse</a>
+                    <a href="<?php echo url('trivia/'); ?>" class="hover:text-white transition-colors">Trivia Quiz</a>
                 </div>
             </div>
             
-            <form action="index.php" method="GET" class="relative hidden sm:block">
+            <form action="<?php echo url('home/'); ?>" method="GET" class="relative hidden sm:block">
                 <input type="text" name="search" value="<?php echo htmlspecialchars($search); ?>" class="bg-[#2c3440] text-white pl-8 pr-4 py-1.5 rounded-full text-sm outline-none w-64 focus:ring-1 focus:ring-[#00e054]" placeholder="Search series...">
                 <div class="absolute left-3 top-2.5 text-[#678]"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div>
             </form>
@@ -92,24 +107,76 @@ if ($showId) {
 
     <main class="max-w-6xl mx-auto px-4 pt-24">
         <?php if ($view === 'home'): ?>
-            <h2 class="text-[#9ab] uppercase tracking-widest text-xs font-bold mb-6">Trending Series</h2>
-            <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-6">
-                <?php foreach ($filteredShows as $show): ?>
-                    <a href="?view=show-detail&id=<?php echo $show['id']; ?>" class="group block relative overflow-hidden rounded-md border-2 border-transparent hover:border-[#00e054] transition-all">
-                        <img src="<?php echo $show['poster']; ?>" class="w-full aspect-[2/3] object-cover">
-                        <div class="absolute bottom-0 p-2 bg-black/60 w-full opacity-0 group-hover:opacity-100 transition-opacity">
-                            <p class="text-white text-xs font-bold"><?php echo $show['title']; ?></p>
+            <div class="flex flex-col lg:flex-row gap-8">
+                <!-- Main Content -->
+                <div class="flex-1">
+                    <h2 class="text-[#9ab] uppercase tracking-widest text-xs font-bold mb-6">Trending Series</h2>
+                    <div class="grid grid-cols-2 sm:grid-cols-3 gap-6 mb-12">
+                        <?php foreach ($filteredShows as $show): ?>
+                            <a href="<?php echo url('show/' . $show['id'] . '/'); ?>" class="group block relative overflow-hidden rounded-md border-2 border-transparent hover:border-[#00e054] transition-all">
+                                <img src="<?php echo $show['poster']; ?>" class="w-full aspect-[2/3] object-cover">
+                                <div class="absolute bottom-0 p-3 bg-gradient-to-t from-black to-transparent w-full opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <p class="text-white text-xs font-bold"><?php echo $show['title']; ?></p>
+                                    <p class="text-[10px] text-[#9ab]"><?php echo $show['year']; ?></p>
+                                </div>
+                            </a>
+                        <?php endforeach; ?>
+                    </div>
+
+                    <!-- New Feature: Character Spotlight -->
+                    <section class="mt-12">
+                        <h2 class="text-white uppercase tracking-widest text-xs font-bold mb-6 border-b border-[#2c3440] pb-2">Character Spotlight</h2>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <?php foreach ($CHARACTERS as $char): ?>
+                                <div class="glass p-4 rounded-lg border border-[#2c3440] hover:border-[#456] transition-colors">
+                                    <h3 class="text-white font-bold"><?php echo $char['name']; ?></h3>
+                                    <p class="text-xs text-[#00e054] uppercase tracking-tighter font-bold"><?php echo $char['role']; ?></p>
+                                    <p class="text-[11px] mt-1 text-[#678]">Played by <?php echo $char['actor']; ?></p>
+                                </div>
+                            <?php endforeach; ?>
                         </div>
-                    </a>
-                <?php endforeach; ?>
+                    </section>
+                </div>
+
+                <!-- Sidebar -->
+                <aside class="w-full lg:w-64 space-y-8">
+                    <div class="bg-[#2c3440] p-6 rounded-lg">
+                        <h3 class="text-white text-xs font-bold uppercase tracking-widest mb-4">Did you know?</h3>
+                        <p class="text-sm leading-relaxed mb-4 italic">Aaron Thorsen is the only officer at Mid-Wilshire with a specialized Cat Translator app. He claims it helps with "de-escalation."</p>
+                        <a href="<?php echo url('trivia/'); ?>" class="block text-center bg-[#00e054] text-[#14181c] text-xs font-bold py-2 rounded uppercase hover:scale-105 transition-transform">Test your knowledge</a>
+                    </div>
+
+                    <div class="border-t border-[#2c3440] pt-6">
+                        <h3 class="text-[#678] text-[10px] font-bold uppercase tracking-widest mb-4">Quick Links</h3>
+                        <ul class="space-y-2 text-sm">
+                            <li><a href="#" class="hover:text-white transition-colors">Season 7 Updates</a></li>
+                            <li><a href="#" class="hover:text-white transition-colors">LAPD Real-Life Facts</a></li>
+                            <li><a href="#" class="hover:text-white transition-colors">The Rookie: Feds Episodes</a></li>
+                        </ul>
+                    </div>
+                </aside>
             </div>
+
         <?php elseif ($view === 'show-detail' && $selectedShow): ?>
-            <div class="flex flex-col md:flex-row gap-10">
-                <img src="<?php echo $selectedShow['poster']; ?>" class="w-48 h-72 rounded shadow-xl">
-                <div>
-                    <h1 class="text-5xl font-black text-white mb-4"><?php echo $selectedShow['title']; ?></h1>
-                    <p class="text-xl mb-6"><?php echo $selectedShow['description']; ?></p>
-                    <a href="index.php" class="text-xs font-bold uppercase tracking-widest text-[#00e054]">← Back Home</a>
+            <div class="max-w-4xl mx-auto">
+                <a href="<?php echo url('home/'); ?>" class="text-xs font-bold uppercase tracking-widest text-[#678] hover:text-[#00e054] mb-8 inline-block transition-colors">← Back Home</a>
+                <div class="flex flex-col md:flex-row gap-10">
+                    <div class="w-full md:w-64 flex-shrink-0">
+                        <img src="<?php echo $selectedShow['poster']; ?>" class="w-full rounded shadow-2xl border border-[#2c3440]">
+                        <div class="mt-4 flex items-center justify-between">
+                            <span class="text-white font-bold"><?php echo $selectedShow['rating']; ?>/5.0</span>
+                            <span class="text-[#678] text-xs"><?php echo $selectedShow['seasons']; ?> Seasons</span>
+                        </div>
+                    </div>
+                    <div>
+                        <h1 class="text-6xl font-black text-white mb-6 leading-tight uppercase italic tracking-tighter"><?php echo $selectedShow['title']; ?></h1>
+                        <p class="text-2xl text-white/80 leading-relaxed mb-8 font-light"><?php echo $selectedShow['description']; ?></p>
+                        <div class="flex gap-2">
+                             <?php foreach (explode('/', $selectedShow['genre']) as $g): ?>
+                                <span class="bg-[#2c3440] text-[#9ab] px-3 py-1 rounded-full text-[10px] font-bold uppercase"><?php echo trim($g); ?></span>
+                             <?php endforeach; ?>
+                        </div>
+                    </div>
                 </div>
             </div>
         <?php endif; ?>
