@@ -54,7 +54,8 @@ $view = isset($_GET['view']) ? $_GET['view'] : 'home';
 $showId = isset($_GET['id']) ? (int)$_GET['id'] : null;
 $search = isset($_GET['search']) ? $_GET['search'] : '';
 
-$filteredShows = array_filter($INITIAL_SHOWS, function($show) use ($search) {
+$filteredShows = array_filter($INITIAL_SHOWS, function($show) {
+    global $search;
     return empty($search) || stripos($show['title'], $search) !== false;
 });
 
@@ -123,7 +124,7 @@ function url($path) {
                         <?php endforeach; ?>
                     </div>
 
-                    <!-- New Feature: Character Spotlight -->
+                    <!-- Character Spotlight -->
                     <section class="mt-12">
                         <h2 class="text-white uppercase tracking-widest text-xs font-bold mb-6 border-b border-[#2c3440] pb-2">Character Spotlight</h2>
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -148,10 +149,11 @@ function url($path) {
 
                     <div class="border-t border-[#2c3440] pt-6">
                         <h3 class="text-[#678] text-[10px] font-bold uppercase tracking-widest mb-4">Quick Links</h3>
-                        <ul class="space-y-2 text-sm">
-                            <li><a href="#" class="hover:text-white transition-colors">Season 7 Updates</a></li>
-                            <li><a href="#" class="hover:text-white transition-colors">LAPD Real-Life Facts</a></li>
-                            <li><a href="#" class="hover:text-white transition-colors">The Rookie: Feds Episodes</a></li>
+                        <ul class="space-y-3 text-sm">
+                            <li><a href="<?php echo url('show/10/'); ?>" class="hover:text-white transition-colors flex items-center gap-2"><span>•</span> The Rookie Hub</a></li>
+                            <li><a href="<?php echo url('show/11/'); ?>" class="hover:text-white transition-colors flex items-center gap-2"><span>•</span> The Rookie: Feds</a></li>
+                            <li><a href="<?php echo url('trivia/'); ?>" class="hover:text-white transition-colors flex items-center gap-2"><span>•</span> Mid-Wilshire Quiz</a></li>
+                            <li><a href="<?php echo url('home/'); ?>" class="hover:text-white transition-colors flex items-center gap-2"><span>•</span> All Series</a></li>
                         </ul>
                     </div>
                 </aside>
