@@ -66,7 +66,7 @@ if ($showId) {
     }
 }
 
-// Helper for clean URLs based on your .htaccess
+// Helper for clean URLs
 function url($path) {
     return "/serieslist/" . ltrim($path, '/');
 }
@@ -84,10 +84,10 @@ function url($path) {
     </style>
 </head>
 <body class="min-h-screen pb-20">
-    <nav class="fixed top-0 w-full bg-[#14181c] border-b border-[#2c3440] z-50 h-16 flex items-center px-4">
+    <nav class="fixed top-0 w-full bg-[#14181c] border-b border-[#2c3440] z-[100] h-16 flex items-center px-4">
         <div class="max-w-6xl mx-auto w-full flex justify-between items-center">
-            <div class="flex items-center gap-8">
-                <a href="<?php echo url('home/'); ?>" class="flex items-center gap-2">
+            <div class="flex items-center gap-4 sm:gap-8">
+                <a href="<?php echo url('home/'); ?>" class="flex items-center gap-2 flex-shrink-0">
                     <div class="bg-[#00e054] p-1 rounded">
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#14181c" stroke-width="2"><path d="M2 8a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8Z"/><polyline points="7 21 12 16 17 21"/></svg>
                     </div>
@@ -99,16 +99,16 @@ function url($path) {
                 </div>
             </div>
             
-            <div class="flex items-center gap-4">
+            <div class="flex items-center gap-3 sm:gap-6">
                 <form action="<?php echo url('home/'); ?>" method="GET" class="relative hidden sm:block">
-                    <input type="text" name="search" value="<?php echo htmlspecialchars($search); ?>" class="bg-[#2c3440] text-white pl-8 pr-4 py-1.5 rounded-full text-sm outline-none w-48 lg:w-64 focus:ring-1 focus:ring-[#00e054]" placeholder="Search series...">
+                    <input type="text" name="search" value="<?php echo htmlspecialchars($search); ?>" class="bg-[#2c3440] text-white pl-8 pr-4 py-1.5 rounded-full text-sm outline-none w-40 lg:w-64 focus:ring-1 focus:ring-[#00e054]" placeholder="Search series...">
                     <div class="absolute left-3 top-2.5 text-[#678]"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div>
                 </form>
 
-                <!-- Account Icon -->
-                <button class="p-1 hover:text-white transition-colors" title="Account Info">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-user-circle"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="10" r="3"/><path d="M7 20.662V19a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v1.662"/></svg>
-                </button>
+                <!-- Updated Account Link: Higher Z-Index and Relative Position to ensure clickability -->
+                <a href="login.php" class="relative z-[110] p-2 hover:text-[#00e054] text-white transition-colors flex items-center justify-center rounded-full hover:bg-[#2c3440]" title="Account Info">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-user-circle"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="10" r="3"/><path d="M7 20.662V19a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v1.662"/></svg>
+                </a>
             </div>
         </div>
     </nav>
@@ -116,7 +116,6 @@ function url($path) {
     <main class="max-w-6xl mx-auto px-4 pt-24">
         <?php if ($view === 'home'): ?>
             <div class="flex flex-col lg:flex-row gap-8">
-                <!-- Main Content -->
                 <div class="flex-1">
                     <h2 class="text-[#9ab] uppercase tracking-widest text-xs font-bold mb-6">Trending Series</h2>
                     <div class="grid grid-cols-2 sm:grid-cols-3 gap-6 mb-12">
@@ -131,7 +130,6 @@ function url($path) {
                         <?php endforeach; ?>
                     </div>
 
-                    <!-- Character Spotlight -->
                     <section class="mt-12">
                         <h2 class="text-white uppercase tracking-widest text-xs font-bold mb-6 border-b border-[#2c3440] pb-2">Character Spotlight</h2>
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -146,26 +144,14 @@ function url($path) {
                     </section>
                 </div>
 
-                <!-- Sidebar -->
                 <aside class="w-full lg:w-64 space-y-8">
                     <div class="bg-[#2c3440] p-6 rounded-lg">
                         <h3 class="text-white text-xs font-bold uppercase tracking-widest mb-4">Did you know?</h3>
-                        <p class="text-sm leading-relaxed mb-4 italic">Aaron Thorsen is the only officer at Mid-Wilshire with a specialized Cat Translator app. He claims it helps with "de-escalation."</p>
+                        <p class="text-sm leading-relaxed mb-4 italic">Aaron Thorsen is the only officer at Mid-Wilshire with a specialized Cat Translator app.</p>
                         <a href="<?php echo url('trivia/'); ?>" class="block text-center bg-[#00e054] text-[#14181c] text-xs font-bold py-2 rounded uppercase hover:scale-105 transition-transform">Test your knowledge</a>
-                    </div>
-
-                    <div class="border-t border-[#2c3440] pt-6">
-                        <h3 class="text-[#678] text-[10px] font-bold uppercase tracking-widest mb-4">Quick Links</h3>
-                        <ul class="space-y-3 text-sm">
-                            <li><a href="<?php echo url('show/10/'); ?>" class="hover:text-white transition-colors flex items-center gap-2"><span>•</span> The Rookie Hub</a></li>
-                            <li><a href="<?php echo url('show/11/'); ?>" class="hover:text-white transition-colors flex items-center gap-2"><span>•</span> The Rookie: Feds</a></li>
-                            <li><a href="<?php echo url('trivia/'); ?>" class="hover:text-white transition-colors flex items-center gap-2"><span>•</span> Mid-Wilshire Quiz</a></li>
-                            <li><a href="<?php echo url('home/'); ?>" class="hover:text-white transition-colors flex items-center gap-2"><span>•</span> All Series</a></li>
-                        </ul>
                     </div>
                 </aside>
             </div>
-
         <?php elseif ($view === 'show-detail' && $selectedShow): ?>
             <div class="max-w-4xl mx-auto">
                 <a href="<?php echo url('home/'); ?>" class="text-xs font-bold uppercase tracking-widest text-[#678] hover:text-[#00e054] mb-8 inline-block transition-colors">← Back Home</a>
@@ -180,11 +166,6 @@ function url($path) {
                     <div>
                         <h1 class="text-6xl font-black text-white mb-6 leading-tight uppercase italic tracking-tighter"><?php echo $selectedShow['title']; ?></h1>
                         <p class="text-2xl text-white/80 leading-relaxed mb-8 font-light"><?php echo $selectedShow['description']; ?></p>
-                        <div class="flex gap-2">
-                             <?php foreach (explode('/', $selectedShow['genre']) as $g): ?>
-                                <span class="bg-[#2c3440] text-[#9ab] px-3 py-1 rounded-full text-[10px] font-bold uppercase"><?php echo trim($g); ?></span>
-                             <?php endforeach; ?>
-                        </div>
                     </div>
                 </div>
             </div>
