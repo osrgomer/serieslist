@@ -1,152 +1,246 @@
-<?php
-// Mock Authentication for demonstration
-$isLoggedIn = isset($_GET['mock_login']) && $_GET['mock_login'] === 'true';
-$userId = "JD_77";
-
-// Shared Series Data
-$SERIES_DATABASE = [
-    [
-        "id" => 10,
-        "title" => "The Rookie",
-        "year" => "2018–2026",
-        "rating" => 4.9,
-        "genre" => "Crime Drama",
-        "poster" => "https://images.unsplash.com/photo-1594909122845-11baa439b7bf?q=80&w=300&h=450&fit=crop",
-        "trending" => true,
-        "badge" => "Season 8 Jan 6",
-        "description" => "John Nolan and the LAPD return for Season 8 on Jan 6, 2026. The premiere 'Czech Mate' takes the crew to Prague for a global operation."
-    ],
-    [
-        "id" => 2,
-        "title" => "The Bear",
-        "year" => "2022–Present",
-        "rating" => 4.8,
-        "genre" => "Drama",
-        "poster" => "https://images.unsplash.com/photo-1559339352-11d035aa65de?q=80&w=300&h=450&fit=crop",
-        "trending" => true,
-        "badge" => null,
-        "description" => "A young chef from the fine dining world returns to Chicago to run his family's sandwich shop."
-    ],
-    [
-        "id" => 11,
-        "title" => "The Rookie: Feds",
-        "year" => "2022",
-        "rating" => 4.2,
-        "genre" => "Crime Drama",
-        "poster" => "https://images.unsplash.com/photo-1536440136628-849c177e76a1?q=80&w=300&h=450&fit=crop",
-        "trending" => false,
-        "badge" => null,
-        "description" => "Special Agent Simone Clark joins the LA field office in this high-octane spin-off."
-    ],
-    [
-        "id" => 12,
-        "title" => "S.W.A.T.",
-        "year" => "2017–Present",
-        "rating" => 4.5,
-        "genre" => "Action",
-        "poster" => "https://images.unsplash.com/photo-1509248961158-e54f6934749c?q=80&w=300&h=450&fit=crop",
-        "trending" => false,
-        "badge" => null,
-        "description" => "A local S.W.A.T. sergeant is tasked to run a specialized tactical unit in Los Angeles."
-    ],
-    [
-        "id" => 13,
-        "title" => "Slow Horses",
-        "year" => "2022–Present",
-        "rating" => 4.7,
-        "genre" => "Espionage",
-        "poster" => "https://images.unsplash.com/photo-1534447677768-be436bb09401?q=80&w=300&h=450&fit=crop",
-        "trending" => true,
-        "badge" => "Top Rated",
-        "description" => "A group of MI5 agents who have botched their careers end up in a dumping ground department."
-    ],
-    [
-        "id" => 14,
-        "title" => "Poker Face",
-        "year" => "2023–Present",
-        "rating" => 4.4,
-        "genre" => "Mystery",
-        "poster" => "https://images.unsplash.com/photo-1511193311914-0346f16efe50?q=80&w=300&h=450&fit=crop",
-        "trending" => false,
-        "badge" => null,
-        "description" => "Charlie has an extraordinary ability to determine when someone is lying."
-    ]
-];
-
-$trendingShows = array_filter($SERIES_DATABASE, fn($s) => $s['trending']);
-$allShows = $SERIES_DATABASE;
-?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SeriesList - Home</title>
+    <title>SeriesList - Track & Play</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lucide-react/0.263.0/lucide-react.min.js"></script>
     <style>
-        body { background-color: #14181c; color: #9ab; }
-        .show-card:hover .overlay { opacity: 1; }
-        .glass-nav { background: rgba(20, 24, 28, 0.95); backdrop-filter: blur(10px); }
+        :root {
+            --bg-dark: #14181c;
+            --bg-card: #1b2228;
+            --accent: #00e054;
+            --text-main: #9ab;
+            --text-bright: #fff;
+        }
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            overflow-x: hidden;
+        }
+        .nav-link {
+            transition: color 0.2s ease;
+        }
+        .nav-link:hover {
+            color: var(--text-bright);
+        }
+        .btn-primary {
+            background-color: var(--accent);
+            color: #000;
+            font-weight: bold;
+            padding: 0.5rem 1.25rem;
+            border-radius: 0.25rem;
+            transition: transform 0.1s ease;
+        }
+        .btn-primary:active {
+            transform: scale(0.95);
+        }
     </style>
 </head>
-<body class="min-h-screen pb-20">
-    <nav class="fixed top-0 w-full glass-nav border-b border-[#2c3440] z-[100] h-16 flex items-center px-4">
-        <div class="max-w-6xl mx-auto w-full flex justify-between items-center">
-            <a href="index.php?mock_login=true" class="flex items-center gap-2">
-                <div class="bg-[#00e054] p-1 rounded">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#14181c" stroke-width="3"><path d="M2 8a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8Z"/><polyline points="7 21 12 16 17 21"/></svg>
-                </div>
-                <span class="text-xl font-black text-white italic tracking-tighter uppercase">SeriesList</span>
-            </a>
-            <div class="flex items-center gap-6">
-                <a href="account.php?mock_login=true" class="flex items-center gap-2 px-3 py-1.5 hover:bg-[#2c3440] rounded-full transition-all border border-transparent hover:border-[#456]">
-                    <div class="w-7 h-7 rounded-full bg-gradient-to-tr from-[#00e054] to-blue-500 flex items-center justify-center text-[#14181c] font-bold text-[10px]">JD</div>
-                    <span class="text-white text-[10px] font-bold uppercase tracking-widest hidden sm:block">Edit Profile</span>
-                </a>
-            </div>
-        </div>
-    </nav>
+<body>
+    <div id="app"></div>
 
-    <main class="max-w-6xl mx-auto px-4 pt-24">
-        <!-- TRENDING SECTION -->
-        <section class="mb-16">
-            <h2 class="text-white uppercase tracking-[0.2em] text-xs font-bold mb-8 flex items-center gap-3">
-                Trending Now <span class="h-px flex-1 bg-[#2c3440]"></span>
-            </h2>
-            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-8">
-                <?php foreach ($trendingShows as $show): ?>
-                    <div class="group relative aspect-[16/9] rounded-lg overflow-hidden border border-[#2c3440] hover:border-[#00e054] transition-all">
-                        <img src="<?php echo $show['poster']; ?>" class="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition-opacity" alt="">
-                        <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent p-6 flex flex-col justify-end">
-                            <?php if($show['badge']): ?>
-                                <span class="absolute top-4 right-4 bg-[#00e054] text-[#14181c] text-[9px] font-black px-2 py-0.5 rounded uppercase"><?php echo $show['badge']; ?></span>
-                            <?php endif; ?>
-                            <h3 class="text-white font-black italic text-2xl uppercase tracking-tighter mb-1"><?php echo $show['title']; ?></h3>
-                            <p class="text-[10px] uppercase font-bold text-[#00e054] tracking-widest"><?php echo $show['genre']; ?> • <?php echo $show['year']; ?></p>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signInAnonymously, signInWithCustomToken, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, getDoc, setDoc, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Global variables provided by environment
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : { apiKey: "mock" };
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'serieslist-app';
+        
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // State Management
+        let state = {
+            user: null,
+            currentPage: 'home', // 'home', 'profile', 'trivia'
+            series: [],
+            loading: true
+        };
+
+        // Navigation Helper
+        function navigate(page) {
+            state.currentPage = page;
+            render();
+        }
+
+        // Auth Logic
+        const initAuth = async () => {
+            if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                await signInWithCustomToken(auth, __initial_auth_token);
+            } else {
+                await signInAnonymously(auth);
+            }
+        };
+
+        onAuthStateChanged(auth, (user) => {
+            state.user = user;
+            state.loading = false;
+            if (user) {
+                setupDataListener(user.uid);
+            }
+            render();
+        });
+
+        function setupDataListener(uid) {
+            const userDocRef = doc(db, 'artifacts', appId, 'users', uid, 'profile', 'data');
+            onSnapshot(userDocRef, (doc) => {
+                if (doc.exists()) {
+                    state.series = doc.data().series || [];
+                    render();
+                }
+            }, (error) => console.error("Firestore error:", error));
+        }
+
+        // Components
+        function Header() {
+            return `
+                <header class="bg-[#1b2228] border-b border-[#2c3440] py-4 px-6 mb-8">
+                    <div class="max-w-6xl mx-auto flex justify-between items-center">
+                        <div class="flex items-center gap-8">
+                            <h1 onclick="window.navigate('home')" class="text-white text-2xl font-black tracking-tighter cursor-pointer flex items-center gap-2">
+                                <span class="bg-[#00e054] text-black px-1 rounded">S</span> SeriesList
+                            </h1>
+                            <nav class="hidden md:flex gap-6 uppercase text-xs font-bold tracking-widest pt-1">
+                                <a href="#" onclick="window.navigate('home')" class="nav-link ${state.currentPage === 'home' ? 'text-white' : ''}">Home</a>
+                                <a href="#" onclick="window.navigate('trivia')" class="nav-link ${state.currentPage === 'trivia' ? 'text-white' : ''}">Trivia</a>
+                            </nav>
+                        </div>
+                        <div class="flex items-center gap-4">
+                            ${state.user ? `
+                                ${state.currentPage !== 'profile' ? `
+                                    <button onclick="window.navigate('profile')" class="text-xs uppercase font-bold tracking-widest nav-link">Profile</button>
+                                ` : ''}
+                                <button onclick="window.handleLogout()" class="text-xs uppercase font-bold tracking-widest nav-link opacity-60">Logout</button>
+                            ` : `
+                                <button class="btn-primary text-xs uppercase">Sign In</button>
+                            `}
                         </div>
                     </div>
-                <?php endforeach; ?>
-            </div>
-        </section>
+                </header>
+            `;
+        }
 
-        <!-- ALL SERIES SECTION -->
-        <section>
-            <h2 class="text-[#9ab] uppercase tracking-[0.2em] text-xs font-bold mb-8 flex items-center gap-3">
-                Complete Library <span class="h-px flex-1 bg-[#2c3440]"></span>
-            </h2>
-            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6">
-                <?php foreach ($allShows as $show): ?>
-                    <div class="show-card group relative aspect-[2/3] rounded border border-[#2c3440] overflow-hidden cursor-pointer hover:scale-105 transition-transform">
-                        <img src="<?php echo $show['poster']; ?>" class="w-full h-full object-cover" alt="">
-                        <div class="overlay absolute inset-0 bg-[#14181c]/95 opacity-0 transition-opacity p-4 flex flex-col items-center justify-center text-center">
-                            <h4 class="text-white font-bold text-xs uppercase mb-2"><?php echo $show['title']; ?></h4>
-                            <p class="text-[9px] line-clamp-4 leading-relaxed mb-4"><?php echo $show['description']; ?></p>
-                            <button class="w-full py-2 bg-[#2c3440] hover:bg-[#00e054] text-white hover:text-[#14181c] text-[9px] font-bold uppercase transition-colors rounded">Details</button>
+        function HomePage() {
+            return `
+                <main class="max-w-6xl mx-auto px-6 pb-20">
+                    <section class="mb-12">
+                        <h2 class="text-4xl text-white font-serif mb-4">Track series you've watched.</h2>
+                        <h2 class="text-4xl text-white font-serif mb-8">Save those you want to see.</h2>
+                        <div class="bg-gradient-to-r from-[#2c3440] to-transparent p-8 rounded-lg border border-[#343d4c]">
+                            <p class="text-lg mb-6">Welcome back. Start your next obsession or test your knowledge.</p>
+                            <button onclick="window.navigate('trivia')" class="btn-primary">Play Series Trivia</button>
+                        </div>
+                    </section>
+
+                    <section>
+                        <h3 class="uppercase text-xs font-bold tracking-widest border-b border-[#2c3440] pb-2 mb-6">Popular this week</h3>
+                        <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6">
+                            ${[1, 2, 3, 4, 5].map(i => `
+                                <div class="group cursor-pointer">
+                                    <div class="aspect-[2/3] bg-[#2c3440] rounded border-2 border-transparent group-hover:border-[#00e054] transition-all overflow-hidden relative">
+                                        <div class="absolute inset-0 flex items-center justify-center text-[#456]">Poster ${i}</div>
+                                    </div>
+                                    <p class="mt-2 text-sm text-white font-medium truncate">Example Series ${i}</p>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </section>
+                </main>
+            `;
+        }
+
+        function ProfilePage() {
+            return `
+                <main class="max-w-4xl mx-auto px-6">
+                    <div class="flex items-center gap-6 mb-12">
+                        <div class="w-24 h-24 bg-[#2c3440] rounded-full border-2 border-[#456]"></div>
+                        <div>
+                            <h2 class="text-3xl text-white font-bold">${state.user?.uid.substring(0, 8) || 'User'}</h2>
+                            <p class="text-[#678]">Member since 2025</p>
                         </div>
                     </div>
-                <?php endforeach; ?>
-            </div>
-        </section>
-    </main>
+
+                    <div class="grid md:grid-cols-3 gap-8">
+                        <div class="col-span-2">
+                            <h3 class="uppercase text-xs font-bold tracking-widest border-b border-[#2c3440] pb-2 mb-4">Recent Activity</h3>
+                            <div class="space-y-4">
+                                ${state.series.length > 0 ? state.series.map(s => `
+                                    <div class="bg-[#1b2228] p-4 rounded border border-[#2c3440] flex justify-between">
+                                        <span class="text-white">${s.name}</span>
+                                        <span class="text-[#00e054]">★★★★☆</span>
+                                    </div>
+                                `).join('') : `<p class="text-sm italic">No activity yet. Go watch something!</p>`}
+                            </div>
+                        </div>
+                        <div>
+                            <h3 class="uppercase text-xs font-bold tracking-widest border-b border-[#2c3440] pb-2 mb-4">Stats</h3>
+                            <div class="bg-[#1b2228] p-4 rounded border border-[#2c3440] space-y-4">
+                                <div><p class="text-2xl text-white font-bold">${state.series.length}</p><p class="text-[10px] uppercase font-bold">Series Watched</p></div>
+                                <div><p class="text-2xl text-white font-bold">0</p><p class="text-[10px] uppercase font-bold">Reviews Written</p></div>
+                            </div>
+                        </div>
+                    </div>
+                </main>
+            `;
+        }
+
+        function TriviaPage() {
+            return `
+                <main class="max-w-2xl mx-auto px-6 py-12">
+                    <div class="bg-[#1b2228] border border-[#2c3440] rounded-xl p-10 text-center">
+                        <span class="text-[#00e054] text-xs font-bold uppercase tracking-widest mb-4 block">Question 1 of 5</span>
+                        <h2 class="text-2xl text-white font-bold mb-8">In "Breaking Bad", what is the primary color used in the logo for the element symbols?</h2>
+                        <div class="grid gap-4">
+                            ${['Blue', 'Green', 'Yellow', 'Red'].map(opt => `
+                                <button class="w-full py-4 px-6 bg-[#2c3440] hover:bg-[#343d4c] text-white rounded font-medium transition-colors border border-transparent hover:border-[#00e054]">
+                                    ${opt}
+                                </button>
+                            `).join('')}
+                        </div>
+                    </div>
+                </main>
+            `;
+        }
+
+        function render() {
+            const root = document.getElementById('app');
+            if (state.loading) {
+                root.innerHTML = `<div class="flex items-center justify-center min-h-screen"><p class="animate-pulse">Loading SeriesList...</p></div>`;
+                return;
+            }
+
+            let pageContent = '';
+            switch(state.currentPage) {
+                case 'profile': pageContent = ProfilePage(); break;
+                case 'trivia': pageContent = TriviaPage(); break;
+                default: pageContent = HomePage();
+            }
+
+            root.innerHTML = `
+                ${Header()}
+                ${pageContent}
+            `;
+        }
+
+        // Global Action Handlers
+        window.navigate = navigate;
+        window.handleLogout = async () => {
+            await signOut(auth);
+            navigate('home');
+        };
+
+        // Initialize
+        initAuth();
+        render();
+
+    </script>
 </body>
 </html>
