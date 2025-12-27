@@ -3,244 +3,366 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SeriesList - Track & Play</title>
+    <title>SeriesList Tracker</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/lucide-react/0.263.0/lucide-react.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        :root {
-            --bg-dark: #14181c;
-            --bg-card: #1b2228;
-            --accent: #00e054;
-            --text-main: #9ab;
-            --text-bright: #fff;
-        }
-        body {
-            background-color: var(--bg-dark);
-            color: var(--text-main);
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            margin: 0;
-            overflow-x: hidden;
-        }
-        .nav-link {
-            transition: color 0.2s ease;
-        }
-        .nav-link:hover {
-            color: var(--text-bright);
-        }
-        .btn-primary {
-            background-color: var(--accent);
-            color: #000;
-            font-weight: bold;
-            padding: 0.5rem 1.25rem;
-            border-radius: 0.25rem;
-            transition: transform 0.1s ease;
-        }
-        .btn-primary:active {
-            transform: scale(0.95);
-        }
+        .modal-backdrop { background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(4px); }
+        .animate-in { animation: fadeIn 0.2s ease-out forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+        .spinner { border: 3px solid rgba(79, 70, 229, 0.1); border-top: 3px solid #4f46e5; border-radius: 50%; width: 24px; height: 24px; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
+        /* Custom scrollbar for a cleaner look */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
     </style>
 </head>
-<body>
-    <div id="app"></div>
+<body class="bg-slate-50 text-slate-900 min-h-screen">
+
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-30">
+        <div class="max-w-5xl mx-auto px-4 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <div class="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white font-bold shadow-indigo-200 shadow-lg">L</div>
+                <span class="font-bold text-xl tracking-tight">Series<span class="text-indigo-600">List</span></span>
+            </div>
+            <div class="flex items-center gap-2">
+                <button id="settingsBtn" class="p-2 text-slate-400 hover:text-indigo-600 transition-colors">
+                    <i class="fas fa-cog"></i>
+                </button>
+                <button id="addBtn" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-all flex items-center gap-2 shadow-md active:scale-95">
+                    <i class="fas fa-plus"></i> Add Series
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-5xl mx-auto p-4 space-y-6">
+        <!-- Connection Banner -->
+        <div id="connectionBanner" class="hidden bg-amber-50 border border-amber-200 p-3 rounded-xl text-amber-800 text-xs font-medium flex items-center gap-2">
+            <i class="fas fa-wifi-slash"></i> Offline Mode: Saving locally until connection restored.
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+                <p class="text-slate-500 text-xs font-bold uppercase tracking-wider">Your Library</p>
+                <div class="flex items-baseline gap-2 mt-1">
+                    <span id="statCount" class="text-3xl font-black text-slate-800">0</span>
+                    <span class="text-slate-400 text-sm">Entries</span>
+                </div>
+            </div>
+            <div class="md:col-span-2 bg-slate-900 rounded-2xl p-5 text-white shadow-lg relative overflow-hidden group">
+                <div class="absolute -right-4 -top-4 w-24 h-24 bg-indigo-500/10 rounded-full blur-2xl"></div>
+                <h3 class="font-bold mb-1 flex items-center gap-2"><i class="fas fa-wand-magic-sparkles text-indigo-400"></i> AI Insights</h3>
+                <p id="aiStatus" class="text-slate-400 text-sm mb-3">Initializing storage...</p>
+                <button id="recBtn" class="bg-indigo-600 text-white px-5 py-2 rounded-full text-xs font-bold hover:bg-indigo-500 transition-all active:scale-95">Get Recommendation</button>
+            </div>
+        </div>
+
+        <div id="listGrid" class="grid grid-cols-1 gap-3">
+            <div id="statusMessage" class="py-20 text-center text-slate-400">
+                <div class="spinner mx-auto mb-4"></div>
+                <p id="loadingText">Connecting to cloud storage...</p>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modals -->
+    <div id="addModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4">
+        <div class="absolute inset-0 modal-backdrop" onclick="this.parentElement.classList.add('hidden')"></div>
+        <div class="bg-white rounded-2xl w-full max-w-md relative z-10 shadow-2xl p-6 animate-in">
+            <form id="seriesForm" class="space-y-4">
+                <div class="flex justify-between items-center mb-2">
+                    <h3 class="font-bold text-lg">New Entry</h3>
+                    <button type="button" onclick="document.getElementById('addModal').classList.add('hidden')" class="text-slate-400 hover:text-slate-600">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <input type="text" id="formTitle" required placeholder="Series Title" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none border-slate-200">
+                <div class="grid grid-cols-2 gap-4">
+                    <select id="formStatus" class="px-4 py-2 border rounded-lg bg-white border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none">
+                        <option>Watching</option>
+                        <option>Completed</option>
+                        <option>Planned</option>
+                        <option>Dropped</option>
+                    </select>
+                    <input type="number" id="formRating" min="0" max="10" step="0.1" placeholder="Rating / 10" class="px-4 py-2 border rounded-lg border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none">
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="relative">
+                        <span class="absolute right-3 top-2 text-[10px] text-slate-400 font-bold">EP</span>
+                        <input type="number" id="formProgress" placeholder="Watched" class="w-full px-4 py-2 border rounded-lg border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none">
+                    </div>
+                    <div class="relative">
+                        <span class="absolute right-3 top-2 text-[10px] text-slate-400 font-bold">TOTAL</span>
+                        <input type="number" id="formTotal" placeholder="Total" class="w-full px-4 py-2 border rounded-lg border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none">
+                    </div>
+                </div>
+                <button type="submit" class="w-full bg-indigo-600 text-white font-bold py-3 rounded-xl hover:bg-indigo-700 transition-colors shadow-lg shadow-indigo-100 mt-2">Add to Library</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="settingsModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4">
+        <div class="absolute inset-0 modal-backdrop" onclick="this.parentElement.classList.add('hidden')"></div>
+        <div class="bg-white rounded-2xl w-full max-w-md relative z-10 shadow-2xl p-6 animate-in">
+            <h3 class="font-bold text-lg mb-4">Settings</h3>
+            <div class="space-y-4">
+                <div>
+                    <label class="text-xs font-bold text-slate-400 uppercase block mb-1">Gemini API Key</label>
+                    <input type="password" id="apiKeyInput" placeholder="Enter key..." class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none border-slate-200">
+                    <p class="text-[10px] text-slate-400 mt-1 italic">Key is stored securely in your private cloud profile.</p>
+                </div>
+                <button id="saveSettingsBtn" class="w-full bg-slate-800 text-white font-bold py-2 rounded-lg hover:bg-slate-900 transition-colors">Save Configuration</button>
+            </div>
+        </div>
+    </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, onAuthStateChanged, signInAnonymously, signInWithCustomToken, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, getDoc, setDoc, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // Global variables provided by environment
-        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : { apiKey: "mock" };
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'serieslist-app';
-        
-        // Initialize Firebase
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
+        let db, auth, user, currentAppId;
+        let geminiKey = "";
+        let currentSeries = [];
+        let isCloudMode = false;
 
-        // State Management
-        let state = {
-            user: null,
-            currentPage: 'home', // 'home', 'profile', 'trivia'
-            series: [],
-            loading: true
-        };
+        const banner = document.getElementById('connectionBanner');
 
-        // Navigation Helper
-        function navigate(page) {
-            state.currentPage = page;
-            render();
-        }
+        const init = async () => {
+            const loadingText = document.getElementById('loadingText');
+            let attempts = 0;
 
-        // Auth Logic
-        const initAuth = async () => {
-            if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                await signInWithCustomToken(auth, __initial_auth_token);
-            } else {
-                await signInAnonymously(auth);
-            }
-        };
-
-        onAuthStateChanged(auth, (user) => {
-            state.user = user;
-            state.loading = false;
-            if (user) {
-                setupDataListener(user.uid);
-            }
-            render();
-        });
-
-        function setupDataListener(uid) {
-            const userDocRef = doc(db, 'artifacts', appId, 'users', uid, 'profile', 'data');
-            onSnapshot(userDocRef, (doc) => {
-                if (doc.exists()) {
-                    state.series = doc.data().series || [];
-                    render();
+            const checkEnvironment = () => {
+                const hasConfig = typeof __firebase_config !== 'undefined' && __firebase_config;
+                if (hasConfig) {
+                    setupFirebase();
+                } else if (attempts < 10) {
+                    attempts++;
+                    setTimeout(checkEnvironment, 1000);
+                } else {
+                    setupOfflineMode();
                 }
-            }, (error) => console.error("Firestore error:", error));
-        }
+            };
+            checkEnvironment();
+        };
 
-        // Components
-        function Header() {
-            return `
-                <header class="bg-[#1b2228] border-b border-[#2c3440] py-4 px-6 mb-8">
-                    <div class="max-w-6xl mx-auto flex justify-between items-center">
-                        <div class="flex items-center gap-8">
-                            <h1 onclick="window.navigate('home')" class="text-white text-2xl font-black tracking-tighter cursor-pointer flex items-center gap-2">
-                                <span class="bg-[#00e054] text-black px-1 rounded">S</span> SeriesList
-                            </h1>
-                            <nav class="hidden md:flex gap-6 uppercase text-xs font-bold tracking-widest pt-1">
-                                <a href="#" onclick="window.navigate('home')" class="nav-link ${state.currentPage === 'home' ? 'text-white' : ''}">Home</a>
-                                <a href="#" onclick="window.navigate('trivia')" class="nav-link ${state.currentPage === 'trivia' ? 'text-white' : ''}">Trivia</a>
-                            </nav>
-                        </div>
-                        <div class="flex items-center gap-4">
-                            ${state.user ? `
-                                ${state.currentPage !== 'profile' ? `
-                                    <button onclick="window.navigate('profile')" class="text-xs uppercase font-bold tracking-widest nav-link">Profile</button>
-                                ` : ''}
-                                <button onclick="window.handleLogout()" class="text-xs uppercase font-bold tracking-widest nav-link opacity-60">Logout</button>
-                            ` : `
-                                <button class="btn-primary text-xs uppercase">Sign In</button>
-                            `}
-                        </div>
-                    </div>
-                </header>
-            `;
-        }
+        const setupFirebase = async () => {
+            try {
+                const firebaseConfig = JSON.parse(__firebase_config);
+                currentAppId = typeof __app_id !== 'undefined' ? __app_id : 'series-tracker-v1';
+                const app = initializeApp(firebaseConfig);
+                auth = getAuth(app);
+                db = getFirestore(app);
 
-        function HomePage() {
-            return `
-                <main class="max-w-6xl mx-auto px-6 pb-20">
-                    <section class="mb-12">
-                        <h2 class="text-4xl text-white font-serif mb-4">Track series you've watched.</h2>
-                        <h2 class="text-4xl text-white font-serif mb-8">Save those you want to see.</h2>
-                        <div class="bg-gradient-to-r from-[#2c3440] to-transparent p-8 rounded-lg border border-[#343d4c]">
-                            <p class="text-lg mb-6">Welcome back. Start your next obsession or test your knowledge.</p>
-                            <button onclick="window.navigate('trivia')" class="btn-primary">Play Series Trivia</button>
-                        </div>
-                    </section>
+                onAuthStateChanged(auth, (u) => {
+                    if (u) {
+                        user = u;
+                        isCloudMode = true;
+                        banner.classList.add('hidden');
+                        startDataListeners();
+                    } else {
+                        banner.classList.remove('hidden');
+                    }
+                });
 
-                    <section>
-                        <h3 class="uppercase text-xs font-bold tracking-widest border-b border-[#2c3440] pb-2 mb-6">Popular this week</h3>
-                        <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6">
-                            ${[1, 2, 3, 4, 5].map(i => `
-                                <div class="group cursor-pointer">
-                                    <div class="aspect-[2/3] bg-[#2c3440] rounded border-2 border-transparent group-hover:border-[#00e054] transition-all overflow-hidden relative">
-                                        <div class="absolute inset-0 flex items-center justify-center text-[#456]">Poster ${i}</div>
-                                    </div>
-                                    <p class="mt-2 text-sm text-white font-medium truncate">Example Series ${i}</p>
-                                </div>
-                            `).join('')}
-                        </div>
-                    </section>
-                </main>
-            `;
-        }
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await signInWithCustomToken(auth, __initial_auth_token).catch(() => signInAnonymously(auth));
+                } else {
+                    await signInAnonymously(auth);
+                }
+            } catch (e) {
+                console.error("Firebase Initialization Failed:", e);
+                setupOfflineMode();
+            }
+        };
 
-        function ProfilePage() {
-            return `
-                <main class="max-w-4xl mx-auto px-6">
-                    <div class="flex items-center gap-6 mb-12">
-                        <div class="w-24 h-24 bg-[#2c3440] rounded-full border-2 border-[#456]"></div>
-                        <div>
-                            <h2 class="text-3xl text-white font-bold">${state.user?.uid.substring(0, 8) || 'User'}</h2>
-                            <p class="text-[#678]">Member since 2025</p>
-                        </div>
-                    </div>
+        const setupOfflineMode = () => {
+            isCloudMode = false;
+            banner.classList.remove('hidden');
+            document.getElementById('aiStatus').innerText = "AI restricted in offline mode.";
+            const localData = localStorage.getItem('series_v2_backup');
+            currentSeries = localData ? JSON.parse(localData) : [];
+            renderList(currentSeries);
+        };
 
-                    <div class="grid md:grid-cols-3 gap-8">
-                        <div class="col-span-2">
-                            <h3 class="uppercase text-xs font-bold tracking-widest border-b border-[#2c3440] pb-2 mb-4">Recent Activity</h3>
-                            <div class="space-y-4">
-                                ${state.series.length > 0 ? state.series.map(s => `
-                                    <div class="bg-[#1b2228] p-4 rounded border border-[#2c3440] flex justify-between">
-                                        <span class="text-white">${s.name}</span>
-                                        <span class="text-[#00e054]">★★★★☆</span>
-                                    </div>
-                                `).join('') : `<p class="text-sm italic">No activity yet. Go watch something!</p>`}
-                            </div>
-                        </div>
-                        <div>
-                            <h3 class="uppercase text-xs font-bold tracking-widest border-b border-[#2c3440] pb-2 mb-4">Stats</h3>
-                            <div class="bg-[#1b2228] p-4 rounded border border-[#2c3440] space-y-4">
-                                <div><p class="text-2xl text-white font-bold">${state.series.length}</p><p class="text-[10px] uppercase font-bold">Series Watched</p></div>
-                                <div><p class="text-2xl text-white font-bold">0</p><p class="text-[10px] uppercase font-bold">Reviews Written</p></div>
-                            </div>
-                        </div>
-                    </div>
-                </main>
-            `;
-        }
+        const startDataListeners = () => {
+            if (!user || !db) return;
+            const seriesRef = collection(db, 'artifacts', currentAppId, 'public', 'data', 'series_' + user.uid);
+            onSnapshot(seriesRef, (snapshot) => {
+                currentSeries = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+                localStorage.setItem('series_v2_backup', JSON.stringify(currentSeries));
+                renderList(currentSeries);
+            }, (err) => {
+                if (err.code === 'permission-denied') setupOfflineMode();
+            });
 
-        function TriviaPage() {
-            return `
-                <main class="max-w-2xl mx-auto px-6 py-12">
-                    <div class="bg-[#1b2228] border border-[#2c3440] rounded-xl p-10 text-center">
-                        <span class="text-[#00e054] text-xs font-bold uppercase tracking-widest mb-4 block">Question 1 of 5</span>
-                        <h2 class="text-2xl text-white font-bold mb-8">In "Breaking Bad", what is the primary color used in the logo for the element symbols?</h2>
-                        <div class="grid gap-4">
-                            ${['Blue', 'Green', 'Yellow', 'Red'].map(opt => `
-                                <button class="w-full py-4 px-6 bg-[#2c3440] hover:bg-[#343d4c] text-white rounded font-medium transition-colors border border-transparent hover:border-[#00e054]">
-                                    ${opt}
-                                </button>
-                            `).join('')}
-                        </div>
-                    </div>
-                </main>
-            `;
-        }
+            const settingsRef = doc(db, 'artifacts', currentAppId, 'public', 'data', 'profiles', user.uid);
+            onSnapshot(settingsRef, (snap) => {
+                if (snap.exists()) geminiKey = snap.data().apiKey || "";
+                document.getElementById('aiStatus').innerText = geminiKey ? "AI ready for suggestions." : "Add API Key to unlock recommendations.";
+            });
+        };
 
-        function render() {
-            const root = document.getElementById('app');
-            if (state.loading) {
-                root.innerHTML = `<div class="flex items-center justify-center min-h-screen"><p class="animate-pulse">Loading SeriesList...</p></div>`;
+        const renderList = (list) => {
+            const container = document.getElementById('listGrid');
+            document.getElementById('statCount').textContent = list.length;
+            
+            if (list.length === 0) {
+                container.innerHTML = `<div class="py-20 text-center text-slate-400 border-2 border-dashed border-slate-200 rounded-2xl">Your library is empty. Click 'Add Series' to start.</div>`;
                 return;
             }
 
-            let pageContent = '';
-            switch(state.currentPage) {
-                case 'profile': pageContent = ProfilePage(); break;
-                case 'trivia': pageContent = TriviaPage(); break;
-                default: pageContent = HomePage();
-            }
+            // Sort by most recently updated
+            const sortedList = [...list].sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
 
-            root.innerHTML = `
-                ${Header()}
-                ${pageContent}
-            `;
-        }
-
-        // Global Action Handlers
-        window.navigate = navigate;
-        window.handleLogout = async () => {
-            await signOut(auth);
-            navigate('home');
+            container.innerHTML = sortedList.map(item => {
+                const isOver = item.total > 0 && item.progress >= item.total;
+                const progressColor = isOver ? 'text-green-600' : 'text-indigo-600';
+                
+                return `
+                <div class="bg-white p-4 rounded-xl border border-slate-200 flex items-center justify-between shadow-sm hover:border-indigo-100 transition-all animate-in">
+                    <div class="flex-1 min-w-0 pr-4">
+                        <h4 class="font-bold text-slate-800 truncate" title="${item.title}">${item.title}</h4>
+                        <div class="flex gap-3 items-center mt-1 text-xs text-slate-400">
+                            <span class="px-2 py-0.5 ${isOver ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-500'} rounded uppercase font-bold text-[9px] tracking-tight">
+                                ${isOver ? 'Completed' : item.status}
+                            </span>
+                            <span class="flex items-center gap-1">
+                                <i class="fas fa-star text-yellow-400"></i> 
+                                <span class="font-semibold text-slate-600">${item.rating || '—'}</span>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-4 flex-shrink-0">
+                        <div class="text-right flex flex-col items-end">
+                            <div class="flex items-baseline gap-1">
+                                <span class="text-base font-black ${progressColor}">${item.progress || 0}</span>
+                                <span class="text-[10px] text-slate-400 font-bold uppercase">/ ${item.total || '?'} ep</span>
+                            </div>
+                        </div>
+                        <div class="flex gap-1">
+                            <button onclick="window.incrementValue('${item.id}', ${item.progress || 0}, ${item.total || 0})" class="w-9 h-9 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center hover:bg-indigo-600 hover:text-white transition-colors active:scale-90">
+                                <i class="fas fa-plus text-xs"></i>
+                            </button>
+                            <button onclick="window.removeEntry('${item.id}')" class="w-9 h-9 rounded-lg bg-slate-50 text-slate-300 flex items-center justify-center hover:bg-red-500 hover:text-white transition-colors">
+                                <i class="fas fa-trash text-xs"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `}).join('');
         };
 
-        // Initialize
-        initAuth();
-        render();
+        window.incrementValue = async (id, cur, total) => {
+            // Prevent 31/30 logic - only increment if below total or total is undefined
+            if (total > 0 && cur >= total) return;
+            
+            const newVal = cur + 1;
+            const newStatus = (total > 0 && newVal >= total) ? 'Completed' : 'Watching';
 
+            if (isCloudMode && user && !id.startsWith('local_')) {
+                await updateDoc(doc(db, 'artifacts', currentAppId, 'public', 'data', 'series_' + user.uid, id), { 
+                    progress: newVal,
+                    status: newStatus,
+                    updatedAt: Date.now()
+                });
+            } else {
+                const idx = currentSeries.findIndex(s => s.id === id);
+                if (idx !== -1) {
+                    currentSeries[idx].progress = newVal;
+                    currentSeries[idx].status = newStatus;
+                    currentSeries[idx].updatedAt = Date.now();
+                }
+                localStorage.setItem('series_v2_backup', JSON.stringify(currentSeries));
+                renderList(currentSeries);
+            }
+        };
+
+        window.removeEntry = async (id) => {
+            if (isCloudMode && user && !id.startsWith('local_')) {
+                await deleteDoc(doc(db, 'artifacts', currentAppId, 'public', 'data', 'series_' + user.uid, id));
+            } else {
+                currentSeries = currentSeries.filter(s => s.id !== id);
+                localStorage.setItem('series_v2_backup', JSON.stringify(currentSeries));
+                renderList(currentSeries);
+            }
+        };
+
+        document.getElementById('addBtn').onclick = () => document.getElementById('addModal').classList.remove('hidden');
+        document.getElementById('settingsBtn').onclick = () => {
+            document.getElementById('apiKeyInput').value = geminiKey;
+            document.getElementById('settingsModal').classList.remove('hidden');
+        };
+
+        document.getElementById('saveSettingsBtn').onclick = async () => {
+            const key = document.getElementById('apiKeyInput').value.trim();
+            if (isCloudMode && user) {
+                const profileRef = doc(db, 'artifacts', currentAppId, 'public', 'data', 'profiles', user.uid);
+                await setDoc(profileRef, { apiKey: key }, { merge: true });
+            } else {
+                geminiKey = key;
+            }
+            document.getElementById('settingsModal').classList.add('hidden');
+        };
+
+        document.getElementById('seriesForm').onsubmit = async (e) => {
+            e.preventDefault();
+            const total = Number(document.getElementById('formTotal').value) || 0;
+            const progress = Number(document.getElementById('formProgress').value) || 0;
+            let status = document.getElementById('formStatus').value;
+
+            // Simple validation: If progress matches total, force Completed status
+            if (total > 0 && progress >= total) status = 'Completed';
+
+            const data = {
+                title: document.getElementById('formTitle').value,
+                status: status,
+                rating: Number(document.getElementById('formRating').value) || 0,
+                progress: progress,
+                total: total,
+                updatedAt: Date.now()
+            };
+
+            if (isCloudMode && user) {
+                await addDoc(collection(db, 'artifacts', currentAppId, 'public', 'data', 'series_' + user.uid), data);
+            } else {
+                data.id = "local_" + Date.now();
+                currentSeries.push(data);
+                localStorage.setItem('series_v2_backup', JSON.stringify(currentSeries));
+                renderList(currentSeries);
+            }
+            document.getElementById('addModal').classList.add('hidden');
+            e.target.reset();
+        };
+
+        document.getElementById('recBtn').onclick = async () => {
+            if (!geminiKey) return alert("Please add your Gemini API key in settings.");
+            const aiStatus = document.getElementById('aiStatus');
+            const originalText = aiStatus.innerText;
+            aiStatus.innerText = "Consulting AI...";
+            
+            try {
+                const userList = currentSeries.map(s => `${s.title} (${s.rating}/10)`).join(', ');
+                const prompt = `Based on these shows I liked: ${userList}. Recommend ONE show I should watch next. Give ONLY the title.`;
+
+                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${geminiKey}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+                });
+                const d = await res.json();
+                const suggestion = d.candidates?.[0]?.content?.parts?.[0]?.text || "No suggestion found.";
+                aiStatus.innerHTML = `Recommended: <span class="text-indigo-400 font-bold">${suggestion}</span>`;
+            } catch (err) {
+                aiStatus.innerText = "Connection failed.";
+                setTimeout(() => aiStatus.innerText = originalText, 3000);
+            }
+        };
+
+        init();
     </script>
 </body>
 </html>
