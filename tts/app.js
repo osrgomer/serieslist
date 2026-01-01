@@ -58,16 +58,25 @@ btn.onclick = async () => {
 
     // Set voice properties
     const voices = speechSynthesis.getVoices()
-    const selectedVoice = voices.find(v => 
-      v.name.toLowerCase().includes(voiceName.toLowerCase()) ||
-      v.lang.includes('en')
-    )
+    let selectedVoice = null
+    
+    // Try to find the requested voice
+    if (voiceName && voiceName !== 'default') {
+      selectedVoice = voices.find(v => 
+        v.name.toLowerCase().includes(voiceName.toLowerCase())
+      )
+    }
+    
+    // Fallback to first English voice if specific voice not found
+    if (!selectedVoice) {
+      selectedVoice = voices.find(v => v.lang.startsWith('en')) || voices[0]
+    }
     
     if (selectedVoice) {
       utterance.voice = selectedVoice
       addLog(`Using voice: ${selectedVoice.name}`)
     } else {
-      addLog(`Using default voice (${voiceName} not found)`)
+      addLog(`Using system default voice`)
     }
 
     // Adjust speech based on persona

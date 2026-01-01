@@ -1,3 +1,12 @@
+<?php
+session_start();
+
+// Check if user is logged in
+if (!isset($_SESSION['user_logged_in']) || $_SESSION['user_logged_in'] !== true) {
+    header('Location: ../login.php');
+    exit;
+}
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -54,14 +63,11 @@
         <!-- Controls -->
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <select id="voice" class="p-4 bg-slate-50 rounded-2xl font-bold border border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none">
-            <option>Kore</option>
-            <option>Zephyr</option>
-            <option>Puck</option>
-            <option>Charon</option>
-            <option>Fenrir</option>
-            <option>Leda</option>
-            <option>Orus</option>
-            <option>Aoede</option>
+            <option value="default">System Default</option>
+            <option value="female">Female Voice</option>
+            <option value="male">Male Voice</option>
+            <option value="google">Google US English</option>
+            <option value="microsoft">Microsoft Voice</option>
           </select>
 
           <input id="persona" class="p-4 bg-slate-50 rounded-2xl font-bold border border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none" value="cheerful" />
