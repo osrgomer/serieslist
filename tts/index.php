@@ -51,7 +51,7 @@ if (!isset($_SESSION['user_logged_in']) || $_SESSION['user_logged_in'] !== true)
     <div class="w-full bg-white rounded-3xl shadow-xl border border-slate-200 overflow-hidden">
 
       <!-- Status bar -->
-      <div id="statusBar" class="px-6 py-2.5 flex justify-between text-[10px] uppercase tracking-[0.2em] font-black bg-indigo-600 text-white">
+      <div id="statusBar" class="px-6 py-2.5 flex justify-between text-xs font-semibold tracking-wide bg-indigo-600 text-white">
         <span id="statusText">System Ready</span>
         <span>v2.5-TTS</span>
       </div>
@@ -100,6 +100,7 @@ if (!isset($_SESSION['user_logged_in']) || $_SESSION['user_logged_in'] !== true)
     </div>
   </main>
 
+<script src="app.js"></script>
 <script>
   // Mobile menu toggle
   document.getElementById('mobileMenuBtn').onclick = () => {
@@ -116,6 +117,5 @@ if (!isset($_SESSION['user_logged_in']) || $_SESSION['user_logged_in'] !== true)
     }
   });
 </script>
-<script src="app.js"></script>
 </body>
 </html>
