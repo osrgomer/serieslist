@@ -54,10 +54,10 @@ if (!isset($_SESSION['user_logged_in']) || $_SESSION['user_logged_in'] !== true)
                 <span class="font-bold text-lg tracking-tight sm:hidden">SL</span>
             </div>
             <nav class="hidden md:flex items-center gap-1">
-                <a href="index.php" class="px-3 py-2 text-sm font-medium text-indigo-600 bg-indigo-50 rounded-lg">Library</a>
-                <a href="trivia.php" class="px-3 py-2 text-sm font-medium text-slate-600 hover:text-indigo-600 hover:bg-slate-50 rounded-lg transition-colors">Trivia</a>
-                <a href="tts/index.php" class="px-3 py-2 text-sm font-medium text-slate-600 hover:text-indigo-600 hover:bg-slate-50 rounded-lg transition-colors">Voice</a>
-                <a href="account.php" class="px-3 py-2 text-sm font-medium text-slate-600 hover:text-indigo-600 hover:bg-slate-50 rounded-lg transition-colors">Account</a>
+                <a href="./" class="px-3 py-2 text-sm font-medium text-indigo-600 bg-indigo-50 rounded-lg">Library</a>
+                <a href="trivia" class="px-3 py-2 text-sm font-medium text-slate-600 hover:text-indigo-600 hover:bg-slate-50 rounded-lg transition-colors">Trivia</a>
+                <a href="voice" class="px-3 py-2 text-sm font-medium text-slate-600 hover:text-indigo-600 hover:bg-slate-50 rounded-lg transition-colors">Voice</a>
+                <a href="account" class="px-3 py-2 text-sm font-medium text-slate-600 hover:text-indigo-600 hover:bg-slate-50 rounded-lg transition-colors">Account</a>
             </nav>
             <div class="flex items-center gap-2">
                 <div class="md:hidden relative">
@@ -65,18 +65,18 @@ if (!isset($_SESSION['user_logged_in']) || $_SESSION['user_logged_in'] !== true)
                         <i class="fas fa-bars"></i>
                     </button>
                     <div id="mobileMenu" class="hidden absolute right-0 top-12 bg-white border border-slate-200 rounded-lg shadow-lg py-2 min-w-[120px]">
-                        <a href="index.php" class="block px-4 py-2 text-sm font-medium text-indigo-600 bg-indigo-50">Library</a>
-                        <a href="trivia.php" class="block px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50">Trivia</a>
-                        <a href="tts/index.php" class="block px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50">Voice</a>
-                        <a href="account.php" class="block px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50">Account</a>
+                        <a href="./" class="block px-4 py-2 text-sm font-medium text-indigo-600 bg-indigo-50">Library</a>
+                        <a href="trivia" class="block px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50">Trivia</a>
+                        <a href="voice" class="block px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50">Voice</a>
+                        <a href="account" class="block px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50">Account</a>
                         <hr class="my-2">
-                        <a href="logout.php" class="block px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50">Logout</a>
+                        <a href="logout" class="block px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50">Logout</a>
                     </div>
                 </div>
                 <button id="settingsBtn" class="p-2 text-slate-400 hover:text-indigo-600 transition-colors rounded-lg hover:bg-slate-50" aria-label="Settings">
                     <i class="fas fa-cog"></i>
                 </button>
-                <a href="logout.php" class="hidden md:block p-2 text-slate-400 hover:text-red-600 transition-colors rounded-lg hover:bg-slate-50" aria-label="Logout">
+                <a href="logout" class="hidden md:block p-2 text-slate-400 hover:text-red-600 transition-colors rounded-lg hover:bg-slate-50" aria-label="Logout">
                     <i class="fas fa-sign-out-alt"></i>
                 </a>
                 <button id="addBtn" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 sm:px-4 py-2 rounded-lg text-sm font-semibold transition-all flex items-center gap-2 shadow-md active:scale-95">

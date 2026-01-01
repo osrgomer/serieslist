@@ -38,10 +38,10 @@ $connections = $_SESSION['connections'] ?? [];
                 <span class="font-bold text-lg tracking-tight sm:hidden">SL</span>
             </div>
             <div class="hidden md:flex items-center gap-1">
-                <a href="index.php" class="px-3 py-2 text-sm font-medium text-slate-600 hover:text-indigo-600 hover:bg-slate-50 rounded-lg transition-colors">Library</a>
-                <a href="trivia.php" class="px-3 py-2 text-sm font-medium text-slate-600 hover:text-indigo-600 hover:bg-slate-50 rounded-lg transition-colors">Trivia</a>
-                <a href="tts/index.php" class="px-3 py-2 text-sm font-medium text-slate-600 hover:text-indigo-600 hover:bg-slate-50 rounded-lg transition-colors">Voice</a>
-                <a href="account.php" class="px-3 py-2 text-sm font-medium text-indigo-600 bg-indigo-50 rounded-lg">Account</a>
+                <a href="./" class="px-3 py-2 text-sm font-medium text-slate-600 hover:text-indigo-600 hover:bg-slate-50 rounded-lg transition-colors">Library</a>
+                <a href="trivia" class="px-3 py-2 text-sm font-medium text-slate-600 hover:text-indigo-600 hover:bg-slate-50 rounded-lg transition-colors">Trivia</a>
+                <a href="voice" class="px-3 py-2 text-sm font-medium text-slate-600 hover:text-indigo-600 hover:bg-slate-50 rounded-lg transition-colors">Voice</a>
+                <a href="account" class="px-3 py-2 text-sm font-medium text-indigo-600 bg-indigo-50 rounded-lg">Account</a>
             </div>
             <div class="flex items-center gap-2">
                 <div class="md:hidden relative">
@@ -49,10 +49,10 @@ $connections = $_SESSION['connections'] ?? [];
                         <i class="fas fa-bars"></i>
                     </button>
                     <div id="mobileMenu" class="hidden absolute right-0 top-12 bg-white border border-slate-200 rounded-lg shadow-lg py-2 min-w-[120px]">
-                        <a href="index.php" class="block px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50">Library</a>
-                        <a href="trivia.php" class="block px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50">Trivia</a>
-                        <a href="tts/index.php" class="block px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50">Voice</a>
-                        <a href="account.php" class="block px-4 py-2 text-sm font-medium text-indigo-600 bg-indigo-50">Account</a>
+                        <a href="./" class="block px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50">Library</a>
+                        <a href="trivia" class="block px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50">Trivia</a>
+                        <a href="voice" class="block px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50">Voice</a>
+                        <a href="account" class="block px-4 py-2 text-sm font-medium text-indigo-600 bg-indigo-50">Account</a>
                     </div>
                 </div>
             </div>
