@@ -5,11 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Logging out... | SeriesList</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        body { background-color: #14181c; color: #9ab; font-family: -apple-system, sans-serif; }
         .spinner {
-            border: 3px solid rgba(0, 224, 84, 0.1);
-            border-top: 3px solid #00e054;
+            border: 3px solid rgba(79, 70, 229, 0.1);
+            border-top: 3px solid #4f46e5;
             border-radius: 50%;
             width: 40px;
             height: 40px;
@@ -18,13 +18,13 @@
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
-<body class="flex items-center justify-center min-h-screen">
+<body class="bg-slate-50 flex items-center justify-center min-h-screen">
 
-    <div class="text-center space-y-6">
+    <div class="text-center space-y-6 bg-white p-8 rounded-2xl shadow-lg border border-slate-200">
         <div class="spinner mx-auto"></div>
         <div class="space-y-2">
-            <h1 class="text-white font-bold text-xl tracking-tight">Signing out</h1>
-            <p class="text-sm text-[#678]">Safely clearing your session...</p>
+            <h1 class="text-slate-800 font-bold text-xl tracking-tight">Signing out</h1>
+            <p class="text-sm text-slate-600">Safely clearing your session...</p>
         </div>
     </div>
 

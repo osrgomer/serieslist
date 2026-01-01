@@ -12,8 +12,11 @@ RewriteRule ^home\/?$ index.php [L,QSA]
 # 3. Map /trivia/ to trivia.php
 RewriteRule ^trivia\/?$ trivia.php [L,QSA]
 
-4. Map /account/ to acccount.php
+# 4. Map /account/ to account.php
 RewriteRule ^account\/?$ account.php [L,QSA]
 
-# 5. Handle show details (e.g., /show/10/ -> index.php?view=show-detail&id=10)
+# 5. Map /voice/ to tts/index.php
+RewriteRule ^voice\/?$ tts/index.php [L,QSA]
+
+# 6. Handle show details (e.g., /show/10/ -> index.php?view=show-detail&id=10)
 RewriteRule ^show/([0-9]+)\/?$ index.php?view=show-detail&id=$1 [L,QSA]
