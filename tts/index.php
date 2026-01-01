@@ -101,11 +101,6 @@ if (!isset($_SESSION['user_logged_in']) || $_SESSION['user_logged_in'] !== true)
           Generate Voice
         </button>
 
-        <button id="debugBtn"
-          class="w-full py-3 rounded-2xl font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-all text-sm">
-          Show Available Voices
-        </button>
-
         <!-- Logs -->
         <div>
           <div class="flex justify-between text-[10px] uppercase text-slate-400 mb-2">
@@ -378,16 +373,6 @@ if (!isset($_SESSION['user_logged_in']) || $_SESSION['user_logged_in'] !== true)
 
     speechSynthesis.speak(utterance);
   }
-
-  // Debug button to show available voices
-  document.getElementById('debugBtn').onclick = () => {
-    const voices = speechSynthesis.getVoices();
-    addLog(`=== Available Voices (${voices.length}) ===`);
-    voices.forEach((voice, i) => {
-      addLog(`${i+1}. ${voice.name} (${voice.lang})`);
-    });
-    addLog(`=== End Voice List ===`);
-  };
 
   // Mobile menu toggle
   document.getElementById('mobileMenuBtn').onclick = () => {
