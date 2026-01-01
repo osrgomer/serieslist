@@ -7,7 +7,7 @@ if ($_POST) {
     $_SESSION['user_logged_in'] = true;
     $_SESSION['user_email'] = $_POST['email'] ?? 'user@example.com';
     $_SESSION['user_name'] = $_POST['name'] ?? 'User';
-    header('Location: index.php');
+    header('Location: ./');
     exit;
 }
 ?>

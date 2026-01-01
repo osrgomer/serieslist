@@ -1,5 +1,9 @@
 RewriteEngine On
-RewriteBase /
+RewriteBase /serieslist/
+
+# Redirect index.php to clean URL
+RewriteCond %{THE_REQUEST} /serieslist/index\.php[?\s] [NC]
+RewriteRule ^index\.php$ /serieslist/ [R=301,L]
 
 # Pretty URLs - Remove .php extension
 RewriteCond %{REQUEST_FILENAME} !-d

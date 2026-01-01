@@ -6,7 +6,7 @@ if ($_POST) {
     // Simple mock authentication - in production, validate against database
     $_SESSION['user_logged_in'] = true;
     $_SESSION['user_email'] = $_POST['email'] ?? 'user@example.com';
-    header('Location: index.php');
+    header('Location: ./');
     exit;
 }
 ?>
