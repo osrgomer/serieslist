@@ -1,15 +1,14 @@
 <?php
-// Mock logic for the registration page
-$message = "";
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $user = $_POST['username'] ?? '';
-    $email = $_POST['email'] ?? '';
-    
-    if (!empty($user) && !empty($email)) {
-        $message = "Account created successfully! You can now login.";
-    } else {
-        $message = "Please fill in all fields.";
-    }
+session_start();
+
+// Handle registration form submission
+if ($_POST) {
+    // Simple mock registration - in production, save to database
+    $_SESSION['user_logged_in'] = true;
+    $_SESSION['user_email'] = $_POST['email'] ?? 'user@example.com';
+    $_SESSION['user_name'] = $_POST['name'] ?? 'User';
+    header('Location: index.php');
+    exit;
 }
 ?>
 <!DOCTYPE html>
@@ -17,48 +16,48 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Register - SeriesList</title>
+    <title>SeriesList - Register</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <style> 
-        body { background-color: #14181c; color: #9ab; font-family: sans-serif; } 
-        .glass { background: rgba(44, 52, 64, 0.5); backdrop-filter: blur(4px); }
-    </style>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
-<body class="min-h-screen flex items-center justify-center px-4">
-    <div class="max-w-md w-full glass p-8 rounded-xl border border-[#2c3440] shadow-2xl">
-        <div class="text-center mb-8">
-            <h1 class="text-2xl font-black text-white uppercase italic tracking-tighter">Join SeriesList</h1>
-            <p class="text-xs text-[#678] mt-2 uppercase tracking-widest font-bold">Track, rate, and review series</p>
-        </div>
+<body class="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-4">
+    
+    <div class="mb-8 flex items-center gap-2">
+        <div class="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white font-bold shadow-indigo-200 shadow-lg">L</div>
+        <span class="text-2xl font-black text-slate-800 tracking-tight">Series<span class="text-indigo-600">List</span></span>
+    </div>
 
-        <?php if ($message): ?>
-            <div class="mb-6 p-3 rounded bg-[#00e054]/10 border border-[#00e054]/50 text-[#00e054] text-sm text-center">
-                <?php echo $message; ?>
-            </div>
-        <?php endif; ?>
-
-        <form action="register.php" method="POST" class="space-y-4">
+    <div class="w-full max-w-md bg-white p-8 rounded-2xl shadow-xl border border-slate-200">
+        <h2 class="text-slate-800 text-2xl font-bold mb-1">Join the Club</h2>
+        <p class="text-slate-600 text-sm mb-6">Track every show you watch</p>
+        
+        <form action="" method="POST" class="space-y-4">
             <div>
-                <label class="block text-[10px] uppercase font-bold text-[#678] mb-1 ml-1">Username</label>
-                <input type="text" name="username" required class="w-full bg-[#14181c] border border-[#2c3440] rounded-lg px-4 py-3 text-white outline-none focus:border-[#00e054] transition-colors">
+                <label class="block text-xs uppercase tracking-wider font-bold text-slate-600 mb-2">Full Name</label>
+                <input name="name" type="text" required class="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500">
             </div>
             <div>
-                <label class="block text-[10px] uppercase font-bold text-[#678] mb-1 ml-1">Email Address</label>
-                <input type="email" name="email" required class="w-full bg-[#14181c] border border-[#2c3440] rounded-lg px-4 py-3 text-white outline-none focus:border-[#00e054] transition-colors">
+                <label class="block text-xs uppercase tracking-wider font-bold text-slate-600 mb-2">Email</label>
+                <input name="email" type="email" required class="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500">
             </div>
             <div>
-                <label class="block text-[10px] uppercase font-bold text-[#678] mb-1 ml-1">Password</label>
-                <input type="password" name="password" required class="w-full bg-[#14181c] border border-[#2c3440] rounded-lg px-4 py-3 text-white outline-none focus:border-[#00e054] transition-colors">
+                <label class="block text-xs uppercase tracking-wider font-bold text-slate-600 mb-2">Password</label>
+                <input name="password" type="password" required class="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500">
             </div>
-            <button type="submit" class="w-full bg-[#00e054] text-[#14181c] font-black uppercase tracking-widest py-3 rounded-lg hover:brightness-110 transition-all mt-4">
-                Register
+            <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-lg transition-all transform active:scale-[0.98]">
+                Create Account
             </button>
         </form>
 
-        <div class="mt-8 pt-6 border-t border-[#2c3440] text-center">
-            <p class="text-sm">Already have an account? <a href="login.php" class="text-white hover:text-[#00e054] font-bold transition-colors">Sign in</a></p>
-            <a href="index.php" class="inline-block mt-4 text-xs uppercase tracking-widest font-bold text-[#678] hover:text-white transition-colors">← Back to Browse</a>
+        <div class="mt-6 text-center text-sm">
+            <span class="text-slate-600">Already a member?</span>
+            <a href="login.php" class="text-indigo-600 hover:text-indigo-700 font-bold ml-1">Sign in</a>
         </div>
     </div>
+
+    <a href="login.php" class="mt-8 text-slate-600 hover:text-slate-800 text-sm transition-colors flex items-center gap-2">
+        <i class="fas fa-arrow-left"></i>
+        Back to Login
+    </a>
 </body>
 </html>

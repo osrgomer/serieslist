@@ -1,3 +1,12 @@
+<?php
+session_start();
+
+// Check if user is logged in
+if (!isset($_SESSION['user_logged_in']) || $_SESSION['user_logged_in'] !== true) {
+    header('Location: login.php');
+    exit;
+}
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -60,11 +69,16 @@
                         <a href="trivia.php" class="block px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50">Trivia</a>
                         <a href="tts/index.php" class="block px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50">Voice</a>
                         <a href="account.php" class="block px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50">Account</a>
+                        <hr class="my-2">
+                        <a href="logout.php" class="block px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50">Logout</a>
                     </div>
                 </div>
                 <button id="settingsBtn" class="p-2 text-slate-400 hover:text-indigo-600 transition-colors rounded-lg hover:bg-slate-50" aria-label="Settings">
                     <i class="fas fa-cog"></i>
                 </button>
+                <a href="logout.php" class="hidden md:block p-2 text-slate-400 hover:text-red-600 transition-colors rounded-lg hover:bg-slate-50" aria-label="Logout">
+                    <i class="fas fa-sign-out-alt"></i>
+                </a>
                 <button id="addBtn" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 sm:px-4 py-2 rounded-lg text-sm font-semibold transition-all flex items-center gap-2 shadow-md active:scale-95">
                     <i class="fas fa-plus"></i> <span class="hidden sm:inline">Add Series</span><span class="sm:hidden">Add</span>
                 </button>
@@ -143,12 +157,22 @@
     <div id="settingsModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4">
         <div class="absolute inset-0 modal-backdrop" onclick="this.parentElement.classList.add('hidden')"></div>
         <div class="bg-white rounded-2xl w-full max-w-md relative z-10 shadow-2xl p-6 animate-in">
-            <h3 class="font-bold text-lg mb-4">Settings</h3>
+            <h3 class="font-bold text-lg mb-4">AI Settings</h3>
             <div class="space-y-4">
                 <div>
-                    <label class="text-xs font-bold text-slate-400 uppercase block mb-1">Gemini API Key</label>
-                    <input type="password" id="apiKeyInput" placeholder="Enter key..." class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none border-slate-200">
-                    <p class="text-[10px] text-slate-400 mt-1 italic">Key is stored securely in your private cloud profile.</p>
+                    <label class="text-xs font-bold text-slate-400 uppercase block mb-1">AI Provider</label>
+                    <select id="aiProviderSelect" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none border-slate-200">
+                        <option value="gemini">Google Gemini</option>
+                        <option value="openai">OpenAI ChatGPT</option>
+                        <option value="claude">Anthropic Claude</option>
+                        <option value="grok">xAI Grok</option>
+                        <option value="perplexity">Perplexity</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="text-xs font-bold text-slate-400 uppercase block mb-1">API Key</label>
+                    <input type="password" id="apiKeyInput" placeholder="Enter your API key..." class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none border-slate-200">
+                    <p class="text-[10px] text-slate-400 mt-1 italic">Key is stored securely in your profile.</p>
                 </div>
                 <button id="saveSettingsBtn" class="w-full bg-slate-800 text-white font-bold py-2 rounded-lg hover:bg-slate-900 transition-colors">Save Configuration</button>
             </div>
@@ -161,7 +185,7 @@
         import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         let db, auth, user, currentAppId;
-        let geminiKey = "";
+        let aiSettings = { provider: 'gemini', apiKey: '' };
         let currentSeries = [];
         let isCloudMode = false;
 
@@ -217,7 +241,11 @@
 
         const setupOfflineMode = () => {
             isCloudMode = false;
-            document.getElementById('aiStatus').innerText = "Add API Key to unlock recommendations.";
+            const savedSettings = localStorage.getItem('ai_settings');
+            if (savedSettings) {
+                aiSettings = JSON.parse(savedSettings);
+            }
+            document.getElementById('aiStatus').innerText = aiSettings.apiKey ? "AI ready for suggestions." : "Add API Key to unlock recommendations.";
             const localData = localStorage.getItem('series_v2_backup');
             currentSeries = localData ? JSON.parse(localData) : [];
             renderList(currentSeries);
@@ -236,8 +264,14 @@
 
             const settingsRef = doc(db, 'artifacts', currentAppId, 'public', 'data', 'profiles', user.uid);
             onSnapshot(settingsRef, (snap) => {
-                if (snap.exists()) geminiKey = snap.data().apiKey || "";
-                document.getElementById('aiStatus').innerText = geminiKey ? "AI ready for suggestions." : "Add API Key to unlock recommendations.";
+                if (snap.exists()) {
+                    const data = snap.data();
+                    aiSettings = {
+                        provider: data.aiProvider || 'gemini',
+                        apiKey: data.apiKey || ''
+                    };
+                }
+                document.getElementById('aiStatus').innerText = aiSettings.apiKey ? "AI ready for suggestions." : "Add API Key to unlock recommendations.";
             });
         };
 
@@ -329,17 +363,22 @@
 
         document.getElementById('addBtn').onclick = () => document.getElementById('addModal').classList.remove('hidden');
         document.getElementById('settingsBtn').onclick = () => {
-            document.getElementById('apiKeyInput').value = geminiKey;
+            document.getElementById('aiProviderSelect').value = aiSettings.provider;
+            document.getElementById('apiKeyInput').value = aiSettings.apiKey;
             document.getElementById('settingsModal').classList.remove('hidden');
         };
 
         document.getElementById('saveSettingsBtn').onclick = async () => {
+            const provider = document.getElementById('aiProviderSelect').value;
             const key = document.getElementById('apiKeyInput').value.trim();
+            
+            aiSettings = { provider, apiKey: key };
+            
             if (isCloudMode && user) {
                 const profileRef = doc(db, 'artifacts', currentAppId, 'public', 'data', 'profiles', user.uid);
-                await setDoc(profileRef, { apiKey: key }, { merge: true });
+                await setDoc(profileRef, { aiProvider: provider, apiKey: key }, { merge: true });
             } else {
-                geminiKey = key;
+                localStorage.setItem('ai_settings', JSON.stringify(aiSettings));
             }
             document.getElementById('settingsModal').classList.add('hidden');
         };
@@ -375,7 +414,7 @@
         };
 
         document.getElementById('recBtn').onclick = async () => {
-            if (!geminiKey) return alert("Please add your Gemini API key in settings.");
+            if (!aiSettings.apiKey) return alert("Please add your AI API key in settings.");
             if (currentSeries.length === 0) return alert("Add some series first to get recommendations.");
             
             const aiStatus = document.getElementById('aiStatus');
@@ -396,20 +435,86 @@
                 ];
                 const prompt = randomPrompts[Math.floor(Math.random() * randomPrompts.length)];
 
-                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${geminiKey}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                        contents: [{ parts: [{ text: prompt }] }],
-                        generationConfig: {
-                            temperature: 0.9,
-                            topP: 0.8,
-                            maxOutputTokens: 50
-                        }
-                    })
-                });
-                const d = await res.json();
-                const suggestion = d.candidates?.[0]?.content?.parts?.[0]?.text || "No suggestion found.";
+                const { provider, apiKey } = aiSettings;
+                let suggestion = "No suggestion found.";
+                
+                if (provider === 'gemini') {
+                    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ 
+                            contents: [{ parts: [{ text: prompt }] }],
+                            generationConfig: { temperature: 0.9, topP: 0.8, maxOutputTokens: 50 }
+                        })
+                    });
+                    const data = await res.json();
+                    suggestion = data.candidates?.[0]?.content?.parts?.[0]?.text || "No suggestion found.";
+                } else if (provider === 'openai') {
+                    const res = await fetch('https://api.openai.com/v1/chat/completions', {
+                        method: 'POST',
+                        headers: { 
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${apiKey}`
+                        },
+                        body: JSON.stringify({
+                            model: 'gpt-4o-mini',
+                            messages: [{ role: 'user', content: prompt }],
+                            max_tokens: 50,
+                            temperature: 0.9
+                        })
+                    });
+                    const data = await res.json();
+                    suggestion = data.choices?.[0]?.message?.content || "No suggestion found.";
+                } else if (provider === 'claude') {
+                    const res = await fetch('https://api.anthropic.com/v1/messages', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'x-api-key': apiKey,
+                            'anthropic-version': '2023-06-01'
+                        },
+                        body: JSON.stringify({
+                            model: 'claude-3-haiku-20240307',
+                            max_tokens: 50,
+                            messages: [{ role: 'user', content: prompt }]
+                        })
+                    });
+                    const data = await res.json();
+                    suggestion = data.content?.[0]?.text || "No suggestion found.";
+                } else if (provider === 'grok') {
+                    const res = await fetch('https://api.x.ai/v1/chat/completions', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${apiKey}`
+                        },
+                        body: JSON.stringify({
+                            model: 'grok-beta',
+                            messages: [{ role: 'user', content: prompt }],
+                            max_tokens: 50,
+                            temperature: 0.9
+                        })
+                    });
+                    const data = await res.json();
+                    suggestion = data.choices?.[0]?.message?.content || "No suggestion found.";
+                } else if (provider === 'perplexity') {
+                    const res = await fetch('https://api.perplexity.ai/chat/completions', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${apiKey}`
+                        },
+                        body: JSON.stringify({
+                            model: 'llama-3.1-sonar-small-128k-online',
+                            messages: [{ role: 'user', content: prompt }],
+                            max_tokens: 50,
+                            temperature: 0.9
+                        })
+                    });
+                    const data = await res.json();
+                    suggestion = data.choices?.[0]?.message?.content || "No suggestion found.";
+                }
+                
                 aiStatus.innerHTML = `Recommended: <span class="text-indigo-400 font-bold">${suggestion}</span>`;
             } catch (err) {
                 aiStatus.innerText = "Connection failed. Try again.";
