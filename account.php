@@ -202,18 +202,18 @@ $connections = $_SESSION['connections'] ?? [];
                             </div>
                             <div class="flex items-center justify-between p-4 border border-slate-200 rounded-lg">
                                 <div class="flex items-center gap-3">
-                                    <div class="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center">
-                                        <i class="fab fa-twitter text-white"></i>
+                                    <div class="w-10 h-10 bg-gray-900 rounded-lg flex items-center justify-center">
+                                        <i class="fab fa-github text-white"></i>
                                     </div>
                                     <div>
-                                        <p class="font-medium text-slate-800">Twitter</p>
-                                        <p class="text-xs text-slate-500">Share your reviews and ratings</p>
+                                        <p class="font-medium text-slate-800">GitHub</p>
+                                        <p class="text-xs text-slate-500">Connect your developer profile</p>
                                     </div>
                                 </div>
-                                <?php if (isset($connections['twitter'])): ?>
-                                <a href="oauth.php?provider=twitter&action=disconnect" class="text-green-600 hover:text-green-700 text-sm font-medium transition-colors">Connected</a>
+                                <?php if (isset($connections['github'])): ?>
+                                <a href="oauth.php?provider=github&action=disconnect" class="text-green-600 hover:text-green-700 text-sm font-medium transition-colors">Connected</a>
                                 <?php else: ?>
-                                <a href="oauth.php?provider=twitter&action=connect" class="text-slate-400 hover:text-indigo-600 text-sm font-medium transition-colors">Connect</a>
+                                <a href="oauth.php?provider=github&action=connect" class="text-slate-400 hover:text-indigo-600 text-sm font-medium transition-colors">Connect</a>
                                 <?php endif; ?>
                             </div>
                             <div class="flex items-center justify-between p-4 border border-slate-200 rounded-lg">

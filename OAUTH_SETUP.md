@@ -12,15 +12,16 @@ To enable real OAuth connections, you need to set up applications with each prov
 6. Add authorized redirect URI: `http://localhost/serieslist/oauth.php?provider=google`
 7. Copy the Client ID and Client Secret
 
-## 2. Twitter OAuth Setup
+## 2. GitHub OAuth Setup
 
-1. Go to [Twitter Developer Portal](https://developer.twitter.com/en/portal/dashboard)
-2. Create a new app
-3. In app settings, set:
-   - Callback URL: `http://localhost/serieslist/oauth.php?provider=twitter`
-   - Website URL: `http://localhost/serieslist`
-4. Enable OAuth 2.0 in app permissions
-5. Copy the Client ID and Client Secret from "Keys and tokens"
+1. Go to [GitHub Settings](https://github.com/settings/developers)
+2. Click "OAuth Apps" → "New OAuth App"
+3. Fill in:
+   - Application name: `SeriesList`
+   - Homepage URL: `http://localhost/serieslist`
+   - Authorization callback URL: `http://localhost/serieslist/oauth.php?provider=github`
+4. Click "Register application"
+5. Copy the Client ID and generate a Client Secret
 
 ## 3. Spotify OAuth Setup
 
@@ -39,9 +40,9 @@ Replace the placeholder values in `oauth.php`:
     'client_secret' => 'YOUR_ACTUAL_GOOGLE_CLIENT_SECRET',
     // ... rest stays the same
 ],
-'twitter' => [
-    'client_id' => 'YOUR_ACTUAL_TWITTER_CLIENT_ID', 
-    'client_secret' => 'YOUR_ACTUAL_TWITTER_CLIENT_SECRET',
+'github' => [
+    'client_id' => 'YOUR_ACTUAL_GITHUB_CLIENT_ID', 
+    'client_secret' => 'YOUR_ACTUAL_GITHUB_CLIENT_SECRET',
     // ... rest stays the same
 ],
 'spotify' => [
