@@ -68,6 +68,16 @@ if (!isset($_SESSION['user_logged_in']) || $_SESSION['user_logged_in'] !== true)
             <option value="male">Male Voice</option>
             <option value="google">Google US English</option>
             <option value="microsoft">Microsoft Voice</option>
+            <option value="british">British Accent</option>
+            <option value="australian">Australian Accent</option>
+            <option value="irish">Irish Accent</option>
+            <option value="scottish">Scottish Accent</option>
+            <option value="canadian">Canadian English</option>
+            <option value="south african">South African</option>
+            <option value="indian">Indian English</option>
+            <option value="whisper">Whisper Mode</option>
+            <option value="robot">Robot Voice</option>
+            <option value="narrator">Narrator Style</option>
           </select>
 
           <input id="persona" class="p-4 bg-slate-50 rounded-2xl font-bold border border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none" value="cheerful" />
@@ -165,8 +175,27 @@ if (!isset($_SESSION['user_logged_in']) || $_SESSION['user_logged_in'] !== true)
       
       // Try to find the requested voice
       if (voiceName && voiceName !== 'default') {
+        // Enhanced voice matching with more specific patterns
+        const voicePatterns = {
+          'british': ['uk', 'britain', 'english', 'gb'],
+          'australian': ['australia', 'au'],
+          'irish': ['ireland', 'irish'],
+          'scottish': ['scotland', 'scottish'],
+          'canadian': ['canada', 'canadian'],
+          'south african': ['south africa', 'za'],
+          'indian': ['india', 'hindi', 'indian'],
+          'whisper': ['whisper', 'soft'],
+          'robot': ['robot', 'synthetic'],
+          'narrator': ['narrator', 'storyteller']
+        };
+        
+        const patterns = voicePatterns[voiceName.toLowerCase()] || [voiceName.toLowerCase()];
+        
         selectedVoice = voices.find(v => 
-          v.name.toLowerCase().includes(voiceName.toLowerCase())
+          patterns.some(pattern => 
+            v.name.toLowerCase().includes(pattern) || 
+            v.lang.toLowerCase().includes(pattern)
+          )
         );
       }
       
@@ -182,7 +211,7 @@ if (!isset($_SESSION['user_logged_in']) || $_SESSION['user_logged_in'] !== true)
         addLog(`Using system default voice`);
       }
 
-      // Adjust speech based on persona
+      // Adjust speech based on persona and voice type
       switch(persona.toLowerCase()) {
         case 'cheerful':
           utterance.pitch = 1.2;
@@ -196,9 +225,29 @@ if (!isset($_SESSION['user_logged_in']) || $_SESSION['user_logged_in'] !== true)
           utterance.pitch = 1.0;
           utterance.rate = 0.8;
           break;
+        case 'excited':
+          utterance.pitch = 1.3;
+          utterance.rate = 1.2;
+          break;
+        case 'mysterious':
+          utterance.pitch = 0.7;
+          utterance.rate = 0.7;
+          break;
         default:
           utterance.pitch = 1.0;
           utterance.rate = 1.0;
+      }
+      
+      // Special voice modifications
+      if (voiceName === 'whisper') {
+        utterance.volume = 0.3;
+        utterance.rate = 0.6;
+      } else if (voiceName === 'robot') {
+        utterance.pitch = 0.5;
+        utterance.rate = 0.8;
+      } else if (voiceName === 'narrator') {
+        utterance.pitch = 0.9;
+        utterance.rate = 0.85;
       }
 
       utterance.onstart = () => {
