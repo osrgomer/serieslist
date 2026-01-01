@@ -207,19 +207,26 @@ if (!isset($_SESSION['user_logged_in']) || $_SESSION['user_logged_in'] !== true)
         };
         
         const aiVoice = voiceMap[voiceName] || 'af_heart';
-        const audio = await model.generate(text, { voice: aiVoice });
+        const audioData = await model.generate(text, { voice: aiVoice });
         
         addLog(`Using AI voice: ${aiVoice}`);
         addLog("AI playback started");
         
-        audio.onended = () => {
+        // Create audio element from the generated data
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        const audioBuffer = await audioContext.decodeAudioData(audioData.buffer);
+        const source = audioContext.createBufferSource();
+        source.buffer = audioBuffer;
+        source.connect(audioContext.destination);
+        
+        source.onended = () => {
           addLog("AI playback finished");
           isGenerating = false;
           btn.textContent = "Generate Voice";
           btn.disabled = false;
         };
         
-        audio.play();
+        source.start();
       } else {
         await handleSystemVoice(text, voiceName, persona);
       }
