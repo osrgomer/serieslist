@@ -277,6 +277,7 @@
                                 <span class="text-lg sm:text-base font-black ${progressColor}">${item.progress || 0}</span>
                                 <span class="text-[10px] text-slate-400 font-bold uppercase">/ ${item.total || '?'} ep</span>
                             </div>
+                            ${item.total > 0 && item.progress < item.total ? `<div class="text-[9px] text-slate-400 font-medium">${item.total - item.progress} left</div>` : ''}
                         </div>
                         <div class="flex gap-1">
                             <button onclick="window.incrementValue('${item.id}', ${item.progress || 0}, ${item.total || 0})" class="w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center hover:bg-indigo-600 hover:text-white transition-colors active:scale-90" aria-label="Increment progress">
