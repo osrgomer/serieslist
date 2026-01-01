@@ -1,3 +1,24 @@
+<?php
+session_start();
+
+// Handle OAuth status messages
+$status_message = '';
+$status_type = '';
+
+if (isset($_GET['connected'])) {
+    $status_message = ucfirst($_GET['connected']) . ' connected successfully!';
+    $status_type = 'success';
+} elseif (isset($_GET['disconnected'])) {
+    $status_message = ucfirst($_GET['disconnected']) . ' disconnected successfully!';
+    $status_type = 'success';
+} elseif (isset($_GET['error'])) {
+    $status_message = 'Connection failed. Please try again.';
+    $status_type = 'error';
+}
+
+// Get connection status
+$connections = $_SESSION['connections'] ?? [];
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -67,6 +88,11 @@
                 <div class="flex justify-between items-center mb-8">
                     <h1 id="sectionTitle" class="text-slate-800 text-2xl font-bold">Profile Settings</h1>
                     <div id="statusMessage" class="text-green-600 text-sm font-medium hidden"></div>
+                    <?php if ($status_message): ?>
+                    <div class="<?php echo $status_type === 'success' ? 'text-green-600' : 'text-red-600'; ?> text-sm font-medium">
+                        <?php echo htmlspecialchars($status_message); ?>
+                    </div>
+                    <?php endif; ?>
                 </div>
 
                 <!-- Profile Settings Section -->
@@ -168,7 +194,11 @@
                                         <p class="text-xs text-slate-500">Sync your watchlist across devices</p>
                                     </div>
                                 </div>
-                                <button onclick="toggleConnection('google')" id="googleBtn" class="text-slate-400 hover:text-indigo-600 text-sm font-medium transition-colors">Connect</button>
+                                <?php if (isset($connections['google'])): ?>
+                                <a href="oauth.php?provider=google&action=disconnect" class="text-green-600 hover:text-green-700 text-sm font-medium transition-colors">Connected</a>
+                                <?php else: ?>
+                                <a href="oauth.php?provider=google&action=connect" class="text-slate-400 hover:text-indigo-600 text-sm font-medium transition-colors">Connect</a>
+                                <?php endif; ?>
                             </div>
                             <div class="flex items-center justify-between p-4 border border-slate-200 rounded-lg">
                                 <div class="flex items-center gap-3">
@@ -180,7 +210,11 @@
                                         <p class="text-xs text-slate-500">Share your reviews and ratings</p>
                                     </div>
                                 </div>
-                                <button onclick="toggleConnection('twitter')" id="twitterBtn" class="text-slate-400 hover:text-indigo-600 text-sm font-medium transition-colors">Connect</button>
+                                <?php if (isset($connections['twitter'])): ?>
+                                <a href="oauth.php?provider=twitter&action=disconnect" class="text-green-600 hover:text-green-700 text-sm font-medium transition-colors">Connected</a>
+                                <?php else: ?>
+                                <a href="oauth.php?provider=twitter&action=connect" class="text-slate-400 hover:text-indigo-600 text-sm font-medium transition-colors">Connect</a>
+                                <?php endif; ?>
                             </div>
                             <div class="flex items-center justify-between p-4 border border-slate-200 rounded-lg">
                                 <div class="flex items-center gap-3">
@@ -192,7 +226,11 @@
                                         <p class="text-xs text-slate-500">Discover soundtracks from your shows</p>
                                     </div>
                                 </div>
-                                <button onclick="toggleConnection('spotify')" id="spotifyBtn" class="text-slate-400 hover:text-indigo-600 text-sm font-medium transition-colors">Connect</button>
+                                <?php if (isset($connections['spotify'])): ?>
+                                <a href="oauth.php?provider=spotify&action=disconnect" class="text-green-600 hover:text-green-700 text-sm font-medium transition-colors">Connected</a>
+                                <?php else: ?>
+                                <a href="oauth.php?provider=spotify&action=connect" class="text-slate-400 hover:text-indigo-600 text-sm font-medium transition-colors">Connect</a>
+                                <?php endif; ?>
                             </div>
                         </div>
                     </div>
@@ -349,36 +387,16 @@
             }, 1000);
         }
         
-        function toggleConnection(service) {
-            const btn = document.getElementById(service + 'Btn');
-            const connections = JSON.parse(localStorage.getItem('connections') || '{}');
-            
-            if (connections[service]) {
-                // Disconnect
-                delete connections[service];
-                btn.textContent = 'Connect';
-                btn.className = 'text-slate-400 hover:text-indigo-600 text-sm font-medium transition-colors';
-            } else {
-                // Connect
-                connections[service] = { connected: true, connectedAt: Date.now() };
-                btn.textContent = 'Connected';
-                btn.className = 'text-green-600 hover:text-green-700 text-sm font-medium transition-colors';
+        // Auto-hide status messages after 5 seconds
+        <?php if ($status_message): ?>
+        setTimeout(() => {
+            const statusEl = document.querySelector('.text-green-600, .text-red-600');
+            if (statusEl && statusEl.textContent.includes('<?php echo addslashes($status_message); ?>')) {
+                statusEl.style.opacity = '0';
+                setTimeout(() => statusEl.remove(), 300);
             }
-            
-            localStorage.setItem('connections', JSON.stringify(connections));
-        }
-        
-        // Load connection states on page load
-        window.addEventListener('load', () => {
-            const connections = JSON.parse(localStorage.getItem('connections') || '{}');
-            ['google', 'twitter', 'spotify'].forEach(service => {
-                const btn = document.getElementById(service + 'Btn');
-                if (connections[service]) {
-                    btn.textContent = 'Connected';
-                    btn.className = 'text-green-600 hover:text-green-700 text-sm font-medium transition-colors';
-                }
-            });
-        });
+        }, 5000);
+        <?php endif; ?>
         
         // Load saved profile data on page load
         window.addEventListener('load', () => {
