@@ -77,6 +77,15 @@ if (!isset($_SESSION['user_logged_in']) || $_SESSION['user_logged_in'] !== true)
             <option value="ai-sky">AI Sky (Local)</option>
             <option value="ai-adam">AI Adam (Local)</option>
             <option value="ai-emma">AI Emma (Local)</option>
+            <option value="deutsch">Google Deutsch</option>
+            <option value="français">Google Français</option>
+            <option value="español">Google Español</option>
+            <option value="italiano">Google Italiano</option>
+            <option value="português">Google Português</option>
+            <option value="русский">Google Русский</option>
+            <option value="日本語">Google 日本語</option>
+            <option value="한국의">Google 한국의</option>
+            <option value="中文">Google 中文</option>
           </select>
 
           <input id="persona" class="p-4 bg-slate-50 rounded-2xl font-bold border border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none" value="cheerful" />
@@ -262,6 +271,15 @@ if (!isset($_SESSION['user_logged_in']) || $_SESSION['user_logged_in'] !== true)
         'us': ['us', 'united states', 'america'],
         'whisper': ['whisper', 'soft'],
         'robot': ['robot', 'synthetic'],
+        'deutsch': ['deutsch', 'german', 'de-'],
+        'français': ['français', 'french', 'fr-'],
+        'español': ['español', 'spanish', 'es-'],
+        'italiano': ['italiano', 'italian', 'it-'],
+        'português': ['português', 'portuguese', 'pt-'],
+        'русский': ['русский', 'russian', 'ru-'],
+        '日本語': ['日本語', 'japanese', 'ja-'],
+        '한국의': ['한국의', 'korean', 'ko-'],
+        '中文': ['中文', '國語', '粤語', '普通话', 'chinese', 'zh-']
       };
       
       const patterns = voicePatterns[voiceName.toLowerCase()] || [voiceName.toLowerCase()];
