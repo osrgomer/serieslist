@@ -212,21 +212,28 @@ if (!isset($_SESSION['user_logged_in']) || $_SESSION['user_logged_in'] !== true)
         addLog(`Using AI voice: ${aiVoice}`);
         addLog("AI playback started");
         
-        // Create audio element from the generated data
-        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-        const audioBuffer = await audioContext.decodeAudioData(audioData.buffer);
-        const source = audioContext.createBufferSource();
-        source.buffer = audioBuffer;
-        source.connect(audioContext.destination);
+        // Create blob URL and play with HTML audio element
+        const audioBlob = new Blob([audioData], { type: 'audio/wav' });
+        const audioUrl = URL.createObjectURL(audioBlob);
+        const audio = new Audio(audioUrl);
         
-        source.onended = () => {
+        audio.onended = () => {
           addLog("AI playback finished");
+          URL.revokeObjectURL(audioUrl);
           isGenerating = false;
           btn.textContent = "Generate Voice";
           btn.disabled = false;
         };
         
-        source.start();
+        audio.onerror = () => {
+          addLog("AI playback error");
+          URL.revokeObjectURL(audioUrl);
+          isGenerating = false;
+          btn.textContent = "Generate Voice";
+          btn.disabled = false;
+        };
+        
+        audio.play();
       } else {
         await handleSystemVoice(text, voiceName, persona);
       }
