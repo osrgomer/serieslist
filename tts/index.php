@@ -66,18 +66,12 @@ if (!isset($_SESSION['user_logged_in']) || $_SESSION['user_logged_in'] !== true)
             <option value="default">System Default</option>
             <option value="female">Female Voice</option>
             <option value="male">Male Voice</option>
-            <option value="google">Google US English</option>
+            <option value="google">Google Voice</option>
             <option value="microsoft">Microsoft Voice</option>
-            <option value="british">British Accent</option>
-            <option value="australian">Australian Accent</option>
-            <option value="irish">Irish Accent</option>
-            <option value="scottish">Scottish Accent</option>
-            <option value="canadian">Canadian English</option>
-            <option value="south african">South African</option>
-            <option value="indian">Indian English</option>
+            <option value="uk">UK English</option>
+            <option value="us">US English</option>
             <option value="whisper">Whisper Mode</option>
             <option value="robot">Robot Voice</option>
-            <option value="narrator">Narrator Style</option>
           </select>
 
           <input id="persona" class="p-4 bg-slate-50 rounded-2xl font-bold border border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none" value="cheerful" />
@@ -91,6 +85,11 @@ if (!isset($_SESSION['user_logged_in']) || $_SESSION['user_logged_in'] !== true)
         <button id="generateBtn"
           class="w-full py-5 rounded-3xl font-black text-white bg-slate-900 hover:bg-indigo-600 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed">
           Generate Voice
+        </button>
+
+        <button id="debugBtn"
+          class="w-full py-3 rounded-2xl font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-all text-sm">
+          Show Available Voices
         </button>
 
         <!-- Logs -->
@@ -173,20 +172,13 @@ if (!isset($_SESSION['user_logged_in']) || $_SESSION['user_logged_in'] !== true)
       const voices = speechSynthesis.getVoices();
       let selectedVoice = null;
       
-      // Try to find the requested voice
+      // Try to find the requested voice with simpler patterns
       if (voiceName && voiceName !== 'default') {
-        // Enhanced voice matching with more specific patterns
         const voicePatterns = {
-          'british': ['uk', 'britain', 'english', 'gb'],
-          'australian': ['australia', 'au'],
-          'irish': ['ireland', 'irish'],
-          'scottish': ['scotland', 'scottish'],
-          'canadian': ['canada', 'canadian'],
-          'south african': ['south africa', 'za'],
-          'indian': ['india', 'hindi', 'indian'],
+          'uk': ['uk', 'britain', 'british', 'gb'],
+          'us': ['us', 'united states', 'america'],
           'whisper': ['whisper', 'soft'],
           'robot': ['robot', 'synthetic'],
-          'narrator': ['narrator', 'storyteller']
         };
         
         const patterns = voicePatterns[voiceName.toLowerCase()] || [voiceName.toLowerCase()];
@@ -197,18 +189,33 @@ if (!isset($_SESSION['user_logged_in']) || $_SESSION['user_logged_in'] !== true)
             v.lang.toLowerCase().includes(pattern)
           )
         );
+        
+        // Check if we found an exact match or using fallback
+        if (selectedVoice) {
+          const isExactMatch = patterns.some(pattern => 
+            selectedVoice.name.toLowerCase().includes(pattern) || 
+            selectedVoice.lang.toLowerCase().includes(pattern)
+          );
+          
+          if (!isExactMatch) {
+            addLog(`Requested '${voiceName}' not found, using fallback: ${selectedVoice.name}`);
+          } else {
+            addLog(`Using voice: ${selectedVoice.name}`);
+          }
+        }
       }
       
-      // Fallback to first English voice if specific voice not found
+      // Fallback to first female English voice, then any English voice, then first available
       if (!selectedVoice) {
-        selectedVoice = voices.find(v => v.lang.startsWith('en')) || voices[0];
+        selectedVoice = voices.find(v => v.lang.startsWith('en') && v.name.toLowerCase().includes('female')) ||
+                      voices.find(v => v.lang.startsWith('en')) || 
+                      voices[0];
       }
       
       if (selectedVoice) {
         utterance.voice = selectedVoice;
-        addLog(`Using voice: ${selectedVoice.name}`);
       } else {
-        addLog(`Using system default voice`);
+        addLog(`Using system default voice (${voiceName} not available)`);
       }
 
       // Adjust speech based on persona and voice type
@@ -284,6 +291,16 @@ if (!isset($_SESSION['user_logged_in']) || $_SESSION['user_logged_in'] !== true)
     addLog("Speech synthesis ready");
     addLog(`Available voices: ${speechSynthesis.getVoices().length}`);
   });
+
+  // Debug button to show available voices
+  document.getElementById('debugBtn').onclick = () => {
+    const voices = speechSynthesis.getVoices();
+    addLog(`=== Available Voices (${voices.length}) ===`);
+    voices.forEach((voice, i) => {
+      addLog(`${i+1}. ${voice.name} (${voice.lang})`);
+    });
+    addLog(`=== End Voice List ===`);
+  };
 
   // Mobile menu toggle
   document.getElementById('mobileMenuBtn').onclick = () => {
