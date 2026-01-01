@@ -217,8 +217,7 @@
 
         const setupOfflineMode = () => {
             isCloudMode = false;
-            banner.classList.remove('hidden');
-            document.getElementById('aiStatus').innerText = "AI restricted in offline mode.";
+            document.getElementById('aiStatus').innerText = "Add API Key to unlock recommendations.";
             const localData = localStorage.getItem('series_v2_backup');
             currentSeries = localData ? JSON.parse(localData) : [];
             renderList(currentSeries);

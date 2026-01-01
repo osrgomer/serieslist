@@ -50,66 +50,153 @@
                             <i class="fas fa-camera text-white"></i>
                         </div>
                     </div>
-                    <h2 id="profileUsername" class="text-slate-800 font-bold text-lg mt-4">SeriesFan99</h2>
-                    <p class="text-xs text-slate-500 font-bold uppercase tracking-wider mt-1">Pro Member</p>
+                    <h2 id="profileUsername" class="text-slate-800 font-bold text-lg mt-4">User</h2>
+
                 </div>
 
                 <nav class="flex flex-col text-sm font-medium">
-                    <a href="#" class="bg-indigo-50 text-indigo-600 px-4 py-3 rounded-t-lg border-b border-slate-100">Profile Settings</a>
-                    <a href="#" class="bg-white hover:bg-slate-50 text-slate-600 px-4 py-3 border-b border-slate-100 transition-colors">Avatar & Cover</a>
-                    <a href="#" class="bg-white hover:bg-slate-50 text-slate-600 px-4 py-3 border-b border-slate-100 transition-colors">Security</a>
-                    <a href="#" class="bg-white hover:bg-slate-50 text-slate-600 px-4 py-3 rounded-b-lg transition-colors">Connections</a>
+                    <a href="#" onclick="showSection('profile')" class="bg-indigo-50 text-indigo-600 px-4 py-3 rounded-t-lg border-b border-slate-100" id="profileTab">Profile Settings</a>
+                    <a href="#" onclick="showSection('avatar')" class="bg-white hover:bg-slate-50 text-slate-600 px-4 py-3 border-b border-slate-100 transition-colors" id="avatarTab">Avatar & Cover</a>
+                    <a href="#" onclick="showSection('security')" class="bg-white hover:bg-slate-50 text-slate-600 px-4 py-3 border-b border-slate-100 transition-colors" id="securityTab">Security</a>
+                    <a href="#" onclick="showSection('connections')" class="bg-white hover:bg-slate-50 text-slate-600 px-4 py-3 rounded-b-lg transition-colors" id="connectionsTab">Connections</a>
                 </nav>
             </aside>
 
             <!-- Main Content -->
             <section class="flex-1">
                 <div class="flex justify-between items-center mb-8">
-                    <h1 class="text-slate-800 text-2xl font-bold">Account Settings</h1>
+                    <h1 id="sectionTitle" class="text-slate-800 text-2xl font-bold">Profile Settings</h1>
                     <div id="statusMessage" class="text-green-600 text-sm font-medium hidden"></div>
                 </div>
 
-                <form onsubmit="handleSave(event)" class="space-y-6 bg-white border border-slate-200 p-6 sm:p-8 rounded-2xl shadow-sm">
-                    <div class="grid md:grid-cols-2 gap-6">
-                        <div class="space-y-2">
-                            <label class="text-xs font-bold uppercase tracking-wider text-slate-600">Username</label>
-                            <input 
-                                type="text" 
-                                id="usernameInput"
-                                class="w-full p-3 rounded-lg border border-slate-200 text-slate-800 text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
-                                value="SeriesFan99"
-                            />
+                <!-- Profile Settings Section -->
+                <div id="profileSection" class="section-content">
+                    <form onsubmit="handleSave(event)" class="space-y-6 bg-white border border-slate-200 p-6 sm:p-8 rounded-2xl shadow-sm">
+                        <div class="grid md:grid-cols-2 gap-6">
+                            <div class="space-y-2">
+                                <label class="text-xs font-bold uppercase tracking-wider text-slate-600">Username</label>
+                                <input 
+                                    type="text" 
+                                    id="usernameInput"
+                                    class="w-full p-3 rounded-lg border border-slate-200 text-slate-800 text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
+                                    value="User"
+                                />
+                            </div>
+                            <div class="space-y-2">
+                                <label class="text-xs font-bold uppercase tracking-wider text-slate-600">Email</label>
+                                <input 
+                                    type="email" 
+                                    id="emailInput"
+                                    class="w-full p-3 rounded-lg border border-slate-200 text-slate-800 text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
+                                    value="user@example.com"
+                                />
+                            </div>
                         </div>
+
                         <div class="space-y-2">
-                            <label class="text-xs font-bold uppercase tracking-wider text-slate-600">Email</label>
-                            <input 
-                                type="email" 
-                                id="emailInput"
-                                class="w-full p-3 rounded-lg border border-slate-200 text-slate-800 text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
-                                value="fan@example.com"
-                            />
+                            <label class="text-xs font-bold uppercase tracking-wider text-slate-600">Bio</label>
+                            <textarea 
+                                id="bioInput"
+                                class="w-full p-3 rounded-lg border border-slate-200 text-slate-800 text-sm min-h-[120px] focus:ring-2 focus:ring-indigo-500 outline-none"
+                            >TV and movie enthusiast. Always looking for the next great series to binge.</textarea>
+                            <p class="text-xs text-slate-500">Markdown is supported for formatting your biography.</p>
+                        </div>
+
+                        <div class="pt-6 border-t border-slate-200 flex justify-end">
+                            <button 
+                                type="submit"
+                                id="saveBtn"
+                                class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm px-8 py-3 rounded-lg transition-all disabled:opacity-50"
+                            >
+                                Save Changes
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Avatar & Cover Section -->
+                <div id="avatarSection" class="section-content hidden">
+                    <div class="bg-white border border-slate-200 p-6 sm:p-8 rounded-2xl shadow-sm">
+                        <h3 class="text-lg font-bold text-slate-800 mb-4">Profile Picture</h3>
+                        <div class="flex items-center gap-6">
+                            <img id="avatarPreview" src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=200&h=200&fit=crop" class="w-20 h-20 rounded-full border-4 border-slate-200 object-cover" />
+                            <div>
+                                <button onclick="openAvatarModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">Change Avatar</button>
+                                <p class="text-xs text-slate-500 mt-2">Click to select from available avatars</p>
+                            </div>
                         </div>
                     </div>
+                </div>
 
-                    <div class="space-y-2">
-                        <label class="text-xs font-bold uppercase tracking-wider text-slate-600">Bio</label>
-                        <textarea 
-                            id="bioInput"
-                            class="w-full p-3 rounded-lg border border-slate-200 text-slate-800 text-sm min-h-[120px] focus:ring-2 focus:ring-indigo-500 outline-none"
-                        >Obsessed with prestige drama and sci-fi series. Always looking for the next binge.</textarea>
-                        <p class="text-xs text-slate-500">Markdown is supported for formatting your biography.</p>
+                <!-- Security Section -->
+                <div id="securitySection" class="section-content hidden">
+                    <div class="bg-white border border-slate-200 p-6 sm:p-8 rounded-2xl shadow-sm">
+                        <h3 class="text-lg font-bold text-slate-800 mb-4">Password & Security</h3>
+                        <form onsubmit="handlePasswordChange(event)" class="space-y-4">
+                            <div class="space-y-2">
+                                <label class="text-xs font-bold uppercase tracking-wider text-slate-600">Current Password</label>
+                                <input type="password" id="currentPassword" class="w-full p-3 rounded-lg border border-slate-200 text-slate-800 text-sm focus:ring-2 focus:ring-indigo-500 outline-none" placeholder="Enter current password" required />
+                            </div>
+                            <div class="space-y-2">
+                                <label class="text-xs font-bold uppercase tracking-wider text-slate-600">New Password</label>
+                                <input type="password" id="newPassword" class="w-full p-3 rounded-lg border border-slate-200 text-slate-800 text-sm focus:ring-2 focus:ring-indigo-500 outline-none" placeholder="Enter new password" required minlength="6" />
+                            </div>
+                            <div class="space-y-2">
+                                <label class="text-xs font-bold uppercase tracking-wider text-slate-600">Confirm Password</label>
+                                <input type="password" id="confirmPassword" class="w-full p-3 rounded-lg border border-slate-200 text-slate-800 text-sm focus:ring-2 focus:ring-indigo-500 outline-none" placeholder="Confirm new password" required />
+                            </div>
+                            <div id="passwordMessage" class="text-sm font-medium hidden"></div>
+                            <div class="pt-4">
+                                <button type="submit" id="passwordBtn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm px-8 py-3 rounded-lg transition-all disabled:opacity-50">Update Password</button>
+                            </div>
+                        </form>
                     </div>
+                </div>
 
-                    <div class="pt-6 border-t border-slate-200 flex justify-end">
-                        <button 
-                            type="submit"
-                            id="saveBtn"
-                            class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm px-8 py-3 rounded-lg transition-all disabled:opacity-50"
-                        >
-                            Save Changes
-                        </button>
+                <!-- Connections Section -->
+                <div id="connectionsSection" class="section-content hidden">
+                    <div class="bg-white border border-slate-200 p-6 sm:p-8 rounded-2xl shadow-sm">
+                        <h3 class="text-lg font-bold text-slate-800 mb-4">Connected Services</h3>
+                        <div class="space-y-4">
+                            <div class="flex items-center justify-between p-4 border border-slate-200 rounded-lg">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 bg-red-500 rounded-lg flex items-center justify-center">
+                                        <i class="fab fa-google text-white"></i>
+                                    </div>
+                                    <div>
+                                        <p class="font-medium text-slate-800">Google Account</p>
+                                        <p class="text-xs text-slate-500">Sync your watchlist across devices</p>
+                                    </div>
+                                </div>
+                                <button onclick="toggleConnection('google')" id="googleBtn" class="text-slate-400 hover:text-indigo-600 text-sm font-medium transition-colors">Connect</button>
+                            </div>
+                            <div class="flex items-center justify-between p-4 border border-slate-200 rounded-lg">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center">
+                                        <i class="fab fa-twitter text-white"></i>
+                                    </div>
+                                    <div>
+                                        <p class="font-medium text-slate-800">Twitter</p>
+                                        <p class="text-xs text-slate-500">Share your reviews and ratings</p>
+                                    </div>
+                                </div>
+                                <button onclick="toggleConnection('twitter')" id="twitterBtn" class="text-slate-400 hover:text-indigo-600 text-sm font-medium transition-colors">Connect</button>
+                            </div>
+                            <div class="flex items-center justify-between p-4 border border-slate-200 rounded-lg">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 bg-green-600 rounded-lg flex items-center justify-center">
+                                        <i class="fab fa-spotify text-white"></i>
+                                    </div>
+                                    <div>
+                                        <p class="font-medium text-slate-800">Spotify</p>
+                                        <p class="text-xs text-slate-500">Discover soundtracks from your shows</p>
+                                    </div>
+                                </div>
+                                <button onclick="toggleConnection('spotify')" id="spotifyBtn" class="text-slate-400 hover:text-indigo-600 text-sm font-medium transition-colors">Connect</button>
+                            </div>
+                        </div>
                     </div>
-                </form>
+                </div>
             </section>
         </div>
     </div>
@@ -150,10 +237,28 @@
             }
         });
 
+        function openAvatarModal() {
+            document.getElementById('avatarModal').classList.remove('hidden');
+        }
+
+        function closeAvatarModal() {
+            document.getElementById('avatarModal').classList.add('hidden');
+        }
+
         function handleSave(e) {
             e.preventDefault();
             const btn = document.getElementById('saveBtn');
             const status = document.getElementById('statusMessage');
+            
+            // Get form values
+            const username = document.getElementById('usernameInput').value;
+            const email = document.getElementById('emailInput').value;
+            const bio = document.getElementById('bioInput').value;
+            const avatar = document.getElementById('profileAvatar').src;
+            
+            // Save to localStorage
+            const profileData = { username, email, bio, avatar };
+            localStorage.setItem('userProfile', JSON.stringify(profileData));
             
             btn.disabled = true;
             btn.textContent = 'Saving...';
@@ -164,22 +269,129 @@
                 btn.textContent = 'Save Changes';
                 status.textContent = 'Profile updated successfully!';
                 status.classList.remove('hidden');
+                
+                // Update display
+                document.getElementById('profileUsername').textContent = username;
+                
                 setTimeout(() => status.classList.add('hidden'), 3000);
             }, 800);
         }
 
-        function openAvatarModal() {
-            document.getElementById('avatarModal').classList.remove('hidden');
-        }
-
-        function closeAvatarModal() {
-            document.getElementById('avatarModal').classList.add('hidden');
-        }
-
         function selectAvatar(src) {
             document.getElementById('profileAvatar').src = src;
+            document.getElementById('avatarPreview').src = src;
             closeAvatarModal();
         }
+        
+        function showSection(section) {
+            // Hide all sections
+            document.querySelectorAll('.section-content').forEach(s => s.classList.add('hidden'));
+            
+            // Remove active state from all tabs
+            document.querySelectorAll('nav a').forEach(tab => {
+                tab.classList.remove('bg-indigo-50', 'text-indigo-600');
+                tab.classList.add('bg-white', 'text-slate-600');
+            });
+            
+            // Show selected section and activate tab
+            const sections = {
+                'profile': { element: 'profileSection', title: 'Profile Settings', tab: 'profileTab' },
+                'avatar': { element: 'avatarSection', title: 'Avatar & Cover', tab: 'avatarTab' },
+                'security': { element: 'securitySection', title: 'Password & Security', tab: 'securityTab' },
+                'connections': { element: 'connectionsSection', title: 'Connected Services', tab: 'connectionsTab' }
+            };
+            
+            const current = sections[section];
+            if (current) {
+                document.getElementById(current.element).classList.remove('hidden');
+                document.getElementById('sectionTitle').textContent = current.title;
+                const activeTab = document.getElementById(current.tab);
+                activeTab.classList.remove('bg-white', 'text-slate-600');
+                activeTab.classList.add('bg-indigo-50', 'text-indigo-600');
+            }
+        }
+        
+        function handlePasswordChange(e) {
+            e.preventDefault();
+            const current = document.getElementById('currentPassword').value;
+            const newPass = document.getElementById('newPassword').value;
+            const confirm = document.getElementById('confirmPassword').value;
+            const btn = document.getElementById('passwordBtn');
+            const msg = document.getElementById('passwordMessage');
+            
+            if (newPass !== confirm) {
+                msg.textContent = 'Passwords do not match';
+                msg.className = 'text-red-600 text-sm font-medium';
+                msg.classList.remove('hidden');
+                return;
+            }
+            
+            if (newPass.length < 6) {
+                msg.textContent = 'Password must be at least 6 characters';
+                msg.className = 'text-red-600 text-sm font-medium';
+                msg.classList.remove('hidden');
+                return;
+            }
+            
+            btn.disabled = true;
+            btn.textContent = 'Updating...';
+            
+            // Simulate password change
+            setTimeout(() => {
+                localStorage.setItem('userPassword', newPass);
+                msg.textContent = 'Password updated successfully!';
+                msg.className = 'text-green-600 text-sm font-medium';
+                msg.classList.remove('hidden');
+                btn.disabled = false;
+                btn.textContent = 'Update Password';
+                e.target.reset();
+                setTimeout(() => msg.classList.add('hidden'), 3000);
+            }, 1000);
+        }
+        
+        function toggleConnection(service) {
+            const btn = document.getElementById(service + 'Btn');
+            const connections = JSON.parse(localStorage.getItem('connections') || '{}');
+            
+            if (connections[service]) {
+                // Disconnect
+                delete connections[service];
+                btn.textContent = 'Connect';
+                btn.className = 'text-slate-400 hover:text-indigo-600 text-sm font-medium transition-colors';
+            } else {
+                // Connect
+                connections[service] = { connected: true, connectedAt: Date.now() };
+                btn.textContent = 'Connected';
+                btn.className = 'text-green-600 hover:text-green-700 text-sm font-medium transition-colors';
+            }
+            
+            localStorage.setItem('connections', JSON.stringify(connections));
+        }
+        
+        // Load connection states on page load
+        window.addEventListener('load', () => {
+            const connections = JSON.parse(localStorage.getItem('connections') || '{}');
+            ['google', 'twitter', 'spotify'].forEach(service => {
+                const btn = document.getElementById(service + 'Btn');
+                if (connections[service]) {
+                    btn.textContent = 'Connected';
+                    btn.className = 'text-green-600 hover:text-green-700 text-sm font-medium transition-colors';
+                }
+            });
+        });
+        
+        // Load saved profile data on page load
+        window.addEventListener('load', () => {
+            const saved = localStorage.getItem('userProfile');
+            if (saved) {
+                const profile = JSON.parse(saved);
+                document.getElementById('usernameInput').value = profile.username || 'User';
+                document.getElementById('emailInput').value = profile.email || 'user@example.com';
+                document.getElementById('bioInput').value = profile.bio || 'TV and movie enthusiast. Always looking for the next great series to binge.';
+                document.getElementById('profileAvatar').src = profile.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=200&h=200&fit=crop';
+                document.getElementById('profileUsername').textContent = profile.username || 'User';
+            }
+        });
     </script>
 </body>
 </html>

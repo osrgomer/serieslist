@@ -1,22 +1,25 @@
 RewriteEngine On
 RewriteBase /serieslist/
 
-# 1. Remove .php extension from links (e.g., allow /trivia instead of /trivia.php)
+# Pretty URLs - Remove .php extension
 RewriteCond %{REQUEST_FILENAME} !-d
-RewriteCond %{REQUEST_FILENAME}\.php -f
-RewriteRule ^([^\/]+)\/?$ $1.php [L]
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME}.php -f
+RewriteRule ^([^/]+)/?$ $1.php [L]
 
-# 2. Map /home/ to index.php
-RewriteRule ^home\/?$ index.php [L,QSA]
+# Specific route mappings
+RewriteRule ^home/?$ index.php [L,QSA]
+RewriteRule ^library/?$ index.php [L,QSA]
+RewriteRule ^trivia/?$ trivia.php [L,QSA]
+RewriteRule ^quiz/?$ trivia.php [L,QSA]
+RewriteRule ^account/?$ account.php [L,QSA]
+RewriteRule ^profile/?$ account.php [L,QSA]
+RewriteRule ^settings/?$ account.php [L,QSA]
+RewriteRule ^voice/?$ tts/index.php [L,QSA]
+RewriteRule ^tts/?$ tts/index.php [L,QSA]
+RewriteRule ^login/?$ login.php [L,QSA]
+RewriteRule ^logout/?$ logout.php [L,QSA]
+RewriteRule ^privacy/?$ privacy.php [L,QSA]
 
-# 3. Map /trivia/ to trivia.php
-RewriteRule ^trivia\/?$ trivia.php [L,QSA]
-
-# 4. Map /account/ to account.php
-RewriteRule ^account\/?$ account.php [L,QSA]
-
-# 5. Map /voice/ to tts/index.php
-RewriteRule ^voice\/?$ tts/index.php [L,QSA]
-
-# 6. Handle show details (e.g., /show/10/ -> index.php?view=show-detail&id=10)
-RewriteRule ^show/([0-9]+)\/?$ index.php?view=show-detail&id=$1 [L,QSA]
+# Show details route
+RewriteRule ^show/([0-9]+)/?$ index.php?view=show-detail&id=$1 [L,QSA]
