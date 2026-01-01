@@ -229,15 +229,25 @@ if (!isset($_SESSION['user_logged_in']) || $_SESSION['user_logged_in'] !== true)
           btn.disabled = false;
         };
         
-        audio.onerror = () => {
-          addLog("AI playback error");
+        audio.onerror = (e) => {
+          addLog(`AI playback error: ${e.target.error?.message || 'Unknown error'}`);
+          addLog("Falling back to system voice...");
           URL.revokeObjectURL(audioUrl);
-          isGenerating = false;
-          btn.textContent = "Generate Voice";
-          btn.disabled = false;
+          handleSystemVoice(text, 'female', persona);
         };
         
-        audio.play();
+        audio.oncanplaythrough = () => {
+          addLog("AI audio ready, starting playback");
+        };
+        
+        try {
+          await audio.play();
+        } catch (playError) {
+          addLog(`Play failed: ${playError.message}`);
+          addLog("Falling back to system voice...");
+          URL.revokeObjectURL(audioUrl);
+          await handleSystemVoice(text, 'female', persona);
+        }
       } else {
         await handleSystemVoice(text, voiceName, persona);
       }
