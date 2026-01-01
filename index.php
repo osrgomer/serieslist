@@ -387,12 +387,26 @@
             
             try {
                 const userList = currentSeries.map(s => `${s.title} (${s.rating}/10)`).join(', ');
-                const prompt = `Based on these shows I liked: ${userList}. Recommend ONE show I should watch next. Give ONLY the title.`;
+                const randomPrompts = [
+                    `Based on these shows I liked: ${userList}. Recommend ONE different show I should watch next. Give ONLY the title.`,
+                    `I enjoyed watching: ${userList}. Suggest ONE new series similar to these. Just the title please.`,
+                    `My favorite shows are: ${userList}. What's ONE show you'd recommend that I haven't seen? Title only.`,
+                    `Given my taste in: ${userList}. Pick ONE show that would fit my preferences. Only respond with the title.`,
+                    `Shows I've rated highly: ${userList}. Recommend ONE series that matches this taste. Title only please.`
+                ];
+                const prompt = randomPrompts[Math.floor(Math.random() * randomPrompts.length)];
 
                 const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${geminiKey}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+                    body: JSON.stringify({ 
+                        contents: [{ parts: [{ text: prompt }] }],
+                        generationConfig: {
+                            temperature: 0.9,
+                            topP: 0.8,
+                            maxOutputTokens: 50
+                        }
+                    })
                 });
                 const d = await res.json();
                 const suggestion = d.candidates?.[0]?.content?.parts?.[0]?.text || "No suggestion found.";
