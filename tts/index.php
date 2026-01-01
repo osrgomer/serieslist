@@ -72,6 +72,11 @@ if (!isset($_SESSION['user_logged_in']) || $_SESSION['user_logged_in'] !== true)
             <option value="us">US English</option>
             <option value="whisper">Whisper Mode</option>
             <option value="robot">Robot Voice</option>
+            <option value="ai-bella">AI Bella (Local)</option>
+            <option value="ai-heart">AI Heart (Local)</option>
+            <option value="ai-sky">AI Sky (Local)</option>
+            <option value="ai-adam">AI Adam (Local)</option>
+            <option value="ai-emma">AI Emma (Local)</option>
           </select>
 
           <input id="persona" class="p-4 bg-slate-50 rounded-2xl font-bold border border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none" value="cheerful" />
@@ -109,9 +114,12 @@ if (!isset($_SESSION['user_logged_in']) || $_SESSION['user_logged_in'] !== true)
     </div>
   </main>
 
-<script>
+<script type="module">
+  import { KokoroTTS } from "https://cdn.jsdelivr.net/npm/kokoro-js@1.2.1/dist/kokoro.web.min.js";
+  
   let isGenerating = false;
   let logs = [];
+  let aiTTS = null;
 
   const btn = document.getElementById("generateBtn");
   const logsEl = document.getElementById("logs");
@@ -125,6 +133,24 @@ if (!isset($_SESSION['user_logged_in']) || $_SESSION['user_logged_in'] !== true)
     logs.unshift(`[${time}] ${msg}`);
     logs = logs.slice(0, 15);
     logsEl.innerHTML = logs.map(l => `<div class="mb-1">${l}</div>`).join("");
+  }
+
+  // Initialize AI TTS
+  async function initAI() {
+    if (aiTTS) return aiTTS;
+    addLog("Loading AI Model (90MB)... please wait.");
+    
+    try {
+      aiTTS = await KokoroTTS.from_pretrained("onnx-community/Kokoro-82M-v1.0-ONNX", {
+        dtype: "q8",
+        device: "wasm"
+      });
+      addLog("AI TTS Model Ready!");
+      return aiTTS;
+    } catch (err) {
+      addLog(`AI Model Error: ${err.message}`);
+      return null;
+    }
   }
 
   // clear logs
@@ -144,7 +170,7 @@ if (!isset($_SESSION['user_logged_in']) || $_SESSION['user_logged_in'] !== true)
     });
   }
 
-  // browser TTS handler
+  // Main TTS handler
   btn.onclick = async () => {
     if (isGenerating) return;
     const text = textEl.value.trim();
@@ -162,135 +188,164 @@ if (!isset($_SESSION['user_logged_in']) || $_SESSION['user_logged_in'] !== true)
     btn.disabled = true;
 
     try {
-      // Wait for voices to be available
-      await waitForVoices();
-      
-      speechSynthesis.cancel();
-      const utterance = new SpeechSynthesisUtterance(text);
-
-      // Set voice properties
-      const voices = speechSynthesis.getVoices();
-      let selectedVoice = null;
-      
-      // Try to find the requested voice with simpler patterns
-      if (voiceName && voiceName !== 'default') {
-        const voicePatterns = {
-          'uk': ['uk', 'britain', 'british', 'gb'],
-          'us': ['us', 'united states', 'america'],
-          'whisper': ['whisper', 'soft'],
-          'robot': ['robot', 'synthetic'],
+      // Check if it's an AI voice
+      if (voiceName.startsWith('ai-')) {
+        const model = await initAI();
+        if (!model) {
+          addLog("AI model not available, falling back to system voice");
+          await handleSystemVoice(text, voiceName, persona);
+          return;
+        }
+        
+        addLog("Generating AI audio...");
+        const voiceMap = {
+          'ai-bella': 'af_bella',
+          'ai-heart': 'af_heart', 
+          'ai-sky': 'af_sky',
+          'ai-adam': 'am_adam',
+          'ai-emma': 'bf_emma'
         };
         
-        const patterns = voicePatterns[voiceName.toLowerCase()] || [voiceName.toLowerCase()];
+        const aiVoice = voiceMap[voiceName] || 'af_heart';
+        const audio = await model.generate(text, { voice: aiVoice });
         
-        selectedVoice = voices.find(v => 
-          patterns.some(pattern => 
-            v.name.toLowerCase().includes(pattern) || 
-            v.lang.toLowerCase().includes(pattern)
-          )
-        );
+        addLog(`Using AI voice: ${aiVoice}`);
+        addLog("AI playback started");
         
-        // Check if we found an exact match or using fallback
-        if (selectedVoice) {
-          const isExactMatch = patterns.some(pattern => 
-            selectedVoice.name.toLowerCase().includes(pattern) || 
-            selectedVoice.lang.toLowerCase().includes(pattern)
-          );
-          
-          if (!isExactMatch) {
-            addLog(`Requested '${voiceName}' not found, using fallback: ${selectedVoice.name}`);
-          } else {
-            addLog(`Using voice: ${selectedVoice.name}`);
-          }
-        }
-      }
-      
-      // Fallback to first female English voice, then any English voice, then first available
-      if (!selectedVoice) {
-        selectedVoice = voices.find(v => v.lang.startsWith('en') && v.name.toLowerCase().includes('female')) ||
-                      voices.find(v => v.lang.startsWith('en')) || 
-                      voices[0];
-      }
-      
-      if (selectedVoice) {
-        utterance.voice = selectedVoice;
+        audio.onended = () => {
+          addLog("AI playback finished");
+          isGenerating = false;
+          btn.textContent = "Generate Voice";
+          btn.disabled = false;
+        };
+        
+        audio.play();
       } else {
-        addLog(`Using system default voice (${voiceName} not available)`);
+        await handleSystemVoice(text, voiceName, persona);
       }
-
-      // Adjust speech based on persona and voice type
-      switch(persona.toLowerCase()) {
-        case 'cheerful':
-          utterance.pitch = 1.2;
-          utterance.rate = 1.1;
-          break;
-        case 'serious':
-          utterance.pitch = 0.8;
-          utterance.rate = 0.9;
-          break;
-        case 'calm':
-          utterance.pitch = 1.0;
-          utterance.rate = 0.8;
-          break;
-        case 'excited':
-          utterance.pitch = 1.3;
-          utterance.rate = 1.2;
-          break;
-        case 'mysterious':
-          utterance.pitch = 0.7;
-          utterance.rate = 0.7;
-          break;
-        default:
-          utterance.pitch = 1.0;
-          utterance.rate = 1.0;
-      }
-      
-      // Special voice modifications
-      if (voiceName === 'whisper') {
-        utterance.volume = 0.3;
-        utterance.rate = 0.6;
-      } else if (voiceName === 'robot') {
-        utterance.pitch = 0.5;
-        utterance.rate = 0.8;
-      } else if (voiceName === 'narrator') {
-        utterance.pitch = 0.9;
-        utterance.rate = 0.85;
-      }
-
-      utterance.onstart = () => {
-        addLog("Playback started successfully.");
-      };
-
-      utterance.onend = () => {
-        isGenerating = false;
-        btn.textContent = "Generate Voice";
-        btn.disabled = false;
-        addLog("Playback finished.");
-      };
-
-      utterance.onerror = (event) => {
-        addLog(`Speech Error: ${event.error}`);
-        isGenerating = false;
-        btn.textContent = "Generate Voice";
-        btn.disabled = false;
-      };
-
-      speechSynthesis.speak(utterance);
-
     } catch (err) {
-      addLog("Speech Error: " + err.message);
+      addLog("Error: " + err.message);
       isGenerating = false;
       btn.textContent = "Generate Voice";
       btn.disabled = false;
     }
   };
 
-  // Initialize voices when page loads
-  window.addEventListener('load', async () => {
+  // Handle system voices
+  async function handleSystemVoice(text, voiceName, persona) {
     await waitForVoices();
-    addLog("Speech synthesis ready");
-    addLog(`Available voices: ${speechSynthesis.getVoices().length}`);
-  });
+    
+    speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(text);
+
+    const voices = speechSynthesis.getVoices();
+    let selectedVoice = null;
+    
+    // Try to find the requested voice with simpler patterns
+    if (voiceName && voiceName !== 'default') {
+      const voicePatterns = {
+        'uk': ['uk', 'britain', 'british', 'gb'],
+        'us': ['us', 'united states', 'america'],
+        'whisper': ['whisper', 'soft'],
+        'robot': ['robot', 'synthetic'],
+      };
+      
+      const patterns = voicePatterns[voiceName.toLowerCase()] || [voiceName.toLowerCase()];
+      
+      selectedVoice = voices.find(v => 
+        patterns.some(pattern => 
+          v.name.toLowerCase().includes(pattern) || 
+          v.lang.toLowerCase().includes(pattern)
+        )
+      );
+      
+      // Check if we found an exact match or using fallback
+      if (selectedVoice) {
+        const isExactMatch = patterns.some(pattern => 
+          selectedVoice.name.toLowerCase().includes(pattern) || 
+          selectedVoice.lang.toLowerCase().includes(pattern)
+        );
+        
+        if (!isExactMatch) {
+          addLog(`Requested '${voiceName}' not found, using fallback: ${selectedVoice.name}`);
+        } else {
+          addLog(`Using voice: ${selectedVoice.name}`);
+        }
+      }
+    }
+    
+    // Fallback to first female English voice, then any English voice, then first available
+    if (!selectedVoice) {
+      selectedVoice = voices.find(v => v.lang.startsWith('en') && v.name.toLowerCase().includes('female')) ||
+                    voices.find(v => v.lang.startsWith('en')) || 
+                    voices[0];
+    }
+    
+    if (selectedVoice) {
+      utterance.voice = selectedVoice;
+    } else {
+      addLog(`Using system default voice (${voiceName} not available)`);
+    }
+
+    // Adjust speech based on persona and voice type
+    switch(persona.toLowerCase()) {
+      case 'cheerful':
+        utterance.pitch = 1.2;
+        utterance.rate = 1.1;
+        break;
+      case 'serious':
+        utterance.pitch = 0.8;
+        utterance.rate = 0.9;
+        break;
+      case 'calm':
+        utterance.pitch = 1.0;
+        utterance.rate = 0.8;
+        break;
+      case 'excited':
+        utterance.pitch = 1.3;
+        utterance.rate = 1.2;
+        break;
+      case 'mysterious':
+        utterance.pitch = 0.7;
+        utterance.rate = 0.7;
+        break;
+      default:
+        utterance.pitch = 1.0;
+        utterance.rate = 1.0;
+    }
+    
+    // Special voice modifications
+    if (voiceName === 'whisper') {
+      utterance.volume = 0.3;
+      utterance.rate = 0.6;
+    } else if (voiceName === 'robot') {
+      utterance.pitch = 0.5;
+      utterance.rate = 0.8;
+    } else if (voiceName === 'narrator') {
+      utterance.pitch = 0.9;
+      utterance.rate = 0.85;
+    }
+
+    utterance.onstart = () => {
+      addLog("Playback started successfully.");
+    };
+
+    utterance.onend = () => {
+      isGenerating = false;
+      btn.textContent = "Generate Voice";
+      btn.disabled = false;
+      addLog("Playback finished.");
+    };
+
+    utterance.onerror = (event) => {
+      addLog(`Speech Error: ${event.error}`);
+      isGenerating = false;
+      btn.textContent = "Generate Voice";
+      btn.disabled = false;
+    };
+
+    speechSynthesis.speak(utterance);
+  }
 
   // Debug button to show available voices
   document.getElementById('debugBtn').onclick = () => {
@@ -315,6 +370,13 @@ if (!isset($_SESSION['user_logged_in']) || $_SESSION['user_logged_in'] !== true)
     if (!menu.contains(e.target) && !btn.contains(e.target)) {
       menu.classList.add('hidden');
     }
+  });
+
+  // Initialize voices when page loads
+  window.addEventListener('load', async () => {
+    await waitForVoices();
+    addLog("Speech synthesis ready");
+    addLog(`Available voices: ${speechSynthesis.getVoices().length}`);
   });
 </script>
 </body>
