@@ -1,4 +1,4 @@
-# OAuth credentials - keep secure!
+# OAuth credentials - NEVER commit these!
 oauth.php
 
 # Environment files
@@ -21,3 +21,7 @@ oauth.php
 # OS files
 .DS_Store
 Thumbs.db
+
+# User uploads
+uploads/avatars/*
+!uploads/avatars/.gitkeep
