@@ -39,7 +39,7 @@ switch ($action) {
             // Update existing
             $stmt = $db->prepare("
                 UPDATE series 
-                SET title = ?, poster = ?, rating = ?, status = ?, notes = ?, tmdb_id = ?
+                SET title = ?, poster = ?, rating = ?, status = ?, notes = ?, tmdb_id = ?, progress = ?, total = ?
                 WHERE id = ? AND user_id = ?
             ");
             $result = $stmt->execute([
@@ -49,6 +49,8 @@ switch ($action) {
                 $data['status'] ?? 'watching',
                 $data['notes'] ?? null,
                 $data['tmdb_id'] ?? null,
+                $data['progress'] ?? 0,
+                $data['total'] ?? 0,
                 $data['id'],
                 $userId
             ]);
@@ -57,8 +59,8 @@ switch ($action) {
         } else {
             // Insert new
             $stmt = $db->prepare("
-                INSERT INTO series (user_id, title, poster, rating, status, notes, tmdb_id)
-                VALUES (?, ?, ?, ?, ?, ?, ?)
+                INSERT INTO series (user_id, title, poster, rating, status, notes, tmdb_id, progress, total)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
             ");
             $result = $stmt->execute([
                 $userId,
@@ -67,7 +69,9 @@ switch ($action) {
                 $data['rating'] ?? null,
                 $data['status'] ?? 'watching',
                 $data['notes'] ?? null,
-                $data['tmdb_id'] ?? null
+                $data['tmdb_id'] ?? null,
+                $data['progress'] ?? 0,
+                $data['total'] ?? 0
             ]);
             
             echo json_encode(['success' => $result, 'id' => $db->lastInsertId()]);
