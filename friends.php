@@ -320,7 +320,7 @@ if (!isset($_SESSION['user_logged_in']) || $_SESSION['user_logged_in'] !== true)
         function updateStats() {
             document.getElementById('friendsCount').textContent = friends.length;
             document.getElementById('activeCount').textContent = friends.filter(f => f.online).length;
-            document.getElementById('sharedCount').textContent = Math.floor(friends.length * 1.5); // Mock shared shows
+            document.getElementById('sharedCount').textContent = 0; // TODO: Calculate real shared shows
         }
 
         // Remove friend
