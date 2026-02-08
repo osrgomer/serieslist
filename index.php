@@ -300,7 +300,7 @@ include 'header.php';
         }
         
         // Save series to MySQL
-        async function saveSeriesTo Database(series) {
+        async function saveSeriesToDatabase(series) {
             try {
                 const response = await fetch('/serieslist/api_series.php?action=save', {
                     method: 'POST',
@@ -441,7 +441,7 @@ include 'header.php';
                     currentSeries[idx].updatedAt = Date.now();
                     
                     // Save to MySQL database
-                    await saveSeriesTo Database(currentSeries[idx]);
+                    await saveSeriesToDatabase(currentSeries[idx]);
                 }
                 renderList(currentSeries);
             }
