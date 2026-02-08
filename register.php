@@ -24,7 +24,8 @@ if ($_POST) {
             'password' => password_hash($password, PASSWORD_DEFAULT),
             'avatar' => 'https://ui-avatars.com/api/?name=' . urlencode($name) . '&background=4f46e5&color=fff',
             'created_at' => time(),
-            'registered_at' => time()
+            'registered_at' => time(),
+            'last_active' => time()
         ];
         
         // Log them in

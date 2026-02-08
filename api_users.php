@@ -9,6 +9,19 @@ if (!isset($_SESSION['user_logged_in']) || $_SESSION['user_logged_in'] !== true)
     exit;
 }
 
+// Update current user's last active timestamp
+$currentUserId = $_SESSION['user_email'] ?? 'user@example.com';
+if (isset($_SESSION['global_users'][$currentUserId])) {
+    $_SESSION['global_users'][$currentUserId]['last_active'] = time();
+}
+
+// Helper function to check if user is online (active in last 5 minutes)
+function isUserOnline($userId) {
+    if (!isset($_SESSION['global_users'][$userId])) return false;
+    $lastActive = $_SESSION['global_users'][$userId]['last_active'] ?? 0;
+    return (time() - $lastActive) < 300; // 5 minutes
+}
+
 // Initialize global users storage (in production, use database)
 if (!isset($_SESSION['global_users'])) {
     $_SESSION['global_users'] = [];
@@ -80,7 +93,7 @@ switch ($action) {
                     'id' => $user['id'],
                     'username' => $user['username'],
                     'avatar' => $user['avatar'],
-                    'online' => false
+                    'online' => isUserOnline($user['id'])
                 ];
             }
         }
@@ -89,9 +102,15 @@ switch ($action) {
         break;
         
     case 'get_friends':
+        // Update online status for all friends in real-time
+        $friends = $_SESSION['friends_data']['friends'] ?? [];
+        foreach ($friends as &$friend) {
+            $friend['online'] = isUserOnline($friend['id']);
+        }
+        
         echo json_encode([
             'success' => true,
-            'friends' => $_SESSION['friends_data']['friends'] ?? []
+            'friends' => $friends
         ]);
         break;
         
@@ -139,7 +158,7 @@ switch ($action) {
                 'username' => $friendData['username'],
                 'email' => $friendData['email'],
                 'avatar' => $friendData['avatar'],
-                'online' => false,
+                'online' => isUserOnline($friendData['id']),
                 'addedAt' => time() * 1000
             ];
             
