@@ -14,6 +14,22 @@ if (!isset($_SESSION['global_users'])) {
     $_SESSION['global_users'] = [];
 }
 
+// Migrate old user structure to new structure
+foreach ($_SESSION['global_users'] as $email => $userData) {
+    // Check if user has old structure (missing 'id' field)
+    if (!isset($userData['id'])) {
+        $_SESSION['global_users'][$email] = [
+            'id' => $email,
+            'username' => $userData['name'] ?? 'User',
+            'email' => $email,
+            'password' => $userData['password'] ?? '',
+            'avatar' => 'https://ui-avatars.com/api/?name=' . urlencode($userData['name'] ?? 'User') . '&background=4f46e5&color=fff',
+            'created_at' => $userData['created_at'] ?? time(),
+            'registered_at' => $userData['created_at'] ?? time()
+        ];
+    }
+}
+
 // Register current user in global users if not exists
 $currentUserId = $_SESSION['user_email'] ?? 'user@example.com';
 $currentUserName = $_SESSION['user_name'] ?? 'User';
