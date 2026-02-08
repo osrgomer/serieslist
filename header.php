@@ -100,6 +100,11 @@
                         <a href="/serieslist/trivia" class="block px-4 py-2 text-sm font-medium <?php echo ($current_page ?? '') === 'trivia' ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700'; ?>">Trivia</a>
                         <a href="/serieslist/voice" class="block px-4 py-2 text-sm font-medium <?php echo ($current_page ?? '') === 'voice' ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700'; ?>">Voice</a>
                         <a href="/serieslist/account" class="block px-4 py-2 text-sm font-medium <?php echo ($current_page ?? '') === 'account' ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700'; ?>">Account</a>
+                        <?php if (isset($_SESSION['user_email']) && $_SESSION['user_email'] === 'omersr12@gmail.com'): ?>
+                        <a href="/serieslist/admin" class="block px-4 py-2 text-sm font-medium <?php echo ($current_page ?? '') === 'admin' ? 'text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/30' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700'; ?>">
+                            <i class="fas fa-shield-alt mr-1"></i>Admin
+                        </a>
+                        <?php endif; ?>
                         <hr class="my-2 border-slate-200 dark:border-slate-700">
                         <a href="/serieslist/logout" class="block px-4 py-2 text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20">Logout</a>
                     </div>
