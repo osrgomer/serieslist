@@ -18,6 +18,16 @@ if (isset($_GET['connected'])) {
 
 // Get connection status
 $connections = $_SESSION['connections'] ?? [];
+
+// Ensure username is set
+if (!isset($_SESSION['username']) && isset($_SESSION['user_email'])) {
+    $_SESSION['username'] = $_SESSION['user_email'];
+}
+
+// Get current user info
+$current_user = $_SESSION['username'] ?? 'guest';
+$user_email = $_SESSION['user_email'] ?? 'user@example.com';
+$user_name = $_SESSION['user_name'] ?? 'User';
 ?>
 <!DOCTYPE html>
 <html lang="en" class="transition-colors duration-200">
@@ -509,9 +519,9 @@ $connections = $_SESSION['connections'] ?? [];
                     document.getElementById('avatarPreview').src = data.avatar_url;
                     
                     // Save to profile
-                    const profileData = JSON.parse(localStorage.getItem('userProfile') || '{}');
+                    const profileData = JSON.parse(localStorage.getItem(userProfileKey) || '{}');
                     profileData.avatar = data.avatar_url;
-                    localStorage.setItem('userProfile', JSON.stringify(profileData));
+                    localStorage.setItem(userProfileKey, JSON.stringify(profileData));
                     
                     setTimeout(() => {
                         closeAvatarModal();
@@ -548,9 +558,9 @@ $connections = $_SESSION['connections'] ?? [];
                     document.getElementById('avatarPreview').src = avatarUrl;
                     
                     // Save to profile
-                    const profileData = JSON.parse(localStorage.getItem('userProfile') || '{}');
+                    const profileData = JSON.parse(localStorage.getItem(userProfileKey) || '{}');
                     profileData.avatar = avatarUrl;
-                    localStorage.setItem('userProfile', JSON.stringify(profileData));
+                    localStorage.setItem(userProfileKey, JSON.stringify(profileData));
                     
                     closeAvatarModal();
                 } else {
@@ -583,9 +593,9 @@ $connections = $_SESSION['connections'] ?? [];
                     document.getElementById('profileAvatar').src = defaultAvatar;
                     document.getElementById('avatarPreview').src = defaultAvatar;
                     
-                    const profileData = JSON.parse(localStorage.getItem('userProfile') || '{}');
+                    const profileData = JSON.parse(localStorage.getItem(userProfileKey) || '{}');
                     profileData.avatar = defaultAvatar;
-                    localStorage.setItem('userProfile', JSON.stringify(profileData));
+                    localStorage.setItem(userProfileKey, JSON.stringify(profileData));
                     
                     showStatusMessage('Avatar reset to default', 'success');
                 } else {
@@ -619,7 +629,7 @@ $connections = $_SESSION['connections'] ?? [];
             
             // Save to localStorage
             const profileData = { username, email, bio, avatar };
-            localStorage.setItem('userProfile', JSON.stringify(profileData));
+            localStorage.setItem(userProfileKey, JSON.stringify(profileData));
             
             btn.disabled = true;
             btn.textContent = 'Saving...';
@@ -722,15 +732,23 @@ $connections = $_SESSION['connections'] ?? [];
         <?php endif; ?>
         
         // Load saved profile data on page load
+        const currentUser = '<?php echo addslashes($current_user); ?>';
+        const userProfileKey = 'userProfile_' + currentUser;
+        
         window.addEventListener('load', () => {
-            const saved = localStorage.getItem('userProfile');
+            const saved = localStorage.getItem(userProfileKey);
             if (saved) {
                 const profile = JSON.parse(saved);
-                document.getElementById('usernameInput').value = profile.username || 'User';
-                document.getElementById('emailInput').value = profile.email || 'user@example.com';
+                document.getElementById('usernameInput').value = profile.username || '<?php echo addslashes($user_name); ?>';
+                document.getElementById('emailInput').value = profile.email || '<?php echo addslashes($user_email); ?>';
                 document.getElementById('bioInput').value = profile.bio || 'TV and movie enthusiast. Always looking for the next great series to binge.';
                 document.getElementById('profileAvatar').src = profile.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=200&h=200&fit=crop';
-                document.getElementById('profileUsername').textContent = profile.username || 'User';
+                document.getElementById('profileUsername').textContent = profile.username || '<?php echo addslashes($user_name); ?>';
+            } else {
+                // Set defaults from session
+                document.getElementById('usernameInput').value = '<?php echo addslashes($user_name); ?>';
+                document.getElementById('emailInput').value = '<?php echo addslashes($user_email); ?>';
+                document.getElementById('profileUsername').textContent = '<?php echo addslashes($user_name); ?>';
             }
         });
     </script>
