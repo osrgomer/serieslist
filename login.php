@@ -1,13 +1,33 @@
 <?php
 session_start();
 
+// Initialize global users storage
+if (!isset($_SESSION['global_users'])) {
+    $_SESSION['global_users'] = [];
+}
+
 // Handle login form submission
 if ($_POST) {
-    // Simple mock authentication - in production, validate against database
-    $_SESSION['user_logged_in'] = true;
-    $_SESSION['user_email'] = $_POST['email'] ?? 'user@example.com';
-    header('Location: ./');
-    exit;
+    $email = trim($_POST['email'] ?? '');
+    $password = $_POST['password'] ?? '';
+    
+    // Check if user exists
+    if (isset($_SESSION['global_users'][$email])) {
+        // Verify password
+        if (password_verify($password, $_SESSION['global_users'][$email]['password'])) {
+            // Successful login
+            $_SESSION['user_logged_in'] = true;
+            $_SESSION['user_email'] = $email;
+            $_SESSION['username'] = $email;
+            $_SESSION['user_name'] = $_SESSION['global_users'][$email]['name'];
+            header('Location: ./');
+            exit;
+        } else {
+            $error = "Invalid email or password.";
+        }
+    } else {
+        $error = "Invalid email or password.";
+    }
 }
 ?>
 <!DOCTYPE html>
@@ -31,9 +51,11 @@ if ($_POST) {
             <h2 class="text-slate-800 text-2xl font-bold mb-1">Login</h2>
             <p class="text-slate-600 text-sm mb-6">Access your watchlist and ratings</p>
 
-            <div id="successMsg" class="hidden mb-4 p-3 bg-green-50 border border-green-200 text-green-700 text-sm rounded-lg">
-                Login successful! Redirecting...
+            <?php if (isset($error)): ?>
+            <div class="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg">
+                <?php echo htmlspecialchars($error); ?>
             </div>
+            <?php endif; ?>
 
             <form id="actualForm" action="" method="POST" class="space-y-4">
                 <div>

@@ -1,14 +1,37 @@
 <?php
 session_start();
 
+// Initialize global users storage
+if (!isset($_SESSION['global_users'])) {
+    $_SESSION['global_users'] = [];
+}
+
 // Handle registration form submission
 if ($_POST) {
-    // Simple mock registration - in production, save to database
-    $_SESSION['user_logged_in'] = true;
-    $_SESSION['user_email'] = $_POST['email'] ?? 'user@example.com';
-    $_SESSION['user_name'] = $_POST['name'] ?? 'User';
-    header('Location: ./');
-    exit;
+    $email = trim($_POST['email'] ?? '');
+    $password = $_POST['password'] ?? '';
+    $name = trim($_POST['name'] ?? '');
+    
+    // Check if user already exists
+    if (isset($_SESSION['global_users'][$email])) {
+        $error = "An account with this email already exists.";
+    } else {
+        // Register new user
+        $_SESSION['global_users'][$email] = [
+            'password' => password_hash($password, PASSWORD_DEFAULT),
+            'name' => $name,
+            'created_at' => time()
+        ];
+        
+        // Log them in
+        $_SESSION['user_logged_in'] = true;
+        $_SESSION['user_email'] = $email;
+        $_SESSION['username'] = $email;
+        $_SESSION['user_name'] = $name;
+        
+        header('Location: ./');
+        exit;
+    }
 }
 ?>
 <!DOCTYPE html>
@@ -30,6 +53,12 @@ if ($_POST) {
     <div class="w-full max-w-md bg-white p-8 rounded-2xl shadow-xl border border-slate-200">
         <h2 class="text-slate-800 text-2xl font-bold mb-1">Join the Club</h2>
         <p class="text-slate-600 text-sm mb-6">Track every show you watch</p>
+        
+        <?php if (isset($error)): ?>
+        <div class="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg">
+            <?php echo htmlspecialchars($error); ?>
+        </div>
+        <?php endif; ?>
         
         <form action="" method="POST" class="space-y-4">
             <div>
