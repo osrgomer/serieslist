@@ -16,11 +16,15 @@ if ($_POST) {
     if (isset($_SESSION['global_users'][$email])) {
         $error = "An account with this email already exists.";
     } else {
-        // Register new user
+        // Register new user with complete profile
         $_SESSION['global_users'][$email] = [
+            'id' => $email,
+            'username' => $name,
+            'email' => $email,
             'password' => password_hash($password, PASSWORD_DEFAULT),
-            'name' => $name,
-            'created_at' => time()
+            'avatar' => 'https://ui-avatars.com/api/?name=' . urlencode($name) . '&background=4f46e5&color=fff',
+            'created_at' => time(),
+            'registered_at' => time()
         ];
         
         // Log them in
