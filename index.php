@@ -272,11 +272,73 @@ include 'header.php';
                 aiSettings = JSON.parse(savedSettings);
             }
             document.getElementById('aiStatus').innerText = aiSettings.apiKey ? "AI ready for suggestions." : "Add API Key to unlock recommendations.";
-            const localData = localStorage.getItem('series_v2_' + userKey);
-            currentSeries = localData ? JSON.parse(localData) : [];
-            console.log('Loaded ' + currentSeries.length + ' entries for ' + userKey);
-            renderList(currentSeries);
+            
+            // Load series from MySQL database instead of localStorage
+            loadSeriesFromDatabase();
         };
+        
+        // Load series from MySQL
+        async function loadSeriesFromDatabase() {
+            try {
+                const response = await fetch('/serieslist/api_series.php?action=get_all');
+                const data = await response.json();
+                
+                if (data.success) {
+                    currentSeries = data.series || [];
+                    console.log('Loaded ' + currentSeries.length + ' entries from MySQL');
+                    renderList(currentSeries);
+                } else {
+                    console.error('Failed to load series:', data.error);
+                    currentSeries = [];
+                    renderList(currentSeries);
+                }
+            } catch (error) {
+                console.error('Error loading series:', error);
+                currentSeries = [];
+                renderList(currentSeries);
+            }
+        }
+        
+        // Save series to MySQL
+        async function saveSeriesTo Database(series) {
+            try {
+                const response = await fetch('/serieslist/api_series.php?action=save', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(series)
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Reload to get updated data
+                    await loadSeriesFromDatabase();
+                }
+                return data;
+            } catch (error) {
+                console.error('Error saving series:', error);
+                return { success: false, error: error.message };
+            }
+        }
+        
+        // Delete series from MySQL
+        async function deleteSeriesFromDatabase(id) {
+            try {
+                const response = await fetch('/serieslist/api_series.php?action=delete', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id: id })
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    await loadSeriesFromDatabase();
+                }
+                return data;
+            } catch (error) {
+                console.error('Error deleting series:', error);
+                return { success: false, error: error.message };
+            }
+        }
 
         const startDataListeners = () => {
             if (!user || !db) return;
@@ -377,8 +439,10 @@ include 'header.php';
                     currentSeries[idx].progress = newVal;
                     currentSeries[idx].status = newStatus;
                     currentSeries[idx].updatedAt = Date.now();
+                    
+                    // Save to MySQL database
+                    await saveSeriesTo Database(currentSeries[idx]);
                 }
-                localStorage.setItem('series_v2_' + getUserKey(), JSON.stringify(currentSeries));
                 renderList(currentSeries);
             }
             
@@ -399,9 +463,8 @@ include 'header.php';
             if (isCloudMode && user && !id.startsWith('local_')) {
                 await deleteDoc(doc(db, 'artifacts', currentAppId, 'public', 'data', 'series_' + user.uid, id));
             } else {
-                currentSeries = currentSeries.filter(s => s.id !== id);
-                localStorage.setItem('series_v2_backup', JSON.stringify(currentSeries));
-                renderList(currentSeries);
+                // Delete from MySQL database
+                await deleteSeriesFromDatabase(id);
             }
         };
 
@@ -448,10 +511,8 @@ include 'header.php';
             if (isCloudMode && user) {
                 await addDoc(collection(db, 'artifacts', currentAppId, 'public', 'data', 'series_' + user.uid), data);
             } else {
-                data.id = "local_" + Date.now();
-                currentSeries.push(data);
-                localStorage.setItem('series_v2_' + getUserKey(), JSON.stringify(currentSeries));
-                renderList(currentSeries);
+                // Save to MySQL database
+                await saveSeriesToDatabase(data);
             }
             
             // Log activity
