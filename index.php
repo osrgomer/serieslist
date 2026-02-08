@@ -210,19 +210,32 @@ include 'header.php';
             isCloudMode = false;
             const userKey = 'user_<?php echo $_SESSION['username'] ?? 'guest'; ?>';
             
-            // Migration: Check for old data under 'user_guest' key and move it
+            // Migration: Check for old data under legacy keys and move it
             if (userKey !== 'user_guest') {
+                // Check old 'series_v2_backup' key (pre-user-isolation)
+                const oldBackupData = localStorage.getItem('series_v2_backup');
+                if (oldBackupData && !localStorage.getItem('series_v2_' + userKey)) {
+                    console.log('Migrating data from series_v2_backup to ' + userKey);
+                    localStorage.setItem('series_v2_' + userKey, oldBackupData);
+                    // Don't remove old key yet, in case multiple users
+                }
+                
+                // Also check 'user_guest' key
                 const oldData = localStorage.getItem('series_v2_user_guest');
                 if (oldData && !localStorage.getItem('series_v2_' + userKey)) {
-                    // Migrate old data to new key
+                    console.log('Migrating data from user_guest to ' + userKey);
                     localStorage.setItem('series_v2_' + userKey, oldData);
-                    localStorage.removeItem('series_v2_user_guest');
+                }
+                
+                // Migrate AI settings
+                const oldSettingsBackup = localStorage.getItem('ai_settings');
+                if (oldSettingsBackup && !localStorage.getItem('ai_settings_' + userKey)) {
+                    localStorage.setItem('ai_settings_' + userKey, oldSettingsBackup);
                 }
                 
                 const oldSettings = localStorage.getItem('ai_settings_user_guest');
                 if (oldSettings && !localStorage.getItem('ai_settings_' + userKey)) {
                     localStorage.setItem('ai_settings_' + userKey, oldSettings);
-                    localStorage.removeItem('ai_settings_user_guest');
                 }
             }
             
@@ -233,6 +246,7 @@ include 'header.php';
             document.getElementById('aiStatus').innerText = aiSettings.apiKey ? "AI ready for suggestions." : "Add API Key to unlock recommendations.";
             const localData = localStorage.getItem('series_v2_' + userKey);
             currentSeries = localData ? JSON.parse(localData) : [];
+            console.log('Loaded ' + currentSeries.length + ' entries for ' + userKey);
             renderList(currentSeries);
         };
 
