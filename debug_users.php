@@ -35,7 +35,7 @@ if ($_POST && isset($_POST['email']) && isset($_POST['new_password'])) {
 
 <form method="POST" style="background:#f0f0f0;padding:20px;margin:20px 0;">
     <label>Email: <input type="email" name="email" value="testy@osrg.lol" required style="padding:5px;"></label><br><br>
-    <label>New Password: <input type="text" name="new_password" value="test123" required style="padding:5px;"></label><br><br>
+    <label>New Password: <input type="text" name="new_password" value="1234567890" required style="padding:5px;"></label><br><br>
     <button type="submit" style="padding:10px 20px;background:#4f46e5;color:white;border:none;cursor:pointer;">Reset Password</button>
 </form>
 
