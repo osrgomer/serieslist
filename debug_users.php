@@ -18,4 +18,24 @@ if (isset($_SESSION['global_users'])) {
         echo "</div>";
     }
 }
+
+echo "<hr><h2>Reset Password</h2>";
+if ($_POST && isset($_POST['email']) && isset($_POST['new_password'])) {
+    $email = $_POST['email'];
+    $newPassword = $_POST['new_password'];
+    
+    if (isset($_SESSION['global_users'][$email])) {
+        $_SESSION['global_users'][$email]['password'] = password_hash($newPassword, PASSWORD_DEFAULT);
+        echo "<div style='background:green;color:white;padding:10px;margin:10px 0;'>Password updated for $email!</div>";
+    } else {
+        echo "<div style='background:red;color:white;padding:10px;margin:10px 0;'>User not found!</div>";
+    }
+}
 ?>
+
+<form method="POST" style="background:#f0f0f0;padding:20px;margin:20px 0;">
+    <label>Email: <input type="email" name="email" value="testy@osrg.lol" required style="padding:5px;"></label><br><br>
+    <label>New Password: <input type="text" name="new_password" value="test123" required style="padding:5px;"></label><br><br>
+    <button type="submit" style="padding:10px 20px;background:#4f46e5;color:white;border:none;cursor:pointer;">Reset Password</button>
+</form>
+
