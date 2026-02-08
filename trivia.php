@@ -263,6 +263,7 @@ if ($category && isset($triviaCategories[$category])) {
 // Header configuration
 $current_page = 'trivia';
 $page_title = 'Trivia Hub';
+$base_path = '';
 $extra_head = '';
 ?>
 
