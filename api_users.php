@@ -69,11 +69,20 @@ switch ($action) {
             exit;
         }
         
+        // Debug: log search attempt
+        error_log("Search query: " . $query . " by user: " . $currentUserId);
+        error_log("Global users count: " . count($_SESSION['global_users']));
+        
         // Search in registered users
         $results = [];
         foreach ($_SESSION['global_users'] as $user) {
+            error_log("Checking user: " . ($user['id'] ?? 'no-id') . " username: " . ($user['username'] ?? 'no-username'));
+            
             // Don't show current user or already friends
-            if ($user['id'] === $currentUserId) continue;
+            if ($user['id'] === $currentUserId) {
+                error_log("Skipping current user");
+                continue;
+            }
             
             $isFriend = false;
             if (isset($_SESSION['friends_data']['friends'])) {
@@ -85,19 +94,26 @@ switch ($action) {
                 }
             }
             
-            if ($isFriend) continue;
+            if ($isFriend) {
+                error_log("Skipping friend");
+                continue;
+            }
             
             // Search by username or email
             if (stripos($user['username'], $query) !== false || stripos($user['email'], $query) !== false) {
+                error_log("MATCH FOUND: " . $user['username']);
                 $results[] = [
                     'id' => $user['id'],
                     'username' => $user['username'],
                     'avatar' => $user['avatar'],
                     'online' => isUserOnline($user['id'])
                 ];
+            } else {
+                error_log("No match for query");
             }
         }
         
+        error_log("Total results: " . count($results));
         echo json_encode(['success' => true, 'users' => $results]);
         break;
         
