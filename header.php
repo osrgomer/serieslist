@@ -284,5 +284,4 @@
         // Check for new notifications every 30 seconds
         setInterval(updateBadge, 30000);
         updateBadge(); // Initial check
-        });
     </script>
