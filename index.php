@@ -72,11 +72,19 @@ include 'header.php';
                     <span class="text-slate-400 dark:text-slate-500 text-sm">Entries</span>
                 </div>
             </div>
-            <div class="lg:col-span-2 bg-slate-900 dark:bg-slate-800 rounded-2xl p-4 sm:p-5 text-white shadow-lg relative overflow-hidden group border border-slate-700">
-                <div class="absolute -right-4 -top-4 w-24 h-24 bg-indigo-500/10 rounded-full blur-2xl"></div>
-                <h3 class="font-bold mb-1 flex items-center gap-2 text-sm sm:text-base"><i class="fas fa-wand-magic-sparkles text-indigo-400"></i> AI Insights</h3>
-                <p id="aiStatus" class="text-slate-400 dark:text-slate-300 text-xs sm:text-sm mb-3 min-h-[1.25rem]">Initializing storage...</p>
-                <button id="recBtn" class="bg-indigo-600 text-white px-4 sm:px-5 py-2 rounded-full text-xs font-bold hover:bg-indigo-500 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed">Get Recommendation</button>
+            <div class="lg:col-span-2 bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 rounded-2xl p-5 sm:p-6 text-white shadow-xl relative overflow-hidden group">
+                <div class="absolute -right-8 -top-8 w-32 h-32 bg-white/10 rounded-full blur-3xl"></div>
+                <div class="absolute -left-8 -bottom-8 w-32 h-32 bg-white/10 rounded-full blur-3xl"></div>
+                <div class="relative z-10">
+                    <h3 class="font-bold mb-2 flex items-center gap-2 text-base sm:text-lg">
+                        <i class="fas fa-sparkles text-yellow-300"></i> 
+                        <span>AI Insights</span>
+                    </h3>
+                    <p id="aiStatus" class="text-white/90 text-xs sm:text-sm mb-4 min-h-[1.25rem] font-medium">Initializing storage...</p>
+                    <button id="recBtn" class="bg-white text-indigo-600 px-5 sm:px-6 py-2.5 rounded-full text-xs sm:text-sm font-bold hover:bg-indigo-50 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl">
+                        <i class="fas fa-magic mr-1.5"></i>Get Recommendation
+                    </button>
+                </div>
             </div>
         </div>
 
