@@ -4,6 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo $page_title ?? 'SeriesList Tracker'; ?></title>
+    <?php
+    // Fix old sessions that don't have user_id
+    if (isset($_SESSION['user_email']) && !isset($_SESSION['user_id'])) {
+        require_once __DIR__ . '/db.php';
+        $user = getUserByEmail($_SESSION['user_email']);
+        if ($user) {
+            $_SESSION['user_id'] = $user['id'];
+            $_SESSION['user_name'] = $user['username'];
+        }
+    }
+    ?>
     <script src="<?php echo $base_path ?? ''; ?>theme.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>

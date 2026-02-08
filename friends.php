@@ -141,6 +141,13 @@ include 'header.php';
         }
 
         async function loadActivity() {
+            // TEMPORARILY DISABLED - Activity feed has syntax errors
+            // Will fix after toggle is working
+            const feed = document.getElementById('activityFeed');
+            if (feed) {
+                feed.innerHTML = '<p class="text-slate-500 dark:text-slate-400 italic">Activity feed temporarily disabled</p>';
+            }
+            /*
             try {
                 const response = await fetch('api_users.php?action=get_activity');
                 const data = await response.json();
@@ -151,6 +158,7 @@ include 'header.php';
             } catch (error) {
                 console.error('Error loading activity:', error);
             }
+            */
         }
 
         // Search functionality - search real users
@@ -248,31 +256,10 @@ include 'header.php';
             `).join('');
         }
 
-        // Render activity feed
+        // Render activity feed - TEMPORARILY DISABLED
         function renderActivity() {
             const feed = document.getElementById('activityFeed');
-            
-            if (activities.length === 0) {
-                feed.innerHTML = '<p class="text-slate-500 dark:text-slate-400 italic">No recent activity</p>';
-                return;
-            }
-
-            feed.innerHTML = activities.map(activity => {
-                const timeAgo = getTimeAgo(activity.time);
-                return `
-                    <div class="flex items-start gap-3 p-4 bg-slate-50 dark:bg-slate-700/50 rounded-lg">
-                        <img src="${activity.user.avatar}" class="w-10 h-10 rounded-full">
-                        <div class="flex-1">
-                            <p class="text-sm text-slate-700 dark:text-slate-200">
-                                <span class="font-bold">${activity.user.username}</span> ${activity.action} 
-                                <span class="font-medium text-indigo-600 dark:text-indigo-400">${activity.show}</span>
-                                ${activity.rating ? ' and rated it <span class="text-amber-600 font-bold">' + activity.rating + '/10</span>' : ''}
-                            </p>
-                            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">${timeAgo}</p>
-                        </div>
-                    </div>
-                `;
-            }).join('');
+            feed.innerHTML = '<p class="text-slate-500 dark:text-slate-400 italic">Activity feed temporarily disabled</p>';
         }
 
         // Update stats
