@@ -1,6 +1,9 @@
 # OAuth credentials - NEVER commit these!
 oauth.php
 
+# Database credentials - NEVER commit these!
+db.php
+
 # Environment files
 .env
 .env.local

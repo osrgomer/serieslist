@@ -7,6 +7,11 @@ if (!isset($_SESSION['user_logged_in']) || $_SESSION['user_logged_in'] !== true)
     exit;
 }
 
+// Update last active timestamp when page loads
+if (isset($_SESSION['user_email']) && isset($_SESSION['global_users'][$_SESSION['user_email']])) {
+    $_SESSION['global_users'][$_SESSION['user_email']]['last_active'] = time();
+}
+
 // Header configuration
 $current_page = 'voice';
 $page_title = 'Vocalist AI';

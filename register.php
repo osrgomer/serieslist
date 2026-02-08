@@ -1,10 +1,6 @@
 <?php
 session_start();
-
-// Initialize global users storage
-if (!isset($_SESSION['global_users'])) {
-    $_SESSION['global_users'] = [];
-}
+require_once 'db.php';
 
 // Handle registration form submission
 if ($_POST) {
@@ -13,29 +9,31 @@ if ($_POST) {
     $name = trim($_POST['name'] ?? '');
     
     // Check if user already exists
-    if (isset($_SESSION['global_users'][$email])) {
+    if (getUserByEmail($email)) {
         $error = "An account with this email already exists.";
     } else {
-        // Register new user with complete profile
-        $_SESSION['global_users'][$email] = [
-            'id' => $email,
-            'username' => $name,
-            'email' => $email,
-            'password' => password_hash($password, PASSWORD_DEFAULT),
-            'avatar' => 'https://ui-avatars.com/api/?name=' . urlencode($name) . '&background=4f46e5&color=fff',
-            'created_at' => time(),
-            'registered_at' => time(),
-            'last_active' => time()
-        ];
-        
-        // Log them in
-        $_SESSION['user_logged_in'] = true;
-        $_SESSION['user_email'] = $email;
-        $_SESSION['username'] = $email;
-        $_SESSION['user_name'] = $name;
-        
-        header('Location: ./');
-        exit;
+        try {
+            $pdo = getDB();
+            $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
+            $avatar = 'https://ui-avatars.com/api/?name=' . urlencode($name) . '&background=4f46e5&color=fff';
+            
+            $stmt = $pdo->prepare("INSERT INTO users (email, username, password, avatar) VALUES (?, ?, ?, ?)");
+            $stmt->execute([$email, $name, $hashedPassword, $avatar]);
+            
+            $userId = $pdo->lastInsertId();
+            
+            // Log them in
+            $_SESSION['user_logged_in'] = true;
+            $_SESSION['user_email'] = $email;
+            $_SESSION['user_id'] = $userId;
+            $_SESSION['username'] = $email;
+            $_SESSION['user_name'] = $name;
+            
+            header('Location: ./');
+            exit;
+        } catch (PDOException $e) {
+            $error = "Registration failed: " . $e->getMessage();
+        }
     }
 }
 ?>

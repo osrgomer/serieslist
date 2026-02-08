@@ -29,8 +29,35 @@
                 <a href="/serieslist/trivia" class="px-3 py-2 text-sm font-medium <?php echo ($current_page ?? '') === 'trivia' ? 'text-indigo-600 bg-indigo-50 dark:bg-indigo-900/30' : 'text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-slate-50 dark:hover:bg-slate-700'; ?> rounded-lg transition-colors">Trivia</a>
                 <a href="/serieslist/voice" class="px-3 py-2 text-sm font-medium <?php echo ($current_page ?? '') === 'voice' ? 'text-indigo-600 bg-indigo-50 dark:bg-indigo-900/30' : 'text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-slate-50 dark:hover:bg-slate-700'; ?> rounded-lg transition-colors">Voice</a>
                 <a href="/serieslist/account" class="px-3 py-2 text-sm font-medium <?php echo ($current_page ?? '') === 'account' ? 'text-indigo-600 bg-indigo-50 dark:bg-indigo-900/30' : 'text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-slate-50 dark:hover:bg-slate-700'; ?> rounded-lg transition-colors">Account</a>
+                <?php if (isset($_SESSION['user_email']) && $_SESSION['user_email'] === 'omersr12@gmail.com'): ?>
+                <a href="/serieslist/admin" class="px-3 py-2 text-sm font-medium <?php echo ($current_page ?? '') === 'admin' ? 'text-red-600 bg-red-50 dark:bg-red-900/30' : 'text-slate-600 dark:text-slate-300 hover:text-red-600 dark:hover:text-red-400 hover:bg-slate-50 dark:hover:bg-slate-700'; ?> rounded-lg transition-colors">
+                    <i class="fas fa-shield-alt mr-1"></i>Admin
+                </a>
+                <?php endif; ?>
             </nav>
             <div class="flex items-center gap-2">
+                <!-- Online Status Toggle - Simple Switch -->
+                <div class="flex items-center gap-2">
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <?php
+                        // Check database for current status
+                        $isOnline = false;
+                        if (isset($_SESSION['user_id'])) {
+                            require_once __DIR__ . '/db.php';
+                            $currentStatus = getUserStatus($_SESSION['user_id']);
+                            $isOnline = ($currentStatus === 'online');
+                        }
+                        ?>
+                        <input type="checkbox" 
+                               id="statusToggle" 
+                               class="sr-only peer" 
+                               onchange="window.toggleOnlineStatus(this)"
+                               <?php echo $isOnline ? 'checked' : ''; ?>>
+                        <div class="w-11 h-6 bg-slate-300 dark:bg-slate-600 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-indigo-500 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-500"></div>
+                    </label>
+                    <span id="statusText" class="text-sm text-slate-600 dark:text-slate-400"><?php echo $isOnline ? 'Online' : 'Auto'; ?></span>
+                </div>
+                
                 <!-- Notifications Bell -->
                 <div class="relative">
                     <button id="notifBtn" class="p-2 text-slate-400 dark:text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 relative" aria-label="Notifications">
@@ -189,6 +216,50 @@
             updateBadge();
             document.getElementById('notifList').innerHTML = '<p class="px-4 py-8 text-center text-sm text-slate-500 dark:text-slate-400">No new notifications</p>';
         }
+        
+        // Online status toggle - Simple on/off
+        let currentStatus = '<?php echo isset($currentStatus) ? $currentStatus : 'auto'; ?>';
+        
+        // Function is already defined above by PHP, just make sure it exists
+        window.toggleOnlineStatus = async function(checkbox) {
+            const statusTextEl = document.getElementById('statusText');
+            const newStatus = checkbox.checked ? 'online' : 'auto';
+            if (statusTextEl) {
+                statusTextEl.textContent = checkbox.checked ? 'Online' : 'Auto';
+            }
+            
+            console.log('Setting status to:', newStatus);
+            
+            try {
+                const response = await fetch('/serieslist/api_set_status.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ status: newStatus })
+                });
+                
+                const data = await response.json();
+                console.log('Status response:', data);
+                
+                if (data.success) {
+                    currentStatus = newStatus;
+                } else {
+                    // Revert on failure
+                    checkbox.checked = !checkbox.checked;
+                    if (statusTextEl) {
+                        statusTextEl.textContent = currentStatus === 'online' ? 'Online' : 'Auto';
+                    }
+                    alert('Failed to update status: ' + (data.message || 'Unknown error'));
+                }
+            } catch (error) {
+                console.error('Failed to update status:', error);
+                // Revert on error
+                checkbox.checked = !checkbox.checked;
+                if (statusTextEl) {
+                    statusTextEl.textContent = currentStatus === 'online' ? 'Online' : 'Auto';
+                }
+                alert('Error updating status');
+            }
+        };
         
         // Time ago helper
         function getTimeAgo(timestamp) {

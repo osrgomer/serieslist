@@ -1,32 +1,33 @@
 <?php
 session_start();
-
-// Initialize global users storage
-if (!isset($_SESSION['global_users'])) {
-    $_SESSION['global_users'] = [];
-}
+require_once 'db.php';
 
 // Handle login form submission
 if ($_POST) {
     $email = trim($_POST['email'] ?? '');
     $password = $_POST['password'] ?? '';
     
-    // Check if user exists
-    if (isset($_SESSION['global_users'][$email])) {
-        // Verify password
-        if (password_verify($password, $_SESSION['global_users'][$email]['password'])) {
+    if ($email && $password) {
+        $user = getUserByEmail($email);
+        
+        if ($user && password_verify($password, $user['password'])) {
             // Successful login
             $_SESSION['user_logged_in'] = true;
-            $_SESSION['user_email'] = $email;
-            $_SESSION['username'] = $email;
-            $_SESSION['user_name'] = $_SESSION['global_users'][$email]['name'];
+            $_SESSION['user_email'] = $user['email'];
+            $_SESSION['user_id'] = $user['id'];
+            $_SESSION['username'] = $user['email'];
+            $_SESSION['user_name'] = $user['username'];
+            
+            // Update last active
+            updateLastActive($user['id']);
+            
             header('Location: ./');
             exit;
         } else {
             $error = "Invalid email or password.";
         }
     } else {
-        $error = "Invalid email or password.";
+        $error = "Please enter both email and password.";
     }
 }
 ?>

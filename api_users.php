@@ -1,60 +1,30 @@
 <?php
 session_start();
+
+// CRITICAL: Set header BEFORE any output
 header('Content-Type: application/json');
+
+// Simple error handling - just output errors as JSON
+ini_set('display_errors', 0);
+error_reporting(0);
 
 // Check if user is logged in
 if (!isset($_SESSION['user_logged_in']) || $_SESSION['user_logged_in'] !== true) {
-    http_response_code(401);
-    echo json_encode(['error' => 'Unauthorized']);
+    echo json_encode(['success' => false, 'error' => 'Not logged in']);
     exit;
 }
 
-// Update current user's last active timestamp
-$currentUserId = $_SESSION['user_email'] ?? 'user@example.com';
-if (isset($_SESSION['global_users'][$currentUserId])) {
-    $_SESSION['global_users'][$currentUserId]['last_active'] = time();
+// Load database connection
+require_once 'db.php';
+
+// Update current user's last active timestamp in database
+if (isset($_SESSION['user_id'])) {
+    updateLastActive($_SESSION['user_id']);
 }
 
-// Helper function to check if user is online (active in last 5 minutes)
+// Helper function to check if user is online (uses database)
 function isUserOnline($userId) {
-    if (!isset($_SESSION['global_users'][$userId])) return false;
-    $lastActive = $_SESSION['global_users'][$userId]['last_active'] ?? 0;
-    return (time() - $lastActive) < 300; // 5 minutes
-}
-
-// Initialize global users storage (in production, use database)
-if (!isset($_SESSION['global_users'])) {
-    $_SESSION['global_users'] = [];
-}
-
-// Migrate old user structure to new structure
-foreach ($_SESSION['global_users'] as $email => $userData) {
-    // Check if user has old structure (missing 'id' field)
-    if (!isset($userData['id'])) {
-        $_SESSION['global_users'][$email] = [
-            'id' => $email,
-            'username' => $userData['name'] ?? 'User',
-            'email' => $email,
-            'password' => $userData['password'] ?? '',
-            'avatar' => 'https://ui-avatars.com/api/?name=' . urlencode($userData['name'] ?? 'User') . '&background=4f46e5&color=fff',
-            'created_at' => $userData['created_at'] ?? time(),
-            'registered_at' => $userData['created_at'] ?? time()
-        ];
-    }
-}
-
-// Register current user in global users if not exists
-$currentUserId = $_SESSION['user_email'] ?? 'user@example.com';
-$currentUserName = $_SESSION['user_name'] ?? 'User';
-
-if (!isset($_SESSION['global_users'][$currentUserId])) {
-    $_SESSION['global_users'][$currentUserId] = [
-        'id' => $currentUserId,
-        'username' => $currentUserName,
-        'email' => $currentUserId,
-        'avatar' => 'https://ui-avatars.com/api/?name=' . urlencode($currentUserName) . '&background=4f46e5&color=fff',
-        'registered_at' => time()
-    ];
+    return getUserStatus($userId) === 'online';
 }
 
 $action = $_GET['action'] ?? '';
@@ -69,21 +39,21 @@ switch ($action) {
             exit;
         }
         
-        // Debug: log search attempt
-        error_log("Search query: " . $query . " by user: " . $currentUserId);
-        error_log("Global users count: " . count($_SESSION['global_users']));
+        // Check if global_users exists
+        if (!isset($_SESSION['global_users']) || empty($_SESSION['global_users'])) {
+            echo json_encode(['success' => true, 'users' => [], 'error' => 'No users in database']);
+            exit;
+        }
         
         // Search in registered users
         $results = [];
         foreach ($_SESSION['global_users'] as $user) {
-            error_log("Checking user: " . ($user['id'] ?? 'no-id') . " username: " . ($user['username'] ?? 'no-username'));
-            
-            // Don't show current user or already friends
+            // Don't show current user
             if ($user['id'] === $currentUserId) {
-                error_log("Skipping current user");
                 continue;
             }
             
+            // Check if already friends
             $isFriend = false;
             if (isset($_SESSION['friends_data']['friends'])) {
                 foreach ($_SESSION['friends_data']['friends'] as $friend) {
@@ -95,25 +65,20 @@ switch ($action) {
             }
             
             if ($isFriend) {
-                error_log("Skipping friend");
                 continue;
             }
             
             // Search by username or email
             if (stripos($user['username'], $query) !== false || stripos($user['email'], $query) !== false) {
-                error_log("MATCH FOUND: " . $user['username']);
                 $results[] = [
                     'id' => $user['id'],
                     'username' => $user['username'],
                     'avatar' => $user['avatar'],
                     'online' => isUserOnline($user['id'])
                 ];
-            } else {
-                error_log("No match for query");
             }
         }
         
-        error_log("Total results: " . count($results));
         echo json_encode(['success' => true, 'users' => $results]);
         break;
         
@@ -294,6 +259,41 @@ switch ($action) {
             'success' => true,
             'activities' => $activities
         ]);
+        break;
+        
+    case 'set_online_status':
+        if ($method === 'POST') {
+            require_once 'db.php';
+            
+            $data = json_decode(file_get_contents('php://input'), true);
+            $status = $data['status'] ?? 'auto';
+            
+            if (!isset($_SESSION['user_id'])) {
+                echo json_encode(['success' => false, 'message' => 'User not logged in']);
+                exit;
+            }
+            
+            if (!in_array($status, ['online', 'offline', 'auto'])) {
+                echo json_encode(['success' => false, 'message' => 'Invalid status']);
+                exit;
+            }
+            
+            try {
+                $userId = $_SESSION['user_id'];
+                $result = updateUserStatus($userId, $status);
+                
+                if ($result) {
+                    echo json_encode(['success' => true, 'status' => $status]);
+                } else {
+                    echo json_encode(['success' => false, 'message' => 'Update failed']);
+                }
+            } catch (Exception $e) {
+                echo json_encode(['success' => false, 'message' => $e->getMessage()]);
+            }
+        } else {
+            echo json_encode(['success' => false, 'message' => 'POST required']);
+        }
+        exit;
         break;
         
     default:

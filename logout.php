@@ -1,21 +1,17 @@
 <?php
 session_start();
 
-// Preserve global data before clearing session
-$global_users = $_SESSION['global_users'] ?? [];
-$friends_data_all = $_SESSION['friends_data_all'] ?? [];
+// Set user to offline in database before logging out
+if (isset($_SESSION['user_id'])) {
+    require_once 'db.php';
+    $pdo = getDB();
+    // Set last_active to old date to immediately show as offline
+    $stmt = $pdo->prepare("UPDATE users SET last_active = '1970-01-01 00:00:00' WHERE id = ?");
+    $stmt->execute([$_SESSION['user_id']]);
+}
 
-// Clear only login-related session data
-unset($_SESSION['user_logged_in']);
-unset($_SESSION['user_email']);
-unset($_SESSION['username']);
-unset($_SESSION['user_name']);
-unset($_SESSION['connections']);
-unset($_SESSION['friends_data']);
-
-// Restore global data
-$_SESSION['global_users'] = $global_users;
-$_SESSION['friends_data_all'] = $friends_data_all;
+// Clear all session data
+session_destroy();
 
 // Redirect to login page
 header('Location: login.php');

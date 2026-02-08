@@ -51,7 +51,7 @@ if ($action === 'create_demo_activity') {
             ],
             'action' => $demo['action'],
             'show' => $demo['show'],
-            'time' => (time() - $demo['time_ago']) * 1000,
+            'time' => time() - $demo['time_ago'],
             'rating' => null,
             'progress' => null
         ];

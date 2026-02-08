@@ -12,6 +12,12 @@ if (!isset($_SESSION['username']) && isset($_SESSION['user_email'])) {
     $_SESSION['username'] = $_SESSION['user_email'];
 }
 
+// Update last active timestamp in database
+if (isset($_SESSION['user_id'])) {
+    require_once 'db.php';
+    updateLastActive($_SESSION['user_id']);
+}
+
 $current_page = 'library';
 $page_title = 'SeriesList Tracker';
 $extra_head = '

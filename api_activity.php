@@ -51,7 +51,7 @@ switch ($action) {
                 ],
                 'action' => $activityType,
                 'show' => $showTitle,
-                'time' => time() * 1000,
+                'time' => time(),
                 'rating' => $rating,
                 'progress' => $progress
             ];

@@ -6,60 +6,20 @@ if (!isset($_SESSION['user_logged_in']) || $_SESSION['user_logged_in'] !== true)
     header('Location: login.php');
     exit;
 }
+
+// Update last active timestamp in database
+if (isset($_SESSION['user_id'])) {
+    require_once 'db.php';
+    updateLastActive($_SESSION['user_id']);
+}
+
+$current_page = 'friends';
+$page_title = 'Friends - SeriesList';
+$extra_head = '';
+include 'header.php';
 ?>
-<!DOCTYPE html>
-<html lang="en" class="transition-colors duration-200">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Friends - SeriesList</title>
-    <script src="theme.js"></script>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            darkMode: 'class'
-        }
-    </script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-</head>
-<body class="min-h-screen bg-slate-50 dark:bg-slate-900">
 
-    <nav class="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 sticky top-0 z-30 shadow-sm">
-        <div class="max-w-5xl mx-auto px-4 h-16 flex items-center justify-between">
-            <div class="flex items-center gap-2">
-                <div class="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white font-bold shadow-indigo-200 shadow-lg">L</div>
-                <span class="font-bold text-xl tracking-tight hidden sm:block text-slate-900 dark:text-slate-100">Series<span class="text-indigo-600">List</span></span>
-                <span class="font-bold text-lg tracking-tight sm:hidden text-slate-900 dark:text-slate-100">SL</span>
-            </div>
-            <div class="hidden md:flex items-center gap-1">
-                <a href="./" class="px-3 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-slate-50 dark:hover:bg-slate-700 rounded-lg transition-colors">Library</a>
-                <a href="friends" class="px-3 py-2 text-sm font-medium text-indigo-600 bg-indigo-50 dark:bg-indigo-900/30 rounded-lg">Friends</a>
-                <a href="trivia" class="px-3 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-slate-50 dark:hover:bg-slate-700 rounded-lg transition-colors">Trivia</a>
-                <a href="tts" class="px-3 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-slate-50 dark:hover:bg-slate-700 rounded-lg transition-colors">Voice</a>
-                <a href="account" class="px-3 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-slate-50 dark:hover:bg-slate-700 rounded-lg transition-colors">Account</a>
-            </div>
-            <div class="flex items-center gap-2">
-                <button onclick="toggleTheme()" class="p-2 text-slate-400 dark:text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700" aria-label="Toggle theme">
-                    <i class="fas fa-moon dark:hidden"></i>
-                    <i class="fas fa-sun hidden dark:inline"></i>
-                </button>
-                <div class="md:hidden relative">
-                    <button id="mobileMenuBtn" class="p-2 text-slate-400 hover:text-indigo-600 transition-colors rounded-lg hover:bg-slate-50" aria-label="Menu">
-                        <i class="fas fa-bars"></i>
-                    </button>
-                    <div id="mobileMenu" class="hidden absolute right-0 top-12 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-lg py-2 min-w-[120px]">
-                        <a href="./" class="block px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700">Library</a>
-                        <a href="friends" class="block px-4 py-2 text-sm font-medium text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30">Friends</a>
-                        <a href="trivia" class="block px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700">Trivia</a>
-                        <a href="tts" class="block px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700">Voice</a>
-                        <a href="account" class="block px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700">Account</a>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </nav>
-
-    <div class="max-w-5xl mx-auto px-4 pt-8 pb-20">
+    <main class="max-w-5xl mx-auto px-4 pt-8 pb-20">
         <div class="flex flex-col lg:flex-row gap-6">
             
             <!-- Left Sidebar -->
@@ -129,7 +89,7 @@ if (!isset($_SESSION['user_logged_in']) || $_SESSION['user_logged_in'] !== true)
                 </div>
             </main>
         </div>
-    </div>
+    </main>
 
     <script>
         // Mobile menu toggle
@@ -281,7 +241,7 @@ if (!isset($_SESSION['user_logged_in']) || $_SESSION['user_logged_in'] !== true)
                             <p class="text-xs text-slate-500 dark:text-slate-400">${friend.online ? 'Online now' : 'Offline'}</p>
                         </div>
                     </div>
-                    <button onclick="removeFriend(${friend.id})" class="text-slate-400 dark:text-slate-500 hover:text-red-600 dark:hover:text-red-400 p-2">
+                    <button onclick="removeFriend('${friend.id}')" class="text-slate-400 dark:text-slate-500 hover:text-red-600 dark:hover:text-red-400 p-2">
                         <i class="fas fa-user-times"></i>
                     </button>
                 </div>
@@ -306,7 +266,7 @@ if (!isset($_SESSION['user_logged_in']) || $_SESSION['user_logged_in'] !== true)
                             <p class="text-sm text-slate-700 dark:text-slate-200">
                                 <span class="font-bold">${activity.user.username}</span> ${activity.action} 
                                 <span class="font-medium text-indigo-600 dark:text-indigo-400">${activity.show}</span>
-                                ${activity.rating ? ` and rated it <span class="text-amber-600 font-bold">${activity.rating}/10</span>` : ''}
+                                ${activity.rating ? ' and rated it <span class="text-amber-600 font-bold">' + activity.rating + '/10</span>' : ''}
                             </p>
                             <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">${timeAgo}</p>
                         </div>
@@ -349,7 +309,7 @@ if (!isset($_SESSION['user_logged_in']) || $_SESSION['user_logged_in'] !== true)
 
         // Utility: Time ago
         function getTimeAgo(timestamp) {
-            const seconds = Math.floor((Date.now() - timestamp) / 1000);
+            const seconds = Math.floor(Date.now() / 1000 - timestamp);
             if (seconds < 60) return 'Just now';
             if (seconds < 3600) return Math.floor(seconds / 60) + ' minutes ago';
             if (seconds < 86400) return Math.floor(seconds / 3600) + ' hours ago';
