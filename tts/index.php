@@ -27,7 +27,7 @@ $extra_head = '';
 </head>
 <body class="min-h-screen bg-slate-50 dark:bg-slate-900 transition-colors font-sans">
 
-<?php include '../header.php'; ?>
+<?php include '../header_nav.php'; ?>
 
   <main class="max-w-2xl mx-auto p-4 md:p-8 flex justify-center">
     <div class="w-full bg-white dark:bg-slate-800 rounded-3xl shadow-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
