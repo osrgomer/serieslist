@@ -20,6 +20,106 @@ $questions = [
         "q" => "Officer Aaron Thorsen uses an app that translates what?",
         "options" => ["Dog barks", "Cat meows", "Police codes", "Baby cries"],
         "correct" => 1
+    ],
+    [
+        "q" => "What is John Nolan's age when he becomes a rookie?",
+        "options" => ["35", "40", "45", "50"],
+        "correct" => 2
+    ],
+    [
+        "q" => "Who is Tim Bradford's first rookie partner?",
+        "options" => ["Lucy Chen", "Jackson West", "John Nolan", "Celina Juarez"],
+        "correct" => 0
+    ],
+    [
+        "q" => "What is Lucy Chen's undercover identity when she goes undercover?",
+        "options" => ["Rachel", "Sava", "Isabella", "Maria"],
+        "correct" => 1
+    ],
+    [
+        "q" => "Who is the Watch Commander of Mid-Wilshire Station?",
+        "options" => ["Wade Grey", "Percy West", "Zoe Anderson", "Doug Stanton"],
+        "correct" => 0
+    ],
+    [
+        "q" => "What happens to Captain Zoe Anderson?",
+        "options" => ["She retires", "She gets promoted", "She is killed by a serial killer", "She transfers"],
+        "correct" => 2
+    ],
+    [
+        "q" => "Who does John Nolan date in the first season?",
+        "options" => ["Lucy Chen", "Grace Sawyer", "Jessica Russo", "Bailey Nune"],
+        "correct" => 1
+    ],
+    [
+        "q" => "What is Angela Lopez's job before becoming a detective?",
+        "options" => ["Street cop", "Undercover officer", "Traffic officer", "K9 handler"],
+        "correct" => 0
+    ],
+    [
+        "q" => "Who is Wesley Evers?",
+        "options" => ["District Attorney", "Defense Attorney", "Judge", "FBI Agent"],
+        "correct" => 1
+    ],
+    [
+        "q" => "What crime led to John Nolan becoming a police officer?",
+        "options" => ["Home invasion", "Bank robbery", "Car theft", "Kidnapping"],
+        "correct" => 1
+    ],
+    [
+        "q" => "Who plays Officer Tim Bradford?",
+        "options" => ["Richard T. Jones", "Eric Winter", "Titus Makin Jr.", "Jenna Dewan"],
+        "correct" => 1
+    ],
+    [
+        "q" => "What is the nickname of Sergeant Wade Grey?",
+        "options" => ["The Boss", "The Commander", "Sarge", "No nickname"],
+        "correct" => 2
+    ],
+    [
+        "q" => "Which rookie doesn't make it through the probationary period?",
+        "options" => ["Lucy Chen", "Jackson West", "John Nolan", "None of them"],
+        "correct" => 3
+    ],
+    [
+        "q" => "What is Tim Bradford's call sign?",
+        "options" => ["7-Adam-15", "7-Adam-19", "7-Adam-07", "7-Adam-21"],
+        "correct" => 1
+    ],
+    [
+        "q" => "Who does Angela Lopez marry?",
+        "options" => ["Jackson West", "Wesley Evers", "James Murray", "Doug Stanton"],
+        "correct" => 1
+    ],
+    [
+        "q" => "What type of vehicle is the shop (patrol car)?",
+        "options" => ["Ford Crown Victoria", "Dodge Charger", "Chevrolet Caprice", "Ford Explorer"],
+        "correct" => 1
+    ],
+    [
+        "q" => "What does P1 mean in LAPD radio codes?",
+        "options" => ["Priority 1 - Emergency", "Patrol 1", "Police 1", "Precinct 1"],
+        "correct" => 0
+    ],
+    [
+        "q" => "Who kidnaps Lucy Chen?",
+        "options" => ["Rosalind Dyer", "Caleb Wright", "Oscar Hutchinson", "Sandra de la Cruz"],
+        "correct" => 1
+    ],
+    [
+        "q" => "What is Bailey Nune's profession?",
+        "options" => ["Nurse", "Firefighter", "Paramedic", "Doctor"],
+        "correct" => 1
+    ],
+    [
+        "q" => "Which character is played by Melissa O'Neil?",
+        "options" => ["Angela Lopez", "Lucy Chen", "Nyla Harper", "Bailey Nune"],
+        "correct" => 1
+    ],
+    [
+        "q" => "What gang organization is a recurring antagonist in the series?",
+        "options" => ["Los Angelicos", "Southern Front", "SoCal Mafia", "La Fiera's Cartel"],
+        "correct" => 1
     ]
 ];
 
