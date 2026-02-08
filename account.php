@@ -153,13 +153,59 @@ $connections = $_SESSION['connections'] ?? [];
 
                 <!-- Avatar & Cover Section -->
                 <div id="avatarSection" class="section-content hidden">
-                    <div class="bg-white border border-slate-200 p-6 sm:p-8 rounded-2xl shadow-sm">
-                        <h3 class="text-lg font-bold text-slate-800 mb-4">Profile Picture</h3>
-                        <div class="flex items-center gap-6">
-                            <img id="avatarPreview" src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=200&h=200&fit=crop" class="w-20 h-20 rounded-full border-4 border-slate-200 object-cover" />
-                            <div>
-                                <button onclick="openAvatarModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">Change Avatar</button>
-                                <p class="text-xs text-slate-500 mt-2">Click to select from available avatars</p>
+                    <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-6 sm:p-8 rounded-2xl shadow-sm">
+                        <h3 class="text-lg font-bold text-slate-800 dark:text-slate-100 mb-6">Profile Picture</h3>
+                        <div class="flex flex-col sm:flex-row items-center gap-6 mb-6">
+                            <div class="relative group">
+                                <img id="avatarPreview" src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=200&h=200&fit=crop" class="w-32 h-32 rounded-full border-4 border-slate-200 dark:border-slate-700 object-cover shadow-lg" />
+                                <div class="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer" onclick="openAvatarModal()">
+                                    <i class="fas fa-camera text-white text-2xl"></i>
+                                </div>
+                            </div>
+                            <div class="flex-1 text-center sm:text-left">
+                                <h4 class="font-bold text-slate-800 dark:text-slate-100 mb-2">Choose Your Avatar</h4>
+                                <p class="text-sm text-slate-600 dark:text-slate-400 mb-4">Upload a custom photo or select from our presets</p>
+                                <div class="flex flex-col sm:flex-row gap-2">
+                                    <button onclick="openAvatarModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2.5 rounded-lg text-sm font-medium transition-colors shadow-md">
+                                        <i class="fas fa-images mr-2"></i>Change Avatar
+                                    </button>
+                                    <button onclick="removeAvatar()" class="bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-300 px-6 py-2.5 rounded-lg text-sm font-medium transition-colors">
+                                        <i class="fas fa-trash mr-2"></i>Remove
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="pt-6 border-t border-slate-200 dark:border-slate-700">
+                            <h4 class="font-bold text-slate-800 dark:text-slate-100 mb-3 text-sm">Avatar Options</h4>
+                            <div class="grid sm:grid-cols-2 gap-4 text-sm">
+                                <div class="flex items-start gap-2">
+                                    <i class="fas fa-check-circle text-green-500 mt-1"></i>
+                                    <div>
+                                        <p class="font-medium text-slate-700 dark:text-slate-200">Upload Custom</p>
+                                        <p class="text-xs text-slate-500 dark:text-slate-400">JPG, PNG, GIF up to 5MB</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-start gap-2">
+                                    <i class="fas fa-check-circle text-green-500 mt-1"></i>
+                                    <div>
+                                        <p class="font-medium text-slate-700 dark:text-slate-200">12 Preset Avatars</p>
+                                        <p class="text-xs text-slate-500 dark:text-slate-400">Ready-to-use profile pictures</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-start gap-2">
+                                    <i class="fas fa-check-circle text-green-500 mt-1"></i>
+                                    <div>
+                                        <p class="font-medium text-slate-700 dark:text-slate-200">Generated Avatars</p>
+                                        <p class="text-xs text-slate-500 dark:text-slate-400">Based on your initials</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-start gap-2">
+                                    <i class="fas fa-check-circle text-green-500 mt-1"></i>
+                                    <div>
+                                        <p class="font-medium text-slate-700 dark:text-slate-200">Auto-sync</p>
+                                        <p class="text-xs text-slate-500 dark:text-slate-400">Updates across all pages</p>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -192,56 +238,99 @@ $connections = $_SESSION['connections'] ?? [];
 
                 <!-- Connections Section -->
                 <div id="connectionsSection" class="section-content hidden">
-                    <div class="bg-white border border-slate-200 p-6 sm:p-8 rounded-2xl shadow-sm">
-                        <h3 class="text-lg font-bold text-slate-800 mb-4">Connected Services</h3>
+                    <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-6 sm:p-8 rounded-2xl shadow-sm">
+                        <h3 class="text-lg font-bold text-slate-800 dark:text-slate-100 mb-2">Connected Services</h3>
+                        <p class="text-sm text-slate-600 dark:text-slate-400 mb-6">Link your accounts to enhance your experience</p>
                         <div class="space-y-4">
-                            <div class="flex items-center justify-between p-4 border border-slate-200 rounded-lg">
+                            <!-- Google -->
+                            <div class="flex items-center justify-between p-4 border border-slate-200 dark:border-slate-700 rounded-lg hover:border-slate-300 dark:hover:border-slate-600 transition-colors">
                                 <div class="flex items-center gap-3">
-                                    <div class="w-10 h-10 bg-red-500 rounded-lg flex items-center justify-center">
-                                        <i class="fab fa-google text-white"></i>
+                                    <div class="w-12 h-12 bg-red-500 rounded-xl flex items-center justify-center shadow-md">
+                                        <i class="fab fa-google text-white text-xl"></i>
                                     </div>
                                     <div>
-                                        <p class="font-medium text-slate-800">Google Account</p>
-                                        <p class="text-xs text-slate-500">Sync your watchlist across devices</p>
+                                        <p class="font-bold text-slate-800 dark:text-slate-100">Google Account</p>
+                                        <p class="text-xs text-slate-500 dark:text-slate-400">Sync your watchlist across devices</p>
                                     </div>
                                 </div>
                                 <?php if (isset($connections['google'])): ?>
-                                <a href="oauth.php?provider=google&action=disconnect" class="text-green-600 hover:text-green-700 text-sm font-medium transition-colors">Connected</a>
+                                <div class="flex items-center gap-3">
+                                    <span class="flex items-center gap-1 text-green-600 dark:text-green-400 text-sm font-medium">
+                                        <i class="fas fa-check-circle"></i> Connected
+                                    </span>
+                                    <a href="oauth.php?provider=google&action=disconnect" class="text-slate-400 dark:text-slate-500 hover:text-red-600 dark:hover:text-red-400 text-sm font-medium transition-colors">
+                                        <i class="fas fa-unlink"></i>
+                                    </a>
+                                </div>
                                 <?php else: ?>
-                                <a href="oauth.php?provider=google&action=connect" class="text-slate-400 hover:text-indigo-600 text-sm font-medium transition-colors">Connect</a>
+                                <a href="oauth.php?provider=google&action=connect" class="bg-slate-100 dark:bg-slate-700 hover:bg-indigo-600 dark:hover:bg-indigo-600 text-slate-700 dark:text-slate-300 hover:text-white px-6 py-2 rounded-lg text-sm font-medium transition-all">
+                                    Connect
+                                </a>
                                 <?php endif; ?>
                             </div>
-                            <div class="flex items-center justify-between p-4 border border-slate-200 rounded-lg">
+                            
+                            <!-- GitHub -->
+                            <div class="flex items-center justify-between p-4 border border-slate-200 dark:border-slate-700 rounded-lg hover:border-slate-300 dark:hover:border-slate-600 transition-colors">
                                 <div class="flex items-center gap-3">
-                                    <div class="w-10 h-10 bg-gray-900 rounded-lg flex items-center justify-center">
-                                        <i class="fab fa-github text-white"></i>
+                                    <div class="w-12 h-12 bg-gray-900 dark:bg-slate-700 rounded-xl flex items-center justify-center shadow-md">
+                                        <i class="fab fa-github text-white text-xl"></i>
                                     </div>
                                     <div>
-                                        <p class="font-medium text-slate-800">GitHub</p>
-                                        <p class="text-xs text-slate-500">Connect your developer profile</p>
+                                        <p class="font-bold text-slate-800 dark:text-slate-100">GitHub</p>
+                                        <p class="text-xs text-slate-500 dark:text-slate-400">Connect your developer profile</p>
                                     </div>
                                 </div>
                                 <?php if (isset($connections['github'])): ?>
-                                <a href="oauth.php?provider=github&action=disconnect" class="text-green-600 hover:text-green-700 text-sm font-medium transition-colors">Connected</a>
+                                <div class="flex items-center gap-3">
+                                    <span class="flex items-center gap-1 text-green-600 dark:text-green-400 text-sm font-medium">
+                                        <i class="fas fa-check-circle"></i> Connected
+                                    </span>
+                                    <a href="oauth.php?provider=github&action=disconnect" class="text-slate-400 dark:text-slate-500 hover:text-red-600 dark:hover:text-red-400 text-sm font-medium transition-colors">
+                                        <i class="fas fa-unlink"></i>
+                                    </a>
+                                </div>
                                 <?php else: ?>
-                                <a href="oauth.php?provider=github&action=connect" class="text-slate-400 hover:text-indigo-600 text-sm font-medium transition-colors">Connect</a>
+                                <a href="oauth.php?provider=github&action=connect" class="bg-slate-100 dark:bg-slate-700 hover:bg-indigo-600 dark:hover:bg-indigo-600 text-slate-700 dark:text-slate-300 hover:text-white px-6 py-2 rounded-lg text-sm font-medium transition-all">
+                                    Connect
+                                </a>
                                 <?php endif; ?>
                             </div>
-                            <div class="flex items-center justify-between p-4 border border-slate-200 rounded-lg">
+                            
+                            <!-- Spotify -->
+                            <div class="flex items-center justify-between p-4 border border-slate-200 dark:border-slate-700 rounded-lg hover:border-slate-300 dark:hover:border-slate-600 transition-colors">
                                 <div class="flex items-center gap-3">
-                                    <div class="w-10 h-10 bg-green-600 rounded-lg flex items-center justify-center">
-                                        <i class="fab fa-spotify text-white"></i>
+                                    <div class="w-12 h-12 bg-green-600 rounded-xl flex items-center justify-center shadow-md">
+                                        <i class="fab fa-spotify text-white text-xl"></i>
                                     </div>
                                     <div>
-                                        <p class="font-medium text-slate-800">Spotify</p>
-                                        <p class="text-xs text-slate-500">Discover soundtracks from your shows</p>
+                                        <p class="font-bold text-slate-800 dark:text-slate-100">Spotify</p>
+                                        <p class="text-xs text-slate-500 dark:text-slate-400">Track your music tastes</p>
                                     </div>
                                 </div>
                                 <?php if (isset($connections['spotify'])): ?>
-                                <a href="oauth.php?provider=spotify&action=disconnect" class="text-green-600 hover:text-green-700 text-sm font-medium transition-colors">Connected</a>
+                                <div class="flex items-center gap-3">
+                                    <span class="flex items-center gap-1 text-green-600 dark:text-green-400 text-sm font-medium">
+                                        <i class="fas fa-check-circle"></i> Connected
+                                    </span>
+                                    <a href="oauth.php?provider=spotify&action=disconnect" class="text-slate-400 dark:text-slate-500 hover:text-red-600 dark:hover:text-red-400 text-sm font-medium transition-colors">
+                                        <i class="fas fa-unlink"></i>
+                                    </a>
+                                </div>
                                 <?php else: ?>
-                                <a href="oauth.php?provider=spotify&action=connect" class="text-slate-400 hover:text-indigo-600 text-sm font-medium transition-colors">Connect</a>
+                                <a href="oauth.php?provider=spotify&action=connect" class="bg-slate-100 dark:bg-slate-700 hover:bg-indigo-600 dark:hover:bg-indigo-600 text-slate-700 dark:text-slate-300 hover:text-white px-6 py-2 rounded-lg text-sm font-medium transition-all">
+                                    Connect
+                                </a>
                                 <?php endif; ?>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-6 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+                            <div class="flex gap-3">
+                                <i class="fas fa-info-circle text-blue-600 dark:text-blue-400 mt-0.5"></i>
+                                <div class="text-sm">
+                                    <p class="font-medium text-blue-900 dark:text-blue-200 mb-1">Why Connect?</p>
+                                    <p class="text-blue-700 dark:text-blue-300 text-xs">Connecting your accounts enables cross-platform syncing, social features, and personalized recommendations based on your preferences.</p>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -251,21 +340,57 @@ $connections = $_SESSION['connections'] ?? [];
     </div>
 
     <!-- Avatar Modal -->
-    <div id="avatarModal" class="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50 hidden">
-        <div class="bg-white border border-slate-200 p-6 rounded-2xl max-w-md w-full">
+    <div id="avatarModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50 hidden">
+        <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-6 rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             <div class="flex justify-between mb-6">
-                <h3 class="text-slate-800 font-bold">Select Avatar</h3>
-                <button onclick="closeAvatarModal()" class="text-slate-400 hover:text-slate-600">✕</button>
+                <h3 class="text-slate-800 dark:text-slate-100 font-bold text-lg">Choose Your Avatar</h3>
+                <button onclick="closeAvatarModal()" class="text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 text-2xl leading-none">&times;</button>
             </div>
-            <div class="grid grid-cols-4 gap-4">
-                <img src="https://i.pravatar.cc/150?img=11" class="rounded-full cursor-pointer hover:ring-2 ring-indigo-500 transition-all" onclick="selectAvatar(this.src)" />
-                <img src="https://i.pravatar.cc/150?img=12" class="rounded-full cursor-pointer hover:ring-2 ring-indigo-500 transition-all" onclick="selectAvatar(this.src)" />
-                <img src="https://i.pravatar.cc/150?img=13" class="rounded-full cursor-pointer hover:ring-2 ring-indigo-500 transition-all" onclick="selectAvatar(this.src)" />
-                <img src="https://i.pravatar.cc/150?img=14" class="rounded-full cursor-pointer hover:ring-2 ring-indigo-500 transition-all" onclick="selectAvatar(this.src)" />
-                <img src="https://i.pravatar.cc/150?img=15" class="rounded-full cursor-pointer hover:ring-2 ring-indigo-500 transition-all" onclick="selectAvatar(this.src)" />
-                <img src="https://i.pravatar.cc/150?img=16" class="rounded-full cursor-pointer hover:ring-2 ring-indigo-500 transition-all" onclick="selectAvatar(this.src)" />
-                <img src="https://i.pravatar.cc/150?img=17" class="rounded-full cursor-pointer hover:ring-2 ring-indigo-500 transition-all" onclick="selectAvatar(this.src)" />
-                <img src="https://i.pravatar.cc/150?img=18" class="rounded-full cursor-pointer hover:ring-2 ring-indigo-500 transition-all" onclick="selectAvatar(this.src)" />
+            
+            <!-- Upload Section -->
+            <div class="mb-6 p-4 bg-slate-50 dark:bg-slate-700/50 rounded-xl border-2 border-dashed border-slate-300 dark:border-slate-600">
+                <div class="text-center">
+                    <i class="fas fa-cloud-upload-alt text-4xl text-slate-400 dark:text-slate-500 mb-3"></i>
+                    <h4 class="font-bold text-slate-700 dark:text-slate-200 mb-2">Upload Custom Avatar</h4>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mb-4">JPG, PNG, GIF or WebP. Max size 5MB.</p>
+                    <input type="file" id="avatarUpload" accept="image/jpeg,image/png,image/gif,image/webp" class="hidden" onchange="handleAvatarUpload(event)" />
+                    <button onclick="document.getElementById('avatarUpload').click()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-lg text-sm font-medium transition-colors">
+                        <i class="fas fa-upload mr-2"></i>Choose File
+                    </button>
+                </div>
+                <div id="uploadProgress" class="hidden mt-4">
+                    <div class="w-full bg-slate-200 dark:bg-slate-600 rounded-full h-2">
+                        <div id="uploadBar" class="bg-indigo-600 h-2 rounded-full transition-all" style="width: 0%"></div>
+                    </div>
+                    <p id="uploadStatus" class="text-xs text-slate-600 dark:text-slate-400 mt-2 text-center"></p>
+                </div>
+            </div>
+            
+            <!-- Preset Avatars -->
+            <div class="mb-6">
+                <h4 class="font-bold text-slate-700 dark:text-slate-200 mb-3 text-sm uppercase tracking-wide">Preset Avatars</h4>
+                <div class="grid grid-cols-6 gap-3">
+                    <img src="https://i.pravatar.cc/150?img=11" class="rounded-full cursor-pointer hover:ring-4 ring-indigo-500 transition-all aspect-square object-cover" onclick="selectAvatar(this.src)" />
+                    <img src="https://i.pravatar.cc/150?img=12" class="rounded-full cursor-pointer hover:ring-4 ring-indigo-500 transition-all aspect-square object-cover" onclick="selectAvatar(this.src)" />
+                    <img src="https://i.pravatar.cc/150?img=13" class="rounded-full cursor-pointer hover:ring-4 ring-indigo-500 transition-all aspect-square object-cover" onclick="selectAvatar(this.src)" />
+                    <img src="https://i.pravatar.cc/150?img=14" class="rounded-full cursor-pointer hover:ring-4 ring-indigo-500 transition-all aspect-square object-cover" onclick="selectAvatar(this.src)" />
+                    <img src="https://i.pravatar.cc/150?img=15" class="rounded-full cursor-pointer hover:ring-4 ring-indigo-500 transition-all aspect-square object-cover" onclick="selectAvatar(this.src)" />
+                    <img src="https://i.pravatar.cc/150?img=16" class="rounded-full cursor-pointer hover:ring-4 ring-indigo-500 transition-all aspect-square object-cover" onclick="selectAvatar(this.src)" />
+                    <img src="https://i.pravatar.cc/150?img=17" class="rounded-full cursor-pointer hover:ring-4 ring-indigo-500 transition-all aspect-square object-cover" onclick="selectAvatar(this.src)" />
+                    <img src="https://i.pravatar.cc/150?img=18" class="rounded-full cursor-pointer hover:ring-4 ring-indigo-500 transition-all aspect-square object-cover" onclick="selectAvatar(this.src)" />
+                    <img src="https://i.pravatar.cc/150?img=19" class="rounded-full cursor-pointer hover:ring-4 ring-indigo-500 transition-all aspect-square object-cover" onclick="selectAvatar(this.src)" />
+                    <img src="https://i.pravatar.cc/150?img=20" class="rounded-full cursor-pointer hover:ring-4 ring-indigo-500 transition-all aspect-square object-cover" onclick="selectAvatar(this.src)" />
+                    <img src="https://i.pravatar.cc/150?img=21" class="rounded-full cursor-pointer hover:ring-4 ring-indigo-500 transition-all aspect-square object-cover" onclick="selectAvatar(this.src)" />
+                    <img src="https://i.pravatar.cc/150?img=22" class="rounded-full cursor-pointer hover:ring-4 ring-indigo-500 transition-all aspect-square object-cover" onclick="selectAvatar(this.src)" />
+                </div>
+            </div>
+            
+            <!-- Generated Avatars -->
+            <div>
+                <h4 class="font-bold text-slate-700 dark:text-slate-200 mb-3 text-sm uppercase tracking-wide">Generated Avatars</h4>
+                <div class="grid grid-cols-6 gap-3" id="generatedAvatars">
+                    <!-- Will be populated with initials-based avatars -->
+                </div>
             </div>
         </div>
     </div>
@@ -288,10 +413,174 @@ $connections = $_SESSION['connections'] ?? [];
 
         function openAvatarModal() {
             document.getElementById('avatarModal').classList.remove('hidden');
+            generateInitialsAvatars();
         }
 
         function closeAvatarModal() {
             document.getElementById('avatarModal').classList.add('hidden');
+        }
+        
+        // Generate initials-based avatars
+        function generateInitialsAvatars() {
+            const userName = document.getElementById('usernameInput').value || 'User';
+            const colors = ['4f46e5', 'ef4444', '10b981', 'f59e0b', '8b5cf6', 'ec4899', '06b6d4', 'f97316'];
+            const container = document.getElementById('generatedAvatars');
+            
+            container.innerHTML = colors.map(color => {
+                const url = `https://ui-avatars.com/api/?name=${encodeURIComponent(userName)}&background=${color}&color=fff&size=200`;
+                return `<img src="${url}" class="rounded-full cursor-pointer hover:ring-4 ring-indigo-500 transition-all aspect-square object-cover" onclick="selectAvatar('${url}')" />`;
+            }).join('');
+        }
+        
+        // Handle avatar upload
+        async function handleAvatarUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            // Validate file size
+            if (file.size > 5 * 1024 * 1024) {
+                alert('File too large. Maximum size is 5MB.');
+                return;
+            }
+            
+            // Show progress
+            const progressDiv = document.getElementById('uploadProgress');
+            const progressBar = document.getElementById('uploadBar');
+            const statusText = document.getElementById('uploadStatus');
+            
+            progressDiv.classList.remove('hidden');
+            statusText.textContent = 'Uploading...';
+            progressBar.style.width = '0%';
+            
+            // Create form data
+            const formData = new FormData();
+            formData.append('avatar', file);
+            
+            try {
+                // Simulate progress
+                let progress = 0;
+                const progressInterval = setInterval(() => {
+                    progress += 10;
+                    if (progress >= 90) {
+                        clearInterval(progressInterval);
+                    }
+                    progressBar.style.width = progress + '%';
+                }, 100);
+                
+                const response = await fetch('api_avatar.php?action=upload', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                clearInterval(progressInterval);
+                progressBar.style.width = '100%';
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    statusText.textContent = 'Upload successful!';
+                    statusText.className = 'text-xs text-green-600 dark:text-green-400 mt-2 text-center font-bold';
+                    
+                    // Update avatar display
+                    document.getElementById('profileAvatar').src = data.avatar_url;
+                    document.getElementById('avatarPreview').src = data.avatar_url;
+                    
+                    // Save to profile
+                    const profileData = JSON.parse(localStorage.getItem('userProfile') || '{}');
+                    profileData.avatar = data.avatar_url;
+                    localStorage.setItem('userProfile', JSON.stringify(profileData));
+                    
+                    setTimeout(() => {
+                        closeAvatarModal();
+                        progressDiv.classList.add('hidden');
+                    }, 1500);
+                } else {
+                    statusText.textContent = 'Error: ' + data.message;
+                    statusText.className = 'text-xs text-red-600 dark:text-red-400 mt-2 text-center font-bold';
+                }
+            } catch (error) {
+                console.error('Upload error:', error);
+                statusText.textContent = 'Upload failed. Please try again.';
+                statusText.className = 'text-xs text-red-600 dark:text-red-400 mt-2 text-center font-bold';
+            }
+            
+            // Reset file input
+            event.target.value = '';
+        }
+        
+        // Select avatar from presets
+        async function selectAvatar(avatarUrl) {
+            try {
+                const response = await fetch('api_avatar.php?action=set', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ avatar_url: avatarUrl })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Update avatar display
+                    document.getElementById('profileAvatar').src = avatarUrl;
+                    document.getElementById('avatarPreview').src = avatarUrl;
+                    
+                    // Save to profile
+                    const profileData = JSON.parse(localStorage.getItem('userProfile') || '{}');
+                    profileData.avatar = avatarUrl;
+                    localStorage.setItem('userProfile', JSON.stringify(profileData));
+                    
+                    closeAvatarModal();
+                } else {
+                    alert('Failed to set avatar: ' + data.message);
+                }
+            } catch (error) {
+                console.error('Error setting avatar:', error);
+                alert('Failed to set avatar. Please try again.');
+            }
+        }
+
+        
+        // Remove avatar (reset to default)
+        async function removeAvatar() {
+            if (!confirm('Reset to default avatar?')) return;
+            
+            const userName = document.getElementById('usernameInput').value || 'User';
+            const defaultAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(userName)}&background=4f46e5&color=fff&size=200`;
+            
+            try {
+                const response = await fetch('api_avatar.php?action=set', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ avatar_url: defaultAvatar })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    document.getElementById('profileAvatar').src = defaultAvatar;
+                    document.getElementById('avatarPreview').src = defaultAvatar;
+                    
+                    const profileData = JSON.parse(localStorage.getItem('userProfile') || '{}');
+                    profileData.avatar = defaultAvatar;
+                    localStorage.setItem('userProfile', JSON.stringify(profileData));
+                    
+                    showStatusMessage('Avatar reset to default', 'success');
+                } else {
+                    showStatusMessage('Failed to reset avatar', 'error');
+                }
+            } catch (error) {
+                console.error('Error resetting avatar:', error);
+                showStatusMessage('Failed to reset avatar', 'error');
+            }
+        }
+        
+        // Show status message helper
+        function showStatusMessage(message, type = 'success') {
+            const statusEl = document.getElementById('statusMessage');
+            statusEl.textContent = message;
+            statusEl.className = `text-sm font-medium ${type === 'success' ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`;
+            statusEl.classList.remove('hidden');
+            setTimeout(() => statusEl.classList.add('hidden'), 3000);
         }
 
         function handleSave(e) {
