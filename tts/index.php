@@ -26,10 +26,10 @@ if (!isset($_SESSION['user_logged_in']) || $_SESSION['user_logged_in'] !== true)
         <span class="font-bold text-lg tracking-tight sm:hidden">SL</span>
       </div>
       <div class="hidden md:flex items-center gap-1">
-        <a href="../" class="px-3 py-2 text-sm font-medium text-slate-600 hover:text-indigo-600 hover:bg-slate-50 rounded-lg transition-colors">Library</a>
-        <a href="../trivia" class="px-3 py-2 text-sm font-medium text-slate-600 hover:text-indigo-600 hover:bg-slate-50 rounded-lg transition-colors">Trivia</a>
-        <a href="../voice" class="px-3 py-2 text-sm font-medium text-indigo-600 bg-indigo-50 rounded-lg">Voice</a>
-        <a href="../account" class="px-3 py-2 text-sm font-medium text-slate-600 hover:text-indigo-600 hover:bg-slate-50 rounded-lg transition-colors">Account</a>
+        <a href="../index.php" class="px-3 py-2 text-sm font-medium text-slate-600 hover:text-indigo-600 hover:bg-slate-50 rounded-lg transition-colors">Library</a>
+        <a href="../trivia.php" class="px-3 py-2 text-sm font-medium text-slate-600 hover:text-indigo-600 hover:bg-slate-50 rounded-lg transition-colors">Trivia</a>
+        <a href="index.php" class="px-3 py-2 text-sm font-medium text-indigo-600 bg-indigo-50 rounded-lg">Voice</a>
+        <a href="../account.php" class="px-3 py-2 text-sm font-medium text-slate-600 hover:text-indigo-600 hover:bg-slate-50 rounded-lg transition-colors">Account</a>
       </div>
       <div class="flex items-center gap-2">
         <div class="md:hidden relative">
@@ -37,10 +37,10 @@ if (!isset($_SESSION['user_logged_in']) || $_SESSION['user_logged_in'] !== true)
             <i class="fas fa-bars"></i>
           </button>
           <div id="mobileMenu" class="hidden absolute right-0 top-12 bg-white border border-slate-200 rounded-lg shadow-lg py-2 min-w-[120px]">
-            <a href="../" class="block px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50">Library</a>
-            <a href="../trivia" class="block px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50">Trivia</a>
-            <a href="../voice" class="block px-4 py-2 text-sm font-medium text-indigo-600 bg-indigo-50">Voice</a>
-            <a href="../account" class="block px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50">Account</a>
+            <a href="../index.php" class="block px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50">Library</a>
+            <a href="../trivia.php" class="block px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50">Trivia</a>
+            <a href="index.php" class="block px-4 py-2 text-sm font-medium text-indigo-600 bg-indigo-50">Voice</a>
+            <a href="../account.php" class="block px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50">Account</a>
           </div>
         </div>
       </div>
@@ -174,6 +174,48 @@ if (!isset($_SESSION['user_logged_in']) || $_SESSION['user_logged_in'] !== true)
     });
   }
 
+  // Helper function to convert AudioBuffer to WAV format
+  function audioBufferToWav(buffer) {
+    const length = buffer.length;
+    const numberOfChannels = buffer.numberOfChannels;
+    const sampleRate = buffer.sampleRate;
+    const arrayBuffer = new ArrayBuffer(44 + length * numberOfChannels * 2);
+    const view = new DataView(arrayBuffer);
+    
+    // WAV header
+    const writeString = (offset, string) => {
+      for (let i = 0; i < string.length; i++) {
+        view.setUint8(offset + i, string.charCodeAt(i));
+      }
+    };
+    
+    writeString(0, 'RIFF');
+    view.setUint32(4, 36 + length * numberOfChannels * 2, true);
+    writeString(8, 'WAVE');
+    writeString(12, 'fmt ');
+    view.setUint32(16, 16, true);
+    view.setUint16(20, 1, true);
+    view.setUint16(22, numberOfChannels, true);
+    view.setUint32(24, sampleRate, true);
+    view.setUint32(28, sampleRate * numberOfChannels * 2, true);
+    view.setUint16(32, numberOfChannels * 2, true);
+    view.setUint16(34, 16, true);
+    writeString(36, 'data');
+    view.setUint32(40, length * numberOfChannels * 2, true);
+    
+    // Convert float samples to 16-bit PCM
+    let offset = 44;
+    for (let i = 0; i < length; i++) {
+      for (let channel = 0; channel < numberOfChannels; channel++) {
+        const sample = Math.max(-1, Math.min(1, buffer.getChannelData(channel)[i]));
+        view.setInt16(offset, sample < 0 ? sample * 0x8000 : sample * 0x7FFF, true);
+        offset += 2;
+      }
+    }
+    
+    return arrayBuffer;
+  }
+
   // Main TTS handler
   btn.onclick = async () => {
     if (isGenerating) return;
@@ -214,12 +256,48 @@ if (!isset($_SESSION['user_logged_in']) || $_SESSION['user_logged_in'] !== true)
         const audioData = await model.generate(text, { voice: aiVoice });
         
         addLog(`Using AI voice: ${aiVoice}`);
-        addLog("AI playback started");
+        addLog(`Audio data type: ${audioData?.constructor?.name || typeof audioData}`);
+        addLog(`Has toWav: ${typeof audioData?.toWav === 'function'}`);
+        addLog(`Has toBlob: ${typeof audioData?.toBlob === 'function'}`);
         
-        // Create blob URL and play with HTML audio element
-        const audioBlob = new Blob([audioData], { type: 'audio/wav' });
+        // THE FIX: Convert Kokoro result to WAV format
+        let audioBlob;
+        try {
+          // Try .toWav() method first (if it exists)
+          if (typeof audioData.toWav === 'function') {
+            audioBlob = new Blob([audioData.toWav()], { type: 'audio/wav' });
+            addLog("Converted to WAV using .toWav()");
+          } 
+          // If .toWav() doesn't exist, try .toBlob()
+          else if (typeof audioData.toBlob === 'function') {
+            audioBlob = await audioData.toBlob();
+            addLog("Converted to blob using .toBlob()");
+          }
+          // If it's already an ArrayBuffer or Uint8Array
+          else if (audioData instanceof ArrayBuffer || audioData instanceof Uint8Array) {
+            audioBlob = new Blob([audioData], { type: 'audio/wav' });
+            addLog("Using raw audio data");
+          }
+          // If it's an AudioBuffer, convert it to WAV
+          else if (audioData instanceof AudioBuffer) {
+            const wav = audioBufferToWav(audioData);
+            audioBlob = new Blob([wav], { type: 'audio/wav' });
+            addLog("Converted AudioBuffer to WAV");
+          }
+          // Last resort: try to use it directly
+          else {
+            audioBlob = new Blob([audioData], { type: 'audio/wav' });
+            addLog("Using direct conversion");
+          }
+        } catch (convertError) {
+          addLog(`Conversion error: ${convertError.message}`);
+          throw convertError;
+        }
+        
         const audioUrl = URL.createObjectURL(audioBlob);
         const audio = new Audio(audioUrl);
+        
+        addLog("AI playback started");
         
         audio.onended = () => {
           addLog("AI playback finished");
@@ -233,11 +311,18 @@ if (!isset($_SESSION['user_logged_in']) || $_SESSION['user_logged_in'] !== true)
           addLog(`AI playback error: ${e.target.error?.message || 'Unknown error'}`);
           addLog("Falling back to system voice...");
           URL.revokeObjectURL(audioUrl);
+          isGenerating = false;
+          btn.textContent = "Generate Voice";
+          btn.disabled = false;
           handleSystemVoice(text, 'female', persona);
         };
         
         audio.oncanplaythrough = () => {
           addLog("AI audio ready, starting playback");
+        };
+        
+        audio.onloadeddata = () => {
+          addLog("AI audio data loaded");
         };
         
         try {
@@ -246,16 +331,37 @@ if (!isset($_SESSION['user_logged_in']) || $_SESSION['user_logged_in'] !== true)
           addLog(`Play failed: ${playError.message}`);
           addLog("Falling back to system voice...");
           URL.revokeObjectURL(audioUrl);
+          isGenerating = false;
+          btn.textContent = "Generate Voice";
+          btn.disabled = false;
           await handleSystemVoice(text, 'female', persona);
         }
       } else {
         await handleSystemVoice(text, voiceName, persona);
       }
     } catch (err) {
-      addLog("Error: " + err.message);
-      isGenerating = false;
-      btn.textContent = "Generate Voice";
-      btn.disabled = false;
+      addLog(`Error: ${err.message}`);
+      addLog(`Error type: ${err.constructor.name}`);
+      if (err.stack) {
+        console.error("Full error:", err);
+      }
+      
+      // Try to fallback to system voice if AI fails
+      if (voiceName.startsWith('ai-')) {
+        addLog("Attempting fallback to system voice...");
+        try {
+          await handleSystemVoice(text, 'female', persona);
+        } catch (fallbackErr) {
+          addLog(`Fallback also failed: ${fallbackErr.message}`);
+          isGenerating = false;
+          btn.textContent = "Generate Voice";
+          btn.disabled = false;
+        }
+      } else {
+        isGenerating = false;
+        btn.textContent = "Generate Voice";
+        btn.disabled = false;
+      }
     }
   };
 

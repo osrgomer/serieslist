@@ -6,15 +6,10 @@ if (!isset($_SESSION['user_logged_in']) || $_SESSION['user_logged_in'] !== true)
     header('Location: login.php');
     exit;
 }
-?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SeriesList Tracker</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+
+$current_page = 'library';
+$page_title = 'SeriesList Tracker';
+$extra_head = '
     <style>
         .modal-backdrop { background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(4px); }
         .animate-in { animation: fadeIn 0.2s ease-out forwards; }
@@ -43,48 +38,20 @@ if (!isset($_SESSION['user_logged_in']) || $_SESSION['user_logged_in'] !== true)
             .mobile-text-sm { font-size: 0.75rem; }
         }
     </style>
-</head>
-<body class="bg-slate-50 text-slate-900 min-h-screen">
-
-    <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
-        <div class="max-w-5xl mx-auto px-4 h-16 flex items-center justify-between">
-            <div class="flex items-center gap-2">
-                <div class="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white font-bold shadow-indigo-200 shadow-lg">L</div>
-                <span class="font-bold text-xl tracking-tight hidden sm:block">Series<span class="text-indigo-600">List</span></span>
-                <span class="font-bold text-lg tracking-tight sm:hidden">SL</span>
-            </div>
-            <nav class="hidden md:flex items-center gap-1">
-                <a href="./" class="px-3 py-2 text-sm font-medium text-indigo-600 bg-indigo-50 rounded-lg">Library</a>
-                <a href="trivia" class="px-3 py-2 text-sm font-medium text-slate-600 hover:text-indigo-600 hover:bg-slate-50 rounded-lg transition-colors">Trivia</a>
-                <a href="voice" class="px-3 py-2 text-sm font-medium text-slate-600 hover:text-indigo-600 hover:bg-slate-50 rounded-lg transition-colors">Voice</a>
-                <a href="account" class="px-3 py-2 text-sm font-medium text-slate-600 hover:text-indigo-600 hover:bg-slate-50 rounded-lg transition-colors">Account</a>
-            </nav>
-            <div class="flex items-center gap-2">
-                <div class="md:hidden relative">
-                    <button id="mobileMenuBtn" class="p-2 text-slate-400 hover:text-indigo-600 transition-colors rounded-lg hover:bg-slate-50" aria-label="Menu">
-                        <i class="fas fa-bars"></i>
-                    </button>
-                    <div id="mobileMenu" class="hidden absolute right-0 top-12 bg-white border border-slate-200 rounded-lg shadow-lg py-2 min-w-[120px]">
-                        <a href="./" class="block px-4 py-2 text-sm font-medium text-indigo-600 bg-indigo-50">Library</a>
-                        <a href="trivia" class="block px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50">Trivia</a>
-                        <a href="voice" class="block px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50">Voice</a>
-                        <a href="account" class="block px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50">Account</a>
-                        <hr class="my-2">
-                        <a href="logout" class="block px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50">Logout</a>
-                    </div>
-                </div>
-                <button id="settingsBtn" class="p-2 text-slate-400 hover:text-indigo-600 transition-colors rounded-lg hover:bg-slate-50" aria-label="Settings">
-                    <i class="fas fa-cog"></i>
-                </button>
-                <a href="logout" class="hidden md:block p-2 text-slate-400 hover:text-red-600 transition-colors rounded-lg hover:bg-slate-50" aria-label="Logout">
-                    <i class="fas fa-sign-out-alt"></i>
-                </a>
-                <button id="addBtn" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 sm:px-4 py-2 rounded-lg text-sm font-semibold transition-all flex items-center gap-2 shadow-md active:scale-95">
-                    <i class="fas fa-plus"></i> <span class="hidden sm:inline">Add Series</span><span class="sm:hidden">Add</span>
-                </button>
-            </div>
-        </div>
-    </header>
+';
+$extra_buttons = '
+    <button id="settingsBtn" class="p-2 text-slate-400 dark:text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700" aria-label="Settings">
+        <i class="fas fa-cog"></i>
+    </button>
+    <a href="logout.php" class="hidden md:block p-2 text-slate-400 hover:text-red-600 dark:hover:text-red-400 transition-colors rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700" aria-label="Logout">
+        <i class="fas fa-sign-out-alt"></i>
+    </a>
+    <button id="addBtn" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 sm:px-4 py-2 rounded-lg text-sm font-semibold transition-all flex items-center gap-2 shadow-md active:scale-95">
+        <i class="fas fa-plus"></i> <span class="hidden sm:inline">Add Series</span><span class="sm:hidden">Add</span>
+    </button>
+';
+include 'header.php';
+?>
 
     <main class="max-w-5xl mx-auto p-4 space-y-6">
         <!-- Connection Banner -->
@@ -93,17 +60,17 @@ if (!isset($_SESSION['user_logged_in']) || $_SESSION['user_logged_in'] !== true)
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
-            <div class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-sm">
-                <p class="text-slate-500 text-xs font-bold uppercase tracking-wider">Your Library</p>
+            <div class="bg-white dark:bg-slate-800 p-4 sm:p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
+                <p class="text-slate-500 dark:text-slate-400 text-xs font-bold uppercase tracking-wider">Your Library</p>
                 <div class="flex items-baseline gap-2 mt-1">
-                    <span id="statCount" class="text-2xl sm:text-3xl font-black text-slate-800">0</span>
-                    <span class="text-slate-400 text-sm">Entries</span>
+                    <span id="statCount" class="text-2xl sm:text-3xl font-black text-slate-800 dark:text-slate-100">0</span>
+                    <span class="text-slate-400 dark:text-slate-500 text-sm">Entries</span>
                 </div>
             </div>
-            <div class="lg:col-span-2 bg-slate-900 rounded-2xl p-4 sm:p-5 text-white shadow-lg relative overflow-hidden group">
+            <div class="lg:col-span-2 bg-slate-900 dark:bg-slate-800 rounded-2xl p-4 sm:p-5 text-white shadow-lg relative overflow-hidden group border border-slate-700">
                 <div class="absolute -right-4 -top-4 w-24 h-24 bg-indigo-500/10 rounded-full blur-2xl"></div>
                 <h3 class="font-bold mb-1 flex items-center gap-2 text-sm sm:text-base"><i class="fas fa-wand-magic-sparkles text-indigo-400"></i> AI Insights</h3>
-                <p id="aiStatus" class="text-slate-400 text-xs sm:text-sm mb-3 min-h-[1.25rem]">Initializing storage...</p>
+                <p id="aiStatus" class="text-slate-400 dark:text-slate-300 text-xs sm:text-sm mb-3 min-h-[1.25rem]">Initializing storage...</p>
                 <button id="recBtn" class="bg-indigo-600 text-white px-4 sm:px-5 py-2 rounded-full text-xs font-bold hover:bg-indigo-500 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed">Get Recommendation</button>
             </div>
         </div>
@@ -119,49 +86,49 @@ if (!isset($_SESSION['user_logged_in']) || $_SESSION['user_logged_in'] !== true)
     <!-- Modals -->
     <div id="addModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4">
         <div class="absolute inset-0 modal-backdrop" onclick="this.parentElement.classList.add('hidden')"></div>
-        <div class="bg-white rounded-2xl w-full max-w-md relative z-10 shadow-2xl p-4 sm:p-6 animate-in max-h-[90vh] overflow-y-auto">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl w-full max-w-md relative z-10 shadow-2xl p-4 sm:p-6 animate-in max-h-[90vh] overflow-y-auto">
             <form id="seriesForm" class="space-y-4">
                 <div class="flex justify-between items-center mb-2">
-                    <h3 class="font-bold text-lg">New Entry</h3>
-                    <button type="button" onclick="document.getElementById('addModal').classList.add('hidden')" class="text-slate-400 hover:text-slate-600 p-1 rounded" aria-label="Close modal">
+                    <h3 class="font-bold text-lg dark:text-slate-100">New Entry</h3>
+                    <button type="button" onclick="document.getElementById('addModal').classList.add('hidden')" class="text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 p-1 rounded" aria-label="Close modal">
                         <i class="fas fa-times"></i>
                     </button>
                 </div>
                 <div class="space-y-3">
-                    <input type="text" id="formTitle" required placeholder="Series Title" class="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none border-slate-200 text-sm" aria-label="Series title">
+                    <input type="text" id="formTitle" required placeholder="Series Title" class="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none border-slate-200 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100 text-sm" aria-label="Series title">
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <select id="formStatus" class="px-4 py-3 border rounded-lg bg-white border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none text-sm" aria-label="Status">
+                        <select id="formStatus" class="px-4 py-3 border rounded-lg bg-white dark:bg-slate-700 dark:text-slate-100 border-slate-200 dark:border-slate-600 focus:ring-2 focus:ring-indigo-500 outline-none text-sm" aria-label="Status">
                             <option>Watching</option>
                             <option>Completed</option>
                             <option>Planned</option>
                             <option>Dropped</option>
                         </select>
-                        <input type="number" id="formRating" min="0" max="10" step="0.1" placeholder="Rating / 10" class="px-4 py-3 border rounded-lg border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none text-sm" aria-label="Rating out of 10">
+                        <input type="number" id="formRating" min="0" max="10" step="0.1" placeholder="Rating / 10" class="px-4 py-3 border rounded-lg border-slate-200 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100 focus:ring-2 focus:ring-indigo-500 outline-none text-sm" aria-label="Rating out of 10">
                     </div>
                     <div class="grid grid-cols-2 gap-3">
                         <div class="relative">
-                            <span class="absolute right-3 top-3 text-[10px] text-slate-400 font-bold pointer-events-none">EP</span>
-                            <input type="number" id="formProgress" placeholder="Watched" class="w-full px-4 py-3 pr-8 border rounded-lg border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none text-sm" aria-label="Episodes watched">
+                            <span class="absolute right-3 top-3 text-[10px] text-slate-400 dark:text-slate-500 font-bold pointer-events-none">EP</span>
+                            <input type="number" id="formProgress" placeholder="Watched" class="w-full px-4 py-3 pr-8 border rounded-lg border-slate-200 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100 focus:ring-2 focus:ring-indigo-500 outline-none text-sm" aria-label="Episodes watched">
                         </div>
                         <div class="relative">
-                            <span class="absolute right-3 top-3 text-[10px] text-slate-400 font-bold pointer-events-none">TOTAL</span>
-                            <input type="number" id="formTotal" placeholder="Total" class="w-full px-4 py-3 pr-12 border rounded-lg border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none text-sm" aria-label="Total episodes">
+                            <span class="absolute right-3 top-3 text-[10px] text-slate-400 dark:text-slate-500 font-bold pointer-events-none">TOTAL</span>
+                            <input type="number" id="formTotal" placeholder="Total" class="w-full px-4 py-3 pr-12 border rounded-lg border-slate-200 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100 focus:ring-2 focus:ring-indigo-500 outline-none text-sm" aria-label="Total episodes">
                         </div>
                     </div>
                 </div>
-                <button type="submit" class="w-full bg-indigo-600 text-white font-bold py-3 rounded-xl hover:bg-indigo-700 transition-colors shadow-lg shadow-indigo-100 mt-4 disabled:opacity-50 disabled:cursor-not-allowed">Add to Library</button>
+                <button type="submit" class="w-full bg-indigo-600 text-white font-bold py-3 rounded-xl hover:bg-indigo-700 transition-colors shadow-lg shadow-indigo-100 dark:shadow-indigo-900/20 mt-4 disabled:opacity-50 disabled:cursor-not-allowed">Add to Library</button>
             </form>
         </div>
     </div>
 
     <div id="settingsModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4">
         <div class="absolute inset-0 modal-backdrop" onclick="this.parentElement.classList.add('hidden')"></div>
-        <div class="bg-white rounded-2xl w-full max-w-md relative z-10 shadow-2xl p-6 animate-in">
-            <h3 class="font-bold text-lg mb-4">AI Settings</h3>
+        <div class="bg-white dark:bg-slate-800 rounded-2xl w-full max-w-md relative z-10 shadow-2xl p-6 animate-in">
+            <h3 class="font-bold text-lg mb-4 dark:text-slate-100">AI Settings</h3>
             <div class="space-y-4">
                 <div>
-                    <label class="text-xs font-bold text-slate-400 uppercase block mb-1">AI Provider</label>
-                    <select id="aiProviderSelect" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none border-slate-200">
+                    <label class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase block mb-1">AI Provider</label>
+                    <select id="aiProviderSelect" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none border-slate-200 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100">
                         <option value="gemini">Google Gemini</option>
                         <option value="openai">OpenAI ChatGPT</option>
                         <option value="claude">Anthropic Claude</option>
@@ -170,11 +137,11 @@ if (!isset($_SESSION['user_logged_in']) || $_SESSION['user_logged_in'] !== true)
                     </select>
                 </div>
                 <div>
-                    <label class="text-xs font-bold text-slate-400 uppercase block mb-1">API Key</label>
-                    <input type="password" id="apiKeyInput" placeholder="Enter your API key..." class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none border-slate-200">
-                    <p class="text-[10px] text-slate-400 mt-1 italic">Key is stored securely in your profile.</p>
+                    <label class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase block mb-1">API Key</label>
+                    <input type="password" id="apiKeyInput" placeholder="Enter your API key..." class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none border-slate-200 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100">
+                    <p class="text-[10px] text-slate-400 dark:text-slate-500 mt-1 italic">Key is stored securely in your profile.</p>
                 </div>
-                <button id="saveSettingsBtn" class="w-full bg-slate-800 text-white font-bold py-2 rounded-lg hover:bg-slate-900 transition-colors">Save Configuration</button>
+                <button id="saveSettingsBtn" class="w-full bg-slate-800 dark:bg-slate-700 text-white font-bold py-2 rounded-lg hover:bg-slate-900 dark:hover:bg-slate-600 transition-colors">Save Configuration</button>
             </div>
         </div>
     </div>
