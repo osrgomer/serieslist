@@ -39,47 +39,35 @@ switch ($action) {
             exit;
         }
         
-        // Check if global_users exists
-        if (!isset($_SESSION['global_users']) || empty($_SESSION['global_users'])) {
-            echo json_encode(['success' => true, 'users' => [], 'error' => 'No users in database']);
-            exit;
-        }
+        // Search in MySQL database
+        $db = getDB();
+        $currentUserId = $_SESSION['user_id'];
         
-        // Search in registered users
+        // Search for users by username or email (exclude current user)
+        $stmt = $db->prepare("
+            SELECT id, username, email, avatar 
+            FROM users 
+            WHERE (username LIKE ? OR email LIKE ?) 
+            AND id != ?
+            LIMIT 20
+        ");
+        $searchTerm = "%$query%";
+        $stmt->execute([$searchTerm, $searchTerm, $currentUserId]);
+        $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        
+        // Format results
         $results = [];
-        foreach ($_SESSION['global_users'] as $user) {
-            // Don't show current user
-            if ($user['id'] === $currentUserId) {
-                continue;
-            }
-            
-            // Check if already friends
-            $isFriend = false;
-            if (isset($_SESSION['friends_data']['friends'])) {
-                foreach ($_SESSION['friends_data']['friends'] as $friend) {
-                    if ($friend['id'] === $user['id']) {
-                        $isFriend = true;
-                        break;
-                    }
-                }
-            }
-            
-            if ($isFriend) {
-                continue;
-            }
-            
-            // Search by username or email
-            if (stripos($user['username'], $query) !== false || stripos($user['email'], $query) !== false) {
-                $results[] = [
-                    'id' => $user['id'],
-                    'username' => $user['username'],
-                    'avatar' => $user['avatar'],
-                    'online' => isUserOnline($user['id'])
-                ];
-            }
+        foreach ($users as $user) {
+            $results[] = [
+                'id' => $user['id'],
+                'username' => $user['username'],
+                'avatar' => $user['avatar'] ?? 'https://ui-avatars.com/api/?name=' . urlencode($user['username']),
+                'online' => getUserStatus($user['id']) === 'online'
+            ];
         }
         
         echo json_encode(['success' => true, 'users' => $results]);
+        exit;
         break;
         
     case 'get_friends':
