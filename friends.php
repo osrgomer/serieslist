@@ -108,8 +108,8 @@ if (!isset($_SESSION['user_logged_in']) || $_SESSION['user_logged_in'] !== true)
                     </div>
                 </div>
 
-                <!-- Activity Feed - HIDDEN FOR NOW -->
-                <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-6 shadow-sm hidden">
+                <!-- Activity Feed -->
+                <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-6 shadow-sm">
                     <h2 class="text-xl font-bold text-slate-800 dark:text-slate-100 mb-4 flex items-center gap-2">
                         <i class="fas fa-rss text-indigo-600"></i> Friend Activity
                     </h2>
@@ -245,8 +245,7 @@ if (!isset($_SESSION['user_logged_in']) || $_SESSION['user_logged_in'] !== true)
                 const data = await response.json();
                 if (data.success) {
                     await loadFriends();
-                    // Activity feed disabled - was showing fake data
-                    // await loadActivity();
+                    await loadActivity();
                     
                     document.getElementById('searchInput').value = '';
                     document.getElementById('searchResults').innerHTML = '';
@@ -337,8 +336,7 @@ if (!isset($_SESSION['user_logged_in']) || $_SESSION['user_logged_in'] !== true)
                 const data = await response.json();
                 if (data.success) {
                     await loadFriends();
-                    // Activity feed disabled - was showing fake data
-                    // await loadActivity();
+                    await loadActivity();
                     showNotification(data.message);
                 } else {
                     showNotification(data.message || 'Failed to remove friend', 'error');
@@ -372,8 +370,7 @@ if (!isset($_SESSION['user_logged_in']) || $_SESSION['user_logged_in'] !== true)
         (async function init() {
             await loadFriends();
             await loadRequests();
-            // Activity feed disabled for now - was showing fake data
-            // await loadActivity();
+            await loadActivity();
         })();
     </script>
 </body>

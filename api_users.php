@@ -195,21 +195,28 @@ switch ($action) {
         break;
         
     case 'get_activity':
-        // Generate activity from friends
+        // Get REAL activity from friends
         $activities = [];
         $friends = $_SESSION['friends_data']['friends'] ?? [];
+        $friendIds = array_column($friends, 'id');
         
-        foreach ($friends as $friend) {
-            if (rand(0, 1) == 1) {
-                $activities[] = [
-                    'user' => $friend,
-                    'action' => ['started watching', 'completed', 'added to watchlist'][rand(0, 2)],
-                    'show' => ['Breaking Bad', 'The Office', 'Stranger Things', 'Game of Thrones'][rand(0, 3)],
-                    'time' => (time() - rand(3600, 86400)) * 1000,
-                    'rating' => rand(0, 1) == 1 ? (rand(70, 100) / 10) : null
-                ];
+        // Get activity for each friend
+        foreach ($friendIds as $friendId) {
+            if (isset($_SESSION['user_activity'][$friendId])) {
+                $friendActivities = $_SESSION['user_activity'][$friendId];
+                // Get last 5 activities per friend
+                $recentActivities = array_slice($friendActivities, -5);
+                $activities = array_merge($activities, $recentActivities);
             }
         }
+        
+        // Sort by time (most recent first)
+        usort($activities, function($a, $b) {
+            return $b['time'] - $a['time'];
+        });
+        
+        // Limit to 20 most recent activities
+        $activities = array_slice($activities, 0, 20);
         
         echo json_encode([
             'success' => true,

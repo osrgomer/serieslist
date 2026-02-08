@@ -346,6 +346,10 @@ include 'header.php';
             
             const newVal = cur + 1;
             const newStatus = (total > 0 && newVal >= total) ? 'Completed' : 'Watching';
+            
+            // Get show title for activity logging
+            const show = currentSeries.find(s => s.id === id);
+            const showTitle = show ? show.title : 'Unknown';
 
             if (isCloudMode && user && !id.startsWith('local_')) {
                 await updateDoc(doc(db, 'artifacts', currentAppId, 'public', 'data', 'series_' + user.uid, id), { 
@@ -360,9 +364,21 @@ include 'header.php';
                     currentSeries[idx].status = newStatus;
                     currentSeries[idx].updatedAt = Date.now();
                 }
-                localStorage.setItem('series_v2_backup', JSON.stringify(currentSeries));
+                localStorage.setItem('series_v2_' + getUserKey(), JSON.stringify(currentSeries));
                 renderList(currentSeries);
             }
+            
+            // Log activity
+            const activityType = newStatus === 'Completed' ? 'completed' : 'updated progress on';
+            await fetch('api_activity.php?action=log_activity', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    type: activityType,
+                    show: showTitle,
+                    progress: newVal
+                })
+            }).catch(err => console.log('Activity logging failed:', err));
         };
 
         window.removeEntry = async (id) => {
@@ -423,6 +439,18 @@ include 'header.php';
                 localStorage.setItem('series_v2_' + getUserKey(), JSON.stringify(currentSeries));
                 renderList(currentSeries);
             }
+            
+            // Log activity
+            await fetch('api_activity.php?action=log_activity', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    type: 'added to watchlist',
+                    show: data.title,
+                    rating: data.rating > 0 ? data.rating : null
+                })
+            }).catch(err => console.log('Activity logging failed:', err));
+            
             document.getElementById('addModal').classList.add('hidden');
             e.target.reset();
         };
