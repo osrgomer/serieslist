@@ -6,46 +6,28 @@ if (!isset($_SESSION['user_logged_in']) || $_SESSION['user_logged_in'] !== true)
     header('Location: ../login.php');
     exit;
 }
+
+// Header configuration
+$current_page = 'voice';
+$page_title = 'Vocalist AI';
+$base_path = '../';
+$extra_head = '';
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Vocalist AI - Browser TTS</title>
+  <title><?php echo $page_title; ?> - SeriesList</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script>tailwind.config = { darkMode: 'class' }</script>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <script src="../theme.js"></script>
+  <?php echo $extra_head; ?>
 </head>
-<body class="min-h-screen bg-slate-50 font-sans">
+<body class="min-h-screen bg-slate-50 dark:bg-slate-900 transition-colors font-sans">
 
-  <nav class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
-    <div class="max-w-5xl mx-auto px-4 h-16 flex items-center justify-between">
-      <div class="flex items-center gap-2">
-        <div class="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white font-bold shadow-indigo-200 shadow-lg">L</div>
-        <span class="font-bold text-xl tracking-tight hidden sm:block">Series<span class="text-indigo-600">List</span></span>
-        <span class="font-bold text-lg tracking-tight sm:hidden">SL</span>
-      </div>
-      <div class="hidden md:flex items-center gap-1">
-        <a href="../index.php" class="px-3 py-2 text-sm font-medium text-slate-600 hover:text-indigo-600 hover:bg-slate-50 rounded-lg transition-colors">Library</a>
-        <a href="../trivia.php" class="px-3 py-2 text-sm font-medium text-slate-600 hover:text-indigo-600 hover:bg-slate-50 rounded-lg transition-colors">Trivia</a>
-        <a href="index.php" class="px-3 py-2 text-sm font-medium text-indigo-600 bg-indigo-50 rounded-lg">Voice</a>
-        <a href="../account.php" class="px-3 py-2 text-sm font-medium text-slate-600 hover:text-indigo-600 hover:bg-slate-50 rounded-lg transition-colors">Account</a>
-      </div>
-      <div class="flex items-center gap-2">
-        <div class="md:hidden relative">
-          <button id="mobileMenuBtn" class="p-2 text-slate-400 hover:text-indigo-600 transition-colors rounded-lg hover:bg-slate-50" aria-label="Menu">
-            <i class="fas fa-bars"></i>
-          </button>
-          <div id="mobileMenu" class="hidden absolute right-0 top-12 bg-white border border-slate-200 rounded-lg shadow-lg py-2 min-w-[120px]">
-            <a href="../index.php" class="block px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50">Library</a>
-            <a href="../trivia.php" class="block px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50">Trivia</a>
-            <a href="index.php" class="block px-4 py-2 text-sm font-medium text-indigo-600 bg-indigo-50">Voice</a>
-            <a href="../account.php" class="block px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50">Account</a>
-          </div>
-        </div>
-      </div>
-    </div>
-  </nav>
+<?php include '../header.php'; ?>
 
   <main class="max-w-2xl mx-auto p-4 md:p-8 flex justify-center">
     <div class="w-full bg-white rounded-3xl shadow-xl border border-slate-200 overflow-hidden">
