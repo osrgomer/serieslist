@@ -145,7 +145,7 @@ $user_name = $_SESSION['user_name'] ?? 'User';
                             <textarea 
                                 id="bioInput"
                                 class="w-full p-3 rounded-lg border border-slate-200 text-slate-800 text-sm min-h-[120px] focus:ring-2 focus:ring-indigo-500 outline-none"
-                            >TV and movie enthusiast. Always looking for the next great series to binge.</textarea>
+                            ></textarea>
                             <p class="text-xs text-slate-500">Markdown is supported for formatting your biography.</p>
                         </div>
 
@@ -736,18 +736,29 @@ $user_name = $_SESSION['user_name'] ?? 'User';
         const userProfileKey = 'userProfile_' + currentUser;
         
         window.addEventListener('load', () => {
+            // Migration: Check for old shared profile data
+            if (currentUser !== 'guest') {
+                const oldProfile = localStorage.getItem('userProfile');
+                if (oldProfile && !localStorage.getItem(userProfileKey)) {
+                    // Only migrate if this is the first user (assume old data belongs to first user)
+                    console.log('Migrating old profile data to user-specific key');
+                    localStorage.setItem(userProfileKey, oldProfile);
+                }
+            }
+            
             const saved = localStorage.getItem(userProfileKey);
             if (saved) {
                 const profile = JSON.parse(saved);
                 document.getElementById('usernameInput').value = profile.username || '<?php echo addslashes($user_name); ?>';
                 document.getElementById('emailInput').value = profile.email || '<?php echo addslashes($user_email); ?>';
-                document.getElementById('bioInput').value = profile.bio || 'TV and movie enthusiast. Always looking for the next great series to binge.';
+                document.getElementById('bioInput').value = profile.bio || '';
                 document.getElementById('profileAvatar').src = profile.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=200&h=200&fit=crop';
                 document.getElementById('profileUsername').textContent = profile.username || '<?php echo addslashes($user_name); ?>';
             } else {
-                // Set defaults from session
+                // Set defaults from session for new user
                 document.getElementById('usernameInput').value = '<?php echo addslashes($user_name); ?>';
                 document.getElementById('emailInput').value = '<?php echo addslashes($user_email); ?>';
+                document.getElementById('bioInput').value = '';
                 document.getElementById('profileUsername').textContent = '<?php echo addslashes($user_name); ?>';
             }
         });
