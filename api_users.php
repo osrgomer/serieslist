@@ -80,7 +80,7 @@ switch ($action) {
                     'id' => $user['id'],
                     'username' => $user['username'],
                     'avatar' => $user['avatar'],
-                    'online' => rand(0, 1) == 1 // Mock online status for now
+                    'online' => false
                 ];
             }
         }
@@ -139,7 +139,7 @@ switch ($action) {
                 'username' => $friendData['username'],
                 'email' => $friendData['email'],
                 'avatar' => $friendData['avatar'],
-                'online' => rand(0, 1) == 1,
+                'online' => false,
                 'addedAt' => time() * 1000
             ];
             
