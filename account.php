@@ -250,11 +250,18 @@ $connections = $_SESSION['connections'] ?? [];
                                     </div>
                                     <div>
                                         <p class="font-bold text-slate-800 dark:text-slate-100">Google Account</p>
-                                        <p class="text-xs text-slate-500 dark:text-slate-400">Sync your watchlist across devices</p>
+                                        <?php if (isset($connections['google']['user_info'])): ?>
+                                            <p class="text-xs text-slate-600 dark:text-slate-400"><?php echo htmlspecialchars($connections['google']['user_info']['email'] ?? $connections['google']['user_info']['name'] ?? 'Connected'); ?></p>
+                                        <?php else: ?>
+                                            <p class="text-xs text-slate-500 dark:text-slate-400">Sync your watchlist across devices</p>
+                                        <?php endif; ?>
                                     </div>
                                 </div>
                                 <?php if (isset($connections['google'])): ?>
                                 <div class="flex items-center gap-3">
+                                    <?php if (isset($connections['google']['user_info']['picture'])): ?>
+                                    <img src="<?php echo htmlspecialchars($connections['google']['user_info']['picture']); ?>" class="w-8 h-8 rounded-full border-2 border-slate-200 dark:border-slate-600" />
+                                    <?php endif; ?>
                                     <span class="flex items-center gap-1 text-green-600 dark:text-green-400 text-sm font-medium">
                                         <i class="fas fa-check-circle"></i> Connected
                                     </span>
@@ -277,11 +284,18 @@ $connections = $_SESSION['connections'] ?? [];
                                     </div>
                                     <div>
                                         <p class="font-bold text-slate-800 dark:text-slate-100">GitHub</p>
-                                        <p class="text-xs text-slate-500 dark:text-slate-400">Connect your developer profile</p>
+                                        <?php if (isset($connections['github']['user_info'])): ?>
+                                            <p class="text-xs text-slate-600 dark:text-slate-400">@<?php echo htmlspecialchars($connections['github']['user_info']['username'] ?? $connections['github']['user_info']['name'] ?? 'Connected'); ?></p>
+                                        <?php else: ?>
+                                            <p class="text-xs text-slate-500 dark:text-slate-400">Connect your developer profile</p>
+                                        <?php endif; ?>
                                     </div>
                                 </div>
                                 <?php if (isset($connections['github'])): ?>
                                 <div class="flex items-center gap-3">
+                                    <?php if (isset($connections['github']['user_info']['picture'])): ?>
+                                    <img src="<?php echo htmlspecialchars($connections['github']['user_info']['picture']); ?>" class="w-8 h-8 rounded-full border-2 border-slate-200 dark:border-slate-600" />
+                                    <?php endif; ?>
                                     <span class="flex items-center gap-1 text-green-600 dark:text-green-400 text-sm font-medium">
                                         <i class="fas fa-check-circle"></i> Connected
                                     </span>
@@ -296,7 +310,8 @@ $connections = $_SESSION['connections'] ?? [];
                                 <?php endif; ?>
                             </div>
                             
-                            <!-- Spotify -->
+                            <!-- Spotify (Hidden until Feb 11, 2026 due to Spotify API restrictions) -->
+                            <?php if (strtotime('2026-02-11') <= time()): ?>
                             <div class="flex items-center justify-between p-4 border border-slate-200 dark:border-slate-700 rounded-lg hover:border-slate-300 dark:hover:border-slate-600 transition-colors">
                                 <div class="flex items-center gap-3">
                                     <div class="w-12 h-12 bg-green-600 rounded-xl flex items-center justify-center shadow-md">
@@ -304,11 +319,18 @@ $connections = $_SESSION['connections'] ?? [];
                                     </div>
                                     <div>
                                         <p class="font-bold text-slate-800 dark:text-slate-100">Spotify</p>
-                                        <p class="text-xs text-slate-500 dark:text-slate-400">Track your music tastes</p>
+                                        <?php if (isset($connections['spotify']['user_info'])): ?>
+                                            <p class="text-xs text-slate-600 dark:text-slate-400"><?php echo htmlspecialchars($connections['spotify']['user_info']['name'] ?? 'Connected'); ?></p>
+                                        <?php else: ?>
+                                            <p class="text-xs text-slate-500 dark:text-slate-400">Track your music tastes</p>
+                                        <?php endif; ?>
                                     </div>
                                 </div>
                                 <?php if (isset($connections['spotify'])): ?>
                                 <div class="flex items-center gap-3">
+                                    <?php if (isset($connections['spotify']['user_info']['picture'])): ?>
+                                    <img src="<?php echo htmlspecialchars($connections['spotify']['user_info']['picture']); ?>" class="w-8 h-8 rounded-full border-2 border-slate-200 dark:border-slate-600" />
+                                    <?php endif; ?>
                                     <span class="flex items-center gap-1 text-green-600 dark:text-green-400 text-sm font-medium">
                                         <i class="fas fa-check-circle"></i> Connected
                                     </span>
@@ -322,6 +344,7 @@ $connections = $_SESSION['connections'] ?? [];
                                 </a>
                                 <?php endif; ?>
                             </div>
+                            <?php endif; ?>
                         </div>
                         
                         <div class="mt-6 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
