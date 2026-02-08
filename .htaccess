@@ -18,6 +18,9 @@ RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME}.php -f
 RewriteRule ^([^/]+)/?$ $1.php [L]
 
+# Add Friends route
+RewriteRule ^friends/?$ friends.php [L,QSA]
+
 # Specific route mappings
 RewriteRule ^home/?$ index.php [L,QSA]
 RewriteRule ^library/?$ index.php [L,QSA]
