@@ -7,6 +7,11 @@ if (!isset($_SESSION['user_logged_in']) || $_SESSION['user_logged_in'] !== true)
     exit;
 }
 
+// Ensure username is set (backward compatibility)
+if (!isset($_SESSION['username']) && isset($_SESSION['user_email'])) {
+    $_SESSION['username'] = $_SESSION['user_email'];
+}
+
 $current_page = 'library';
 $page_title = 'SeriesList Tracker';
 $extra_head = '
