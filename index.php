@@ -209,6 +209,23 @@ include 'header.php';
         const setupOfflineMode = () => {
             isCloudMode = false;
             const userKey = 'user_<?php echo $_SESSION['username'] ?? 'guest'; ?>';
+            
+            // Migration: Check for old data under 'user_guest' key and move it
+            if (userKey !== 'user_guest') {
+                const oldData = localStorage.getItem('series_v2_user_guest');
+                if (oldData && !localStorage.getItem('series_v2_' + userKey)) {
+                    // Migrate old data to new key
+                    localStorage.setItem('series_v2_' + userKey, oldData);
+                    localStorage.removeItem('series_v2_user_guest');
+                }
+                
+                const oldSettings = localStorage.getItem('ai_settings_user_guest');
+                if (oldSettings && !localStorage.getItem('ai_settings_' + userKey)) {
+                    localStorage.setItem('ai_settings_' + userKey, oldSettings);
+                    localStorage.removeItem('ai_settings_user_guest');
+                }
+            }
+            
             const savedSettings = localStorage.getItem('ai_settings_' + userKey);
             if (savedSettings) {
                 aiSettings = JSON.parse(savedSettings);
