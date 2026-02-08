@@ -177,7 +177,18 @@ include 'header.php';
             searchTimeout = setTimeout(async () => {
                 try {
                     const response = await fetch(`api_users.php?action=search_users&q=${encodeURIComponent(query)}`);
+                    
+                    // Log response for debugging
+                    if (!response.ok) {
+                        console.error('API responded with status:', response.status);
+                        const text = await response.text();
+                        console.error('Response body:', text);
+                        results.innerHTML = '<p class="text-sm text-red-500">Error searching users (check console)</p>';
+                        return;
+                    }
+                    
                     const data = await response.json();
+                    console.log('Search results:', data);
                     
                     if (data.success && data.users.length > 0) {
                         results.innerHTML = data.users.map(user => `
