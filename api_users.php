@@ -118,15 +118,39 @@ switch ($action) {
         break;
         
     case 'get_friends':
+        // Load friends from global storage for current user
+        $userFriends = [];
+        
+        // Check user's own friends_data first
+        if (isset($_SESSION['friends_data']['friends'])) {
+            $userFriends = $_SESSION['friends_data']['friends'];
+        }
+        
+        // Also check global friends storage
+        if (isset($_SESSION['friends_data_all'][$currentUserId]['friends'])) {
+            // Merge with global storage (avoid duplicates)
+            foreach ($_SESSION['friends_data_all'][$currentUserId]['friends'] as $globalFriend) {
+                $isDuplicate = false;
+                foreach ($userFriends as $existingFriend) {
+                    if ($existingFriend['id'] === $globalFriend['id']) {
+                        $isDuplicate = true;
+                        break;
+                    }
+                }
+                if (!$isDuplicate) {
+                    $userFriends[] = $globalFriend;
+                }
+            }
+        }
+        
         // Update online status for all friends in real-time
-        $friends = $_SESSION['friends_data']['friends'] ?? [];
-        foreach ($friends as &$friend) {
+        foreach ($userFriends as &$friend) {
             $friend['online'] = isUserOnline($friend['id']);
         }
         
         echo json_encode([
             'success' => true,
-            'friends' => $friends
+            'friends' => $userFriends
         ]);
         break;
         
@@ -168,7 +192,7 @@ switch ($action) {
                 }
             }
             
-            // Add friend
+            // Add friend to CURRENT user's list
             $_SESSION['friends_data']['friends'][] = [
                 'id' => $friendData['id'],
                 'username' => $friendData['username'],
@@ -177,6 +201,38 @@ switch ($action) {
                 'online' => isUserOnline($friendData['id']),
                 'addedAt' => time() * 1000
             ];
+            
+            // ALSO add current user to FRIEND's list (mutual friendship)
+            if (!isset($_SESSION['friends_data_all'])) {
+                $_SESSION['friends_data_all'] = [];
+            }
+            if (!isset($_SESSION['friends_data_all'][$friendId])) {
+                $_SESSION['friends_data_all'][$friendId] = ['friends' => [], 'requests' => [], 'blocked' => []];
+            }
+            
+            // Get current user data
+            $currentUserData = $_SESSION['global_users'][$currentUserId] ?? null;
+            if ($currentUserData) {
+                // Check if friendship already exists
+                $alreadyFriends = false;
+                foreach ($_SESSION['friends_data_all'][$friendId]['friends'] as $existingFriend) {
+                    if ($existingFriend['id'] === $currentUserId) {
+                        $alreadyFriends = true;
+                        break;
+                    }
+                }
+                
+                if (!$alreadyFriends) {
+                    $_SESSION['friends_data_all'][$friendId]['friends'][] = [
+                        'id' => $currentUserData['id'],
+                        'username' => $currentUserData['username'],
+                        'email' => $currentUserData['email'],
+                        'avatar' => $currentUserData['avatar'],
+                        'online' => isUserOnline($currentUserData['id']),
+                        'addedAt' => time() * 1000
+                    ];
+                }
+            }
             
             echo json_encode([
                 'success' => true,
