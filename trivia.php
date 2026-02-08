@@ -247,8 +247,11 @@ if ($category && isset($triviaCategories[$category])) {
     
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $score = 0;
+        $userAnswers = [];
         foreach ($questions as $index => $item) {
-            if (isset($_POST['q' . $index]) && (int)$_POST['q' . $index] === $item['correct']) {
+            $userAnswer = isset($_POST['q' . $index]) ? (int)$_POST['q' . $index] : -1;
+            $userAnswers[$index] = $userAnswer;
+            if ($userAnswer === $item['correct']) {
                 $score++;
             }
         }
@@ -347,6 +350,53 @@ $extra_head = '';
                             <a href="?category=<?php echo $category; ?>" class="inline-block bg-indigo-600 dark:bg-indigo-500 text-white font-bold px-6 py-3 rounded-lg hover:bg-indigo-700 dark:hover:bg-indigo-600 transition-colors">Try Again</a>
                             <a href="trivia" class="inline-block bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold px-6 py-3 rounded-lg hover:bg-slate-300 dark:hover:bg-slate-600 transition-colors">Choose Another</a>
                         </div>
+                    </div>
+                    
+                    <!-- Review Answers -->
+                    <div class="space-y-6 mb-8">
+                        <h3 class="text-2xl font-bold text-slate-800 dark:text-slate-100 text-center mb-6">Review Your Answers</h3>
+                        <?php foreach ($questions as $index => $item): 
+                            $userAnswer = $userAnswers[$index] ?? -1;
+                            $isCorrect = $userAnswer === $item['correct'];
+                        ?>
+                            <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl border-2 <?php echo $isCorrect ? 'border-green-500 dark:border-green-600' : 'border-red-500 dark:border-red-600'; ?> shadow-sm">
+                                <div class="flex items-start gap-3 mb-4">
+                                    <div class="flex-shrink-0 w-8 h-8 rounded-full <?php echo $isCorrect ? 'bg-green-500' : 'bg-red-500'; ?> flex items-center justify-center">
+                                        <i class="fas <?php echo $isCorrect ? 'fa-check' : 'fa-times'; ?> text-white text-sm"></i>
+                                    </div>
+                                    <p class="text-slate-800 dark:text-slate-100 font-bold flex-1"><?php echo ($index + 1) . ". " . htmlspecialchars($item['q']); ?></p>
+                                </div>
+                                <div class="space-y-2 ml-11">
+                                    <?php foreach ($item['options'] as $optIndex => $optText): 
+                                        $isUserAnswer = $userAnswer === $optIndex;
+                                        $isCorrectAnswer = $item['correct'] === $optIndex;
+                                        
+                                        $bgClass = '';
+                                        $textClass = 'text-slate-700 dark:text-slate-300';
+                                        $iconClass = '';
+                                        
+                                        if ($isCorrectAnswer) {
+                                            $bgClass = 'bg-green-100 dark:bg-green-900/30 border-green-500 dark:border-green-600';
+                                            $textClass = 'text-green-800 dark:text-green-300 font-bold';
+                                            $iconClass = '<i class="fas fa-check text-green-600 dark:text-green-400"></i> ';
+                                        } elseif ($isUserAnswer && !$isCorrect) {
+                                            $bgClass = 'bg-red-100 dark:bg-red-900/30 border-red-500 dark:border-red-600';
+                                            $textClass = 'text-red-800 dark:text-red-300 font-bold';
+                                            $iconClass = '<i class="fas fa-times text-red-600 dark:text-red-400"></i> ';
+                                        } else {
+                                            $bgClass = 'border-slate-200 dark:border-slate-700';
+                                        }
+                                    ?>
+                                        <div class="flex items-center gap-3 p-3 rounded-lg border-2 <?php echo $bgClass; ?>">
+                                            <span class="text-sm <?php echo $textClass; ?>">
+                                                <?php if ($iconClass) echo $iconClass; ?>
+                                                <?php echo htmlspecialchars($optText); ?>
+                                            </span>
+                                        </div>
+                                    <?php endforeach; ?>
+                                </div>
+                            </div>
+                        <?php endforeach; ?>
                     </div>
                 <?php else: ?>
                     <form method="POST" class="space-y-6">
