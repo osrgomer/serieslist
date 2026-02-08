@@ -69,11 +69,12 @@ $user_name = $_SESSION['user_name'] ?? 'User';
                     <button id="mobileMenuBtn" class="p-2 text-slate-400 hover:text-indigo-600 transition-colors rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700" aria-label="Menu">
                         <i class="fas fa-bars"></i>
                     </button>
-                    <div id="mobileMenu" class="hidden absolute right-0 top-12 bg-white border border-slate-200 rounded-lg shadow-lg py-2 min-w-[120px]">
-                        <a href="./" class="block px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50">Library</a>
-                        <a href="trivia" class="block px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50">Trivia</a>
-                        <a href="voice" class="block px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50">Voice</a>
-                        <a href="account" class="block px-4 py-2 text-sm font-medium text-indigo-600 bg-indigo-50">Account</a>
+                    <div id="mobileMenu" class="hidden absolute right-0 top-12 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-lg py-2 min-w-[120px]">
+                        <a href="./" class="block px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700">Library</a>
+                        <a href="friends" class="block px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700">Friends</a>
+                        <a href="trivia" class="block px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700">Trivia</a>
+                        <a href="voice" class="block px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700">Voice</a>
+                        <a href="account" class="block px-4 py-2 text-sm font-medium text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30">Account</a>
                     </div>
                 </div>
             </div>
