@@ -31,6 +31,23 @@
                 <a href="/serieslist/account" class="px-3 py-2 text-sm font-medium <?php echo ($current_page ?? '') === 'account' ? 'text-indigo-600 bg-indigo-50 dark:bg-indigo-900/30' : 'text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-slate-50 dark:hover:bg-slate-700'; ?> rounded-lg transition-colors">Account</a>
             </nav>
             <div class="flex items-center gap-2">
+                <!-- Notifications Bell -->
+                <div class="relative">
+                    <button id="notifBtn" class="p-2 text-slate-400 dark:text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 relative" aria-label="Notifications">
+                        <i class="fas fa-bell"></i>
+                        <span id="notifBadge" class="hidden absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center">0</span>
+                    </button>
+                    <div id="notifDropdown" class="hidden absolute right-0 top-12 w-80 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-xl py-2 max-h-96 overflow-y-auto z-50">
+                        <div class="px-4 py-2 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
+                            <h3 class="font-bold text-sm text-slate-800 dark:text-slate-100">Notifications</h3>
+                            <button onclick="clearNotifications()" class="text-xs text-indigo-600 dark:text-indigo-400 hover:underline">Clear all</button>
+                        </div>
+                        <div id="notifList" class="py-2">
+                            <p class="px-4 py-8 text-center text-sm text-slate-500 dark:text-slate-400">No new notifications</p>
+                        </div>
+                    </div>
+                </div>
+                
                 <button onclick="toggleTheme()" class="p-2 text-slate-400 dark:text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700" aria-label="Toggle theme">
                     <i class="fas fa-moon dark:hidden"></i>
                     <i class="fas fa-sun hidden dark:inline"></i>
@@ -68,5 +85,122 @@
             if (!menu.contains(e.target) && !btn.contains(e.target)) {
                 menu.classList.add('hidden');
             }
+        });
+        
+        // Notification system
+        let lastCheckedTime = Date.now();
+        const seenActivities = new Set(JSON.parse(localStorage.getItem('seenActivities') || '[]'));
+        
+        // Toggle notification dropdown
+        document.getElementById('notifBtn').onclick = (e) => {
+            e.stopPropagation();
+            const dropdown = document.getElementById('notifDropdown');
+            dropdown.classList.toggle('hidden');
+            if (!dropdown.classList.contains('hidden')) {
+                loadNotifications();
+            }
+        };
+        
+        // Close dropdown when clicking outside
+        document.addEventListener('click', (e) => {
+            const dropdown = document.getElementById('notifDropdown');
+            const btn = document.getElementById('notifBtn');
+            if (!dropdown.contains(e.target) && !btn.contains(e.target)) {
+                dropdown.classList.add('hidden');
+            }
+        });
+        
+        // Load notifications
+        async function loadNotifications() {
+            try {
+                const response = await fetch('/serieslist/api_users.php?action=get_activity');
+                const data = await response.json();
+                
+                if (data.success && data.activities.length > 0) {
+                    const notifList = document.getElementById('notifList');
+                    const recentActivities = data.activities.slice(0, 10); // Last 10
+                    
+                    notifList.innerHTML = recentActivities.map(activity => {
+                        const activityId = activity.user.id + '_' + activity.show + '_' + activity.time;
+                        const isNew = !seenActivities.has(activityId);
+                        
+                        return `
+                            <div class="px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-700 border-b border-slate-100 dark:border-slate-700 last:border-b-0 ${isNew ? 'bg-indigo-50 dark:bg-indigo-900/20' : ''}">
+                                <div class="flex items-start gap-3">
+                                    <img src="${activity.user.avatar}" class="w-8 h-8 rounded-full flex-shrink-0">
+                                    <div class="flex-1 min-w-0">
+                                        <p class="text-sm text-slate-800 dark:text-slate-100">
+                                            <span class="font-semibold">${activity.user.username}</span>
+                                            <span class="text-slate-600 dark:text-slate-400"> ${activity.action}</span>
+                                            <span class="font-semibold text-indigo-600 dark:text-indigo-400">${activity.show}</span>
+                                        </p>
+                                        <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">${getTimeAgo(activity.time)}</p>
+                                    </div>
+                                    ${isNew ? '<div class="w-2 h-2 bg-indigo-600 rounded-full flex-shrink-0 mt-1.5"></div>' : ''}
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+                    
+                    // Mark all as seen
+                    recentActivities.forEach(activity => {
+                        const activityId = activity.user.id + '_' + activity.show + '_' + activity.time;
+                        seenActivities.add(activityId);
+                    });
+                    localStorage.setItem('seenActivities', JSON.stringify([...seenActivities]));
+                    updateBadge();
+                } else {
+                    document.getElementById('notifList').innerHTML = '<p class="px-4 py-8 text-center text-sm text-slate-500 dark:text-slate-400">No new notifications</p>';
+                }
+            } catch (error) {
+                console.error('Error loading notifications:', error);
+            }
+        }
+        
+        // Update badge count
+        async function updateBadge() {
+            try {
+                const response = await fetch('/serieslist/api_users.php?action=get_activity');
+                const data = await response.json();
+                
+                if (data.success) {
+                    const unseenCount = data.activities.filter(activity => {
+                        const activityId = activity.user.id + '_' + activity.show + '_' + activity.time;
+                        return !seenActivities.has(activityId);
+                    }).length;
+                    
+                    const badge = document.getElementById('notifBadge');
+                    if (unseenCount > 0) {
+                        badge.textContent = unseenCount > 9 ? '9+' : unseenCount;
+                        badge.classList.remove('hidden');
+                    } else {
+                        badge.classList.add('hidden');
+                    }
+                }
+            } catch (error) {
+                console.error('Error updating badge:', error);
+            }
+        }
+        
+        // Clear all notifications
+        function clearNotifications() {
+            localStorage.setItem('seenActivities', '[]');
+            seenActivities.clear();
+            updateBadge();
+            document.getElementById('notifList').innerHTML = '<p class="px-4 py-8 text-center text-sm text-slate-500 dark:text-slate-400">No new notifications</p>';
+        }
+        
+        // Time ago helper
+        function getTimeAgo(timestamp) {
+            const seconds = Math.floor((Date.now() - timestamp) / 1000);
+            if (seconds < 60) return 'Just now';
+            if (seconds < 3600) return Math.floor(seconds / 60) + 'm ago';
+            if (seconds < 86400) return Math.floor(seconds / 3600) + 'h ago';
+            return Math.floor(seconds / 86400) + 'd ago';
+        }
+        
+        // Check for new notifications every 30 seconds
+        setInterval(updateBadge, 30000);
+        updateBadge(); // Initial check
         });
     </script>
