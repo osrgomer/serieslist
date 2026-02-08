@@ -1,17 +1,21 @@
 <?php
 session_start();
 
-// Destroy the session
-session_destroy();
+// Preserve global data before clearing session
+$global_users = $_SESSION['global_users'] ?? [];
+$friends_data_all = $_SESSION['friends_data_all'] ?? [];
 
-// Clear session cookie
-if (ini_get("session.use_cookies")) {
-    $params = session_get_cookie_params();
-    setcookie(session_name(), '', time() - 42000,
-        $params["path"], $params["domain"],
-        $params["secure"], $params["httponly"]
-    );
-}
+// Clear only login-related session data
+unset($_SESSION['user_logged_in']);
+unset($_SESSION['user_email']);
+unset($_SESSION['username']);
+unset($_SESSION['user_name']);
+unset($_SESSION['connections']);
+unset($_SESSION['friends_data']);
+
+// Restore global data
+$_SESSION['global_users'] = $global_users;
+$_SESSION['friends_data_all'] = $friends_data_all;
 
 // Redirect to login page
 header('Location: login.php');
