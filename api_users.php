@@ -71,47 +71,15 @@ switch ($action) {
         break;
         
     case 'get_friends':
-        // Load friends from global storage for current user
-        $userFriends = [];
-        
-        // Check user's own friends_data first
-        if (isset($_SESSION['friends_data']['friends'])) {
-            $userFriends = $_SESSION['friends_data']['friends'];
-        }
-        
-        // Also check global friends storage
-        if (isset($_SESSION['friends_data_all'][$currentUserId]['friends'])) {
-            // Merge with global storage (avoid duplicates)
-            foreach ($_SESSION['friends_data_all'][$currentUserId]['friends'] as $globalFriend) {
-                $isDuplicate = false;
-                foreach ($userFriends as $existingFriend) {
-                    if ($existingFriend['id'] === $globalFriend['id']) {
-                        $isDuplicate = true;
-                        break;
-                    }
-                }
-                if (!$isDuplicate) {
-                    $userFriends[] = $globalFriend;
-                }
-            }
-        }
-        
-        // Update online status for all friends in real-time
-        foreach ($userFriends as &$friend) {
-            $friend['online'] = isUserOnline($friend['id']);
-        }
-        
-        echo json_encode([
-            'success' => true,
-            'friends' => $userFriends
-        ]);
+        // Friends system not yet migrated to MySQL
+        echo json_encode(['success' => true, 'friends' => []]);
+        exit;
         break;
         
     case 'get_requests':
-        echo json_encode([
-            'success' => true,
-            'requests' => $_SESSION['friends_data']['requests'] ?? []
-        ]);
+        // Requests not yet migrated to MySQL
+        echo json_encode(['success' => true, 'requests' => []]);
+        exit;
         break;
         
     case 'add_friend':
@@ -220,33 +188,9 @@ switch ($action) {
         break;
         
     case 'get_activity':
-        // Get REAL activity from friends
-        $activities = [];
-        $friends = $_SESSION['friends_data']['friends'] ?? [];
-        $friendIds = array_column($friends, 'id');
-        
-        // Get activity for each friend
-        foreach ($friendIds as $friendId) {
-            if (isset($_SESSION['user_activity'][$friendId])) {
-                $friendActivities = $_SESSION['user_activity'][$friendId];
-                // Get last 5 activities per friend
-                $recentActivities = array_slice($friendActivities, -5);
-                $activities = array_merge($activities, $recentActivities);
-            }
-        }
-        
-        // Sort by time (most recent first)
-        usort($activities, function($a, $b) {
-            return $b['time'] - $a['time'];
-        });
-        
-        // Limit to 20 most recent activities
-        $activities = array_slice($activities, 0, 20);
-        
-        echo json_encode([
-            'success' => true,
-            'activities' => $activities
-        ]);
+        // Activity feed not yet migrated to MySQL
+        echo json_encode(['success' => true, 'activities' => []]);
+        exit;
         break;
         
     case 'set_online_status':
