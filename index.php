@@ -208,12 +208,13 @@ include 'header.php';
 
         const setupOfflineMode = () => {
             isCloudMode = false;
-            const savedSettings = localStorage.getItem('ai_settings');
+            const userKey = 'user_<?php echo $_SESSION['username'] ?? 'guest'; ?>';
+            const savedSettings = localStorage.getItem('ai_settings_' + userKey);
             if (savedSettings) {
                 aiSettings = JSON.parse(savedSettings);
             }
             document.getElementById('aiStatus').innerText = aiSettings.apiKey ? "AI ready for suggestions." : "Add API Key to unlock recommendations.";
-            const localData = localStorage.getItem('series_v2_backup');
+            const localData = localStorage.getItem('series_v2_' + userKey);
             currentSeries = localData ? JSON.parse(localData) : [];
             renderList(currentSeries);
         };
@@ -221,9 +222,10 @@ include 'header.php';
         const startDataListeners = () => {
             if (!user || !db) return;
             const seriesRef = collection(db, 'artifacts', currentAppId, 'public', 'data', 'series_' + user.uid);
+            const userKey = 'user_<?php echo $_SESSION['username'] ?? 'guest'; ?>';
             onSnapshot(seriesRef, (snapshot) => {
                 currentSeries = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
-                localStorage.setItem('series_v2_backup', JSON.stringify(currentSeries));
+                localStorage.setItem('series_v2_' + userKey, JSON.stringify(currentSeries));
                 renderList(currentSeries);
             }, (err) => {
                 if (err.code === 'permission-denied') setupOfflineMode();
@@ -345,7 +347,7 @@ include 'header.php';
                 const profileRef = doc(db, 'artifacts', currentAppId, 'public', 'data', 'profiles', user.uid);
                 await setDoc(profileRef, { aiProvider: provider, apiKey: key }, { merge: true });
             } else {
-                localStorage.setItem('ai_settings', JSON.stringify(aiSettings));
+                localStorage.setItem('ai_settings_' + getUserKey(), JSON.stringify(aiSettings));
             }
             document.getElementById('settingsModal').classList.add('hidden');
         };
@@ -373,7 +375,7 @@ include 'header.php';
             } else {
                 data.id = "local_" + Date.now();
                 currentSeries.push(data);
-                localStorage.setItem('series_v2_backup', JSON.stringify(currentSeries));
+                localStorage.setItem('series_v2_' + getUserKey(), JSON.stringify(currentSeries));
                 renderList(currentSeries);
             }
             document.getElementById('addModal').classList.add('hidden');
