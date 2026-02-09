@@ -22,11 +22,6 @@ if (isset($_SESSION['user_id'])) {
     updateLastActive($_SESSION['user_id']);
 }
 
-// Helper function to check if user is online (uses database)
-function isUserOnline($userId) {
-    return getUserStatus($userId) === 'online';
-}
-
 $action = $_GET['action'] ?? '';
 $method = $_SERVER['REQUEST_METHOD'];
 
