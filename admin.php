@@ -257,7 +257,12 @@ $page_title = 'Command Centre - SeriesList';
                 const response = await fetch('api_admin.php?action=get_stats');
                 const data = await response.json();
                 
-                if (!data.success) return;
+                console.log('Admin stats loaded:', data);
+                
+                if (!data.success) {
+                    console.error('Stats failed:', data);
+                    return;
+                }
                 
                 // Update server load
                 const load = data.server_load || 0;
@@ -279,8 +284,12 @@ $page_title = 'Command Centre - SeriesList';
                 
                 // Update users (categorize by status)
                 const online = [], idle = [], offline = [];
+                console.log('Total users from API:', data.users.length);
+                
                 data.users.forEach(user => {
-                    const secondsAgo = user.seconds_ago;
+                    const secondsAgo = parseInt(user.seconds_ago);
+                    console.log(`${user.username}: ${secondsAgo}s ago, manual=${user.manual_status}`);
+                    
                     if (secondsAgo < 120 || user.manual_status === 'online') {
                         online.push(user);
                     } else if (secondsAgo < 300 && user.manual_status !== 'offline') {
@@ -289,6 +298,8 @@ $page_title = 'Command Centre - SeriesList';
                         offline.push(user);
                     }
                 });
+                
+                console.log(`Online: ${online.length}, Idle: ${idle.length}, Offline: ${offline.length}`);
                 
                 document.getElementById('onlineCount').textContent = online.length;
                 document.getElementById('idleCount').textContent = idle.length;
