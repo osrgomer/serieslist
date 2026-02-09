@@ -40,11 +40,20 @@
     </div>
     <script>
         async function exitGodMode() {
+            if (!confirm('Exit God Mode and return to admin panel?')) return;
+            
             try {
-                await fetch('/serieslist/api_admin.php?action=exit_impersonate');
-                window.location.href = '/serieslist/admin.php';
+                const response = await fetch('api_admin.php?action=exit_impersonate');
+                const data = await response.json();
+                
+                if (data.success) {
+                    window.location.href = 'admin.php';
+                } else {
+                    alert('Failed to exit God Mode: ' + (data.error || 'Unknown error'));
+                }
             } catch (error) {
                 console.error('Exit failed:', error);
+                alert('Error exiting God Mode. Check console.');
             }
         }
     </script>
