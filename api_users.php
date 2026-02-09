@@ -68,25 +68,102 @@ switch ($action) {
         break;
         
     case 'get_friends':
-        // Friends system not yet migrated to MySQL
-        echo json_encode(['success' => true, 'friends' => []]);
+        // Get friends from MySQL
+        $db = getDB();
+        $currentUserId = $_SESSION['user_id'];
+        
+        $stmt = $db->prepare("
+            SELECT u.id, u.username, u.email, u.avatar, f.created_at
+            FROM friendships f
+            JOIN users u ON f.friend_id = u.id
+            WHERE f.user_id = ?
+            ORDER BY f.created_at DESC
+        ");
+        $stmt->execute([$currentUserId]);
+        $friendsData = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        
+        // Format with online status
+        $friends = [];
+        foreach ($friendsData as $friend) {
+            $friends[] = [
+                'id' => $friend['id'],
+                'username' => $friend['username'],
+                'avatar' => $friend['avatar'],
+                'online' => getUserStatus($friend['id']) === 'online',
+                'addedAt' => strtotime($friend['created_at']) * 1000 // Convert to JS timestamp
+            ];
+        }
+        
+        echo json_encode(['success' => true, 'friends' => $friends]);
         exit;
-        break;
         
     case 'get_requests':
         // Requests not yet migrated to MySQL
         echo json_encode(['success' => true, 'requests' => []]);
         exit;
-        break;
         
     case 'add_friend':
-        // Friends system not yet migrated to MySQL
-        echo json_encode(['success' => false, 'message' => 'Friends feature coming soon']);
+        // Add friend using MySQL
+        if ($method === 'POST') {
+            $data = json_decode(file_get_contents('php://input'), true);
+            $friendId = $data['friend_id'] ?? null;
+            
+            if (!$friendId) {
+                echo json_encode(['success' => false, 'message' => 'Friend ID required']);
+                exit;
+            }
+            
+            $db = getDB();
+            $currentUserId = $_SESSION['user_id'];
+            
+            // Check if already friends
+            $stmt = $db->prepare("SELECT id FROM friendships WHERE user_id = ? AND friend_id = ?");
+            $stmt->execute([$currentUserId, $friendId]);
+            if ($stmt->fetch()) {
+                echo json_encode(['success' => false, 'message' => 'Already friends']);
+                exit;
+            }
+            
+            // Add bidirectional friendship
+            $stmt = $db->prepare("INSERT INTO friendships (user_id, friend_id) VALUES (?, ?), (?, ?)");
+            $result = $stmt->execute([$currentUserId, $friendId, $friendId, $currentUserId]);
+            
+            // Get friend info
+            $stmt = $db->prepare("SELECT username FROM users WHERE id = ?");
+            $stmt->execute([$friendId]);
+            $friend = $stmt->fetch(PDO::FETCH_ASSOC);
+            
+            echo json_encode([
+                'success' => true,
+                'message' => "You're now friends with {$friend['username']}!"
+            ]);
+        } else {
+            echo json_encode(['success' => false, 'message' => 'POST required']);
+        }
         exit;
         
     case 'remove_friend':
-        // Friends system not yet migrated to MySQL
-        echo json_encode(['success' => false, 'message' => 'Friends feature coming soon']);
+        // Remove friend using MySQL
+        if ($method === 'POST') {
+            $data = json_decode(file_get_contents('php://input'), true);
+            $friendId = $data['friend_id'] ?? null;
+            
+            if (!$friendId) {
+                echo json_encode(['success' => false, 'message' => 'Friend ID required']);
+                exit;
+            }
+            
+            $db = getDB();
+            $currentUserId = $_SESSION['user_id'];
+            
+            // Remove bidirectional friendship
+            $stmt = $db->prepare("DELETE FROM friendships WHERE (user_id = ? AND friend_id = ?) OR (user_id = ? AND friend_id = ?)");
+            $result = $stmt->execute([$currentUserId, $friendId, $friendId, $currentUserId]);
+            
+            echo json_encode(['success' => true, 'message' => 'Friend removed']);
+        } else {
+            echo json_encode(['success' => false, 'message' => 'POST required']);
+        }
         exit;
         
     case 'get_activity':
