@@ -1,7 +1,7 @@
 <?php
 session_start();
 
-// Admin authentication - only omersr12@gmail.com
+// Admin authentication
 if (!isset($_SESSION['user_logged_in']) || $_SESSION['user_logged_in'] !== true) {
     header('Location: login.php');
     exit;
@@ -12,458 +12,378 @@ if (!isset($_SESSION['user_email']) || $_SESSION['user_email'] !== 'omersr12@gma
     exit;
 }
 
-// Update last active
+require_once 'db.php';
 if (isset($_SESSION['user_id'])) {
-    require_once 'db.php';
     updateLastActive($_SESSION['user_id']);
 }
 
 $current_page = 'admin';
-$page_title = 'Admin Panel - SeriesList';
-$extra_head = '
-<style>
-    @keyframes pulse-green {
-        0% { transform: scale(1); text-shadow: 0 0 0px rgba(34, 197, 94, 0); }
-        50% { transform: scale(1.15); text-shadow: 0 0 15px rgba(34, 197, 94, 0.8); }
-        100% { transform: scale(1); text-shadow: 0 0 0px rgba(34, 197, 94, 0); }
-    }
-    
-    @keyframes pulse-amber {
-        0% { transform: scale(1); text-shadow: 0 0 0px rgba(245, 158, 11, 0); }
-        50% { transform: scale(1.15); text-shadow: 0 0 15px rgba(245, 158, 11, 0.8); }
-        100% { transform: scale(1); text-shadow: 0 0 0px rgba(245, 158, 11, 0); }
-    }
-    
-    @keyframes pulse-blue {
-        0% { transform: scale(1); text-shadow: 0 0 0px rgba(59, 130, 246, 0); }
-        50% { transform: scale(1.15); text-shadow: 0 0 15px rgba(59, 130, 246, 0.8); }
-        100% { transform: scale(1); text-shadow: 0 0 0px rgba(59, 130, 246, 0); }
-    }
-    
-    .pulse-update-green {
-        display: inline-block;
-        animation: pulse-green 0.6s ease-in-out;
-    }
-    
-    .pulse-update-amber {
-        display: inline-block;
-        animation: pulse-amber 0.6s ease-in-out;
-    }
-    
-    .pulse-update-blue {
-        display: inline-block;
-        animation: pulse-blue 0.6s ease-in-out;
-    }
-</style>
-';
-include 'header.php';
-
-// Get database stats
-require_once 'db.php';
-$pdo = getDB();
-
-// Count users
-$userCount = $pdo->query("SELECT COUNT(*) FROM users")->fetchColumn();
-
-// Count friendships
-$friendshipCount = $pdo->query("SELECT COUNT(DISTINCT user_id) FROM friendships")->fetchColumn();
-
-// Count activities
-$activityCount = $pdo->query("SELECT COUNT(*) FROM user_activity")->fetchColumn();
-
-// Get online/idle/offline users with time-based queries
-$onlineUsers = $pdo->query("
-    SELECT id, email, username, last_active, manual_status 
-    FROM users 
-    WHERE last_active >= NOW() - INTERVAL 2 MINUTE 
-    OR manual_status = 'online'
-    ORDER BY last_active DESC
-")->fetchAll();
-
-$idleUsers = $pdo->query("
-    SELECT id, email, username, last_active, manual_status 
-    FROM users 
-    WHERE last_active < NOW() - INTERVAL 2 MINUTE 
-    AND last_active >= NOW() - INTERVAL 5 MINUTE
-    AND manual_status != 'online'
-    AND manual_status != 'offline'
-    ORDER BY last_active DESC
-")->fetchAll();
-
-$offlineUsers = $pdo->query("
-    SELECT id, email, username, last_active, manual_status 
-    FROM users 
-    WHERE (last_active < NOW() - INTERVAL 5 MINUTE OR manual_status = 'offline')
-    AND manual_status != 'online'
-    ORDER BY last_active DESC
-")->fetchAll();
-
-// Get all users
-$users = $pdo->query("SELECT id, email, username, manual_status, last_active, created_at FROM users ORDER BY created_at DESC")->fetchAll();
-
-// Get recent activities
-$recentActivities = $pdo->query("
-    SELECT ua.*, u.username, u.email 
-    FROM user_activity ua 
-    JOIN users u ON ua.user_id = u.id 
-    ORDER BY ua.created_at DESC 
-    LIMIT 20
-")->fetchAll();
+$page_title = 'Command Centre - SeriesList';
 ?>
-
-    <main class="max-w-7xl mx-auto px-4 pt-8 pb-20">
-        <div class="flex items-center gap-3 mb-8">
-            <div class="w-12 h-12 bg-red-600 rounded-xl flex items-center justify-center text-white">
-                <i class="fas fa-shield-alt text-xl"></i>
-            </div>
-            <div>
-                <h1 class="text-3xl font-bold text-slate-900 dark:text-slate-100">Admin Panel</h1>
-                <p class="text-slate-600 dark:text-slate-400">System overview and management</p>
-            </div>
-            <button id="muteToggle" class="px-4 py-2 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors flex items-center gap-2">
-                <i id="muteIcon" class="fas fa-volume-up"></i>
-                <span id="muteText">Sound On</span>
-            </button>
-        </div>
-
-        <!-- Stats Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-            <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-lg p-6 border border-slate-200 dark:border-slate-700">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-sm text-slate-600 dark:text-slate-400 mb-1">Total Users</p>
-                        <p class="text-3xl font-bold text-slate-900 dark:text-slate-100"><?php echo $userCount; ?></p>
-                    </div>
-                    <div class="w-12 h-12 bg-indigo-100 dark:bg-indigo-900/30 rounded-xl flex items-center justify-center">
-                        <i class="fas fa-users text-indigo-600 dark:text-indigo-400 text-xl"></i>
-                    </div>
-                </div>
-            </div>
-
-            <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-lg p-6 border border-slate-200 dark:border-slate-700">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-sm text-slate-600 dark:text-slate-400 mb-1">Online Now</p>
-                        <p id="onlineCount" class="text-3xl font-bold text-green-600 dark:text-green-400">
-                            <?php echo count($onlineUsers); ?>
-                        </p>
-                        <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                            <i class="fas fa-sync-alt text-[10px]"></i> Live updating
-                        </p>
-                    </div>
-                    <div class="w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-xl flex items-center justify-center">
-                        <i class="fas fa-circle text-green-600 dark:text-green-400 text-xl animate-pulse"></i>
-                    </div>
-                </div>
-            </div>
-
-            <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-lg p-6 border border-slate-200 dark:border-slate-700">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-sm text-slate-600 dark:text-slate-400 mb-1">Friendships</p>
-                        <p id="friendshipCount" class="text-3xl font-bold text-slate-900 dark:text-slate-100">
-                            <?php echo $friendshipCount; ?>
-                        </p>
-                    </div>
-                    <div class="w-12 h-12 bg-amber-100 dark:bg-amber-900/30 rounded-xl flex items-center justify-center">
-                        <i class="fas fa-user-friends text-amber-600 dark:text-amber-400 text-xl"></i>
-                    </div>
-                </div>
-            </div>
-
-            <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-lg p-6 border border-slate-200 dark:border-slate-700">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-sm text-slate-600 dark:text-slate-400 mb-1">Activities</p>
-                        <p id="activityCount" class="text-3xl font-bold text-slate-900 dark:text-slate-100">
-                            <?php echo $activityCount; ?>
-                        </p>
-                    </div>
-                    <div class="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center">
-                        <i class="fas fa-chart-line text-blue-600 dark:text-blue-400 text-xl"></i>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Live User Status Grid -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <!-- Online Users (Last 2 minutes) -->
-            <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700">
-                <div class="p-4 border-b border-slate-200 dark:border-slate-700 bg-green-50 dark:bg-green-900/20">
-                    <div class="flex items-center gap-2">
-                        <i class="fas fa-circle text-green-500 text-xs"></i>
-                        <h3 class="font-bold text-slate-900 dark:text-slate-100">Online</h3>
-                        <span class="text-xs text-slate-600 dark:text-slate-400">(last 2 min)</span>
-                    </div>
-                </div>
-                <div class="p-4 space-y-3 max-h-64 overflow-y-auto">
-                    <?php if (empty($onlineUsers)): ?>
-                        <p class="text-sm text-slate-500 dark:text-slate-400 text-center py-4">No users online</p>
-                    <?php else: ?>
-                        <?php foreach ($onlineUsers as $user): ?>
-                        <div class="flex items-center gap-3 p-2 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700/50">
-                            <i class="fas fa-user-circle text-2xl text-green-500"></i>
-                            <div class="flex-1 min-w-0">
-                                <p class="text-sm font-medium text-slate-900 dark:text-slate-100 truncate">
-                                    <?php echo htmlspecialchars($user['username']); ?>
-                                </p>
-                                <p class="text-xs text-slate-500 dark:text-slate-400">
-                                    <?php 
-                                        $diff = time() - strtotime($user['last_active']);
-                                        if ($diff < 60) echo 'Active now';
-                                        else echo floor($diff / 60) . ' min ago';
-                                    ?>
-                                </p>
-                            </div>
-                        </div>
-                        <?php endforeach; ?>
-                    <?php endif; ?>
-                </div>
-            </div>
-
-            <!-- Idle Users (2-5 minutes) -->
-            <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700">
-                <div class="p-4 border-b border-slate-200 dark:border-slate-700 bg-amber-50 dark:bg-amber-900/20">
-                    <div class="flex items-center gap-2">
-                        <i class="fas fa-circle text-amber-500 text-xs"></i>
-                        <h3 class="font-bold text-slate-900 dark:text-slate-100">Idle</h3>
-                        <span class="text-xs text-slate-600 dark:text-slate-400">(2-5 min)</span>
-                    </div>
-                </div>
-                <div class="p-4 space-y-3 max-h-64 overflow-y-auto">
-                    <?php if (empty($idleUsers)): ?>
-                        <p class="text-sm text-slate-500 dark:text-slate-400 text-center py-4">No idle users</p>
-                    <?php else: ?>
-                        <?php foreach ($idleUsers as $user): ?>
-                        <div class="flex items-center gap-3 p-2 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700/50">
-                            <i class="fas fa-user-circle text-2xl text-amber-500"></i>
-                            <div class="flex-1 min-w-0">
-                                <p class="text-sm font-medium text-slate-900 dark:text-slate-100 truncate">
-                                    <?php echo htmlspecialchars($user['username']); ?>
-                                </p>
-                                <p class="text-xs text-slate-500 dark:text-slate-400">
-                                    <?php 
-                                        $diff = time() - strtotime($user['last_active']);
-                                        echo floor($diff / 60) . ' min ago';
-                                    ?>
-                                </p>
-                            </div>
-                        </div>
-                        <?php endforeach; ?>
-                    <?php endif; ?>
-                </div>
-            </div>
-
-            <!-- Offline Users (>5 minutes) -->
-            <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700">
-                <div class="p-4 border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-700/30">
-                    <div class="flex items-center gap-2">
-                        <i class="fas fa-circle text-slate-400 text-xs"></i>
-                        <h3 class="font-bold text-slate-900 dark:text-slate-100">Offline</h3>
-                        <span class="text-xs text-slate-600 dark:text-slate-400">(>5 min)</span>
-                    </div>
-                </div>
-                <div class="p-4 space-y-3 max-h-64 overflow-y-auto">
-                    <?php if (empty($offlineUsers)): ?>
-                        <p class="text-sm text-slate-500 dark:text-slate-400 text-center py-4">All users active!</p>
-                    <?php else: ?>
-                        <?php foreach ($offlineUsers as $user): ?>
-                        <div class="flex items-center gap-3 p-2 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700/50">
-                            <i class="fas fa-user-circle text-2xl text-slate-400"></i>
-                            <div class="flex-1 min-w-0">
-                                <p class="text-sm font-medium text-slate-900 dark:text-slate-100 truncate">
-                                    <?php echo htmlspecialchars($user['username']); ?>
-                                </p>
-                                <p class="text-xs text-slate-500 dark:text-slate-400">
-                                    <?php 
-                                        $diff = time() - strtotime($user['last_active']);
-                                        if ($diff < 3600) echo floor($diff / 60) . ' min ago';
-                                        elseif ($diff < 86400) echo floor($diff / 3600) . ' hours ago';
-                                        else echo floor($diff / 86400) . ' days ago';
-                                    ?>
-                                </p>
-                            </div>
-                        </div>
-                        <?php endforeach; ?>
-                    <?php endif; ?>
-                </div>
-            </div>
-        </div>
-
-        <!-- Users Table -->
-        <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700 mb-8">
-            <div class="p-6 border-b border-slate-200 dark:border-slate-700">
-                <h2 class="text-xl font-bold text-slate-900 dark:text-slate-100">All Users</h2>
-            </div>
-            <div class="overflow-x-auto">
-                <table class="w-full">
-                    <thead class="bg-slate-50 dark:bg-slate-700/50">
-                        <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">User</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Email</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Status</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Last Active</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Joined</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-slate-200 dark:divide-slate-700">
-                        <?php foreach ($users as $user): ?>
-                        <?php 
-                            $isOnline = isUserOnline($user['id']);
-                            $lastActive = strtotime($user['last_active']);
-                            $timeDiff = time() - $lastActive;
-                        ?>
-                        <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/50">
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="flex items-center gap-3">
-                                    <div class="relative">
-                                        <i class="fas fa-user-circle text-3xl text-slate-400 dark:text-slate-500"></i>
-                                        <div class="absolute -bottom-0.5 -right-0.5 w-3 h-3 <?php echo $isOnline ? 'bg-green-500' : 'bg-slate-400'; ?> border-2 border-white dark:border-slate-800 rounded-full"></div>
-                                    </div>
-                                    <span class="font-medium text-slate-900 dark:text-slate-100"><?php echo htmlspecialchars($user['username']); ?></span>
-                                </div>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-600 dark:text-slate-400">
-                                <?php echo htmlspecialchars($user['email']); ?>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <span class="px-2 py-1 text-xs font-medium rounded-full
-                                    <?php if ($user['manual_status'] === 'online'): ?>
-                                        bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400
-                                    <?php elseif ($user['manual_status'] === 'offline'): ?>
-                                        bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-400
-                                    <?php else: ?>
-                                        bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-400
-                                    <?php endif; ?>">
-                                    <?php echo ucfirst($user['manual_status']); ?>
-                                </span>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-600 dark:text-slate-400">
-                                <?php 
-                                    if ($timeDiff < 60) echo 'Just now';
-                                    elseif ($timeDiff < 3600) echo floor($timeDiff / 60) . ' min ago';
-                                    elseif ($timeDiff < 86400) echo floor($timeDiff / 3600) . ' hours ago';
-                                    else echo floor($timeDiff / 86400) . ' days ago';
-                                ?>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-600 dark:text-slate-400">
-                                <?php echo date('M j, Y', strtotime($user['created_at'])); ?>
-                            </td>
-                        </tr>
-                        <?php endforeach; ?>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-        <!-- Recent Activity -->
-        <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700">
-            <div class="p-6 border-b border-slate-200 dark:border-slate-700">
-                <h2 class="text-xl font-bold text-slate-900 dark:text-slate-100">Recent Activity</h2>
-            </div>
-            <div class="divide-y divide-slate-200 dark:divide-slate-700">
-                <?php foreach ($recentActivities as $activity): ?>
-                <div class="p-6 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
-                    <div class="flex items-start gap-4">
-                        <i class="fas fa-user-circle text-2xl text-slate-400 dark:text-slate-500 mt-1"></i>
-                        <div class="flex-1">
-                            <p class="text-slate-900 dark:text-slate-100">
-                                <span class="font-semibold"><?php echo htmlspecialchars($activity['username']); ?></span>
-                                <span class="text-slate-600 dark:text-slate-400"> <?php echo htmlspecialchars($activity['action']); ?></span>
-                                <span class="font-semibold text-indigo-600 dark:text-indigo-400"><?php echo htmlspecialchars($activity['show_name']); ?></span>
-                            </p>
-                            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                                <?php echo date('M j, Y g:i A', strtotime($activity['created_at'])); ?>
-                            </p>
-                        </div>
-                    </div>
-                </div>
-                <?php endforeach; ?>
-            </div>
-        </div>
-    </main>
-
-    <script>
-        // Notification sound - subtle ping
-        const joinSound = new Audio('https://assets.mixkit.co/active_storage/sfx/2354/2354.wav');
-        joinSound.volume = 0.3; // Keep it subtle
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><?php echo $page_title; ?></title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            background: #0a0a0f;
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(0, 255, 255, 0.1) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(0, 255, 136, 0.1) 0px, transparent 50%);
+            color: #e0e0e0;
+            font-family: 'Courier New', monospace;
+        }
         
-        // Mute toggle state
-        let isMuted = localStorage.getItem('adminSoundMuted') === 'true';
+        .glass-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
         
-        // Set initial mute state
-        function updateMuteButton() {
-            const muteIcon = document.getElementById('muteIcon');
-            const muteText = document.getElementById('muteText');
-            if (isMuted) {
-                muteIcon.className = 'fas fa-volume-mute';
-                muteText.textContent = 'Sound Off';
-            } else {
-                muteIcon.className = 'fas fa-volume-up';
-                muteText.textContent = 'Sound On';
+        .glass-card:hover {
+            border-color: #00ffff;
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.3);
+        }
+        
+        .status-pulse {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            animation: pulse 1.5s infinite;
+        }
+        
+        .status-online { background: #00ff88; box-shadow: 0 0 10px #00ff88; }
+        .status-idle { background: #ffaa00; box-shadow: 0 0 10px #ffaa00; }
+        .status-offline { background: #666; box-shadow: 0 0 5px #666; }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.5); opacity: 0.5; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        
+        .activity-ticker {
+            max-height: 400px;
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: #00ffff #1a1a2e;
+        }
+        
+        .activity-ticker::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .activity-ticker::-webkit-scrollbar-track {
+            background: #1a1a2e;
+        }
+        
+        .activity-ticker::-webkit-scrollbar-thumb {
+            background: #00ffff;
+            border-radius: 3px;
+        }
+        
+        .activity-item {
+            animation: slideDown 0.3s ease-out;
+        }
+        
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
             }
         }
         
-        // Mute toggle handler
-        document.getElementById('muteToggle').addEventListener('click', function() {
-            isMuted = !isMuted;
-            localStorage.setItem('adminSoundMuted', isMuted);
-            updateMuteButton();
-        });
-        
-        updateMuteButton();
-        
-        // Live updating counters with pulse animation and sound
-        let currentCounts = {
-            online: <?php echo count($onlineUsers); ?>,
-            friendships: <?php echo $friendshipCount; ?>,
-            activities: <?php echo $activityCount; ?>
-        };
-        
-        function animateCounter(element, className) {
-            element.classList.remove(className);
-            void element.offsetWidth; // Force reflow to restart animation
-            element.classList.add(className);
+        .neon-text {
+            text-shadow: 0 0 10px rgba(0, 255, 255, 0.8);
         }
         
-        function updateCounters() {
-            fetch('/serieslist/api_online_count.php')
-                .then(response => response.json())
-                .then(data => {
-                    // Update online count
-                    const onlineElement = document.getElementById('onlineCount');
-                    
-                    // Check if someone joined (count increased)
-                    if (data.online > currentCounts.online) {
-                        // Play sound if not muted
-                        if (!isMuted) {
-                            joinSound.play().catch(e => {
-                                console.log("Audio autoplay blocked. User must interact with page first.");
-                            });
-                        }
-                        
-                        // Animate the counter
-                        animateCounter(onlineElement, 'pulse-update-green');
-                    } else if (data.online !== currentCounts.online) {
-                        // Just animate without sound (someone left or went idle)
-                        animateCounter(onlineElement, 'pulse-update-green');
-                    }
-                    
-                    // Update the displayed count
-                    if (data.online !== currentCounts.online) {
-                        currentCounts.online = data.online;
-                        onlineElement.textContent = data.online;
-                    }
-                })
-                .catch(error => console.error('Error updating counters:', error));
+        .progress-bar {
+            background: linear-gradient(90deg, #00ff88 0%, #00ffff 100%);
+            height: 100%;
+            transition: width 0.3s ease;
         }
         
-        // Update every 5 seconds
-        setInterval(updateCounters, 5000);
-        
-        // Run once on page load
-        updateCounters();
-    </script>
+        .impersonate-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(90deg, #ff0000, #ff6600);
+            color: white;
+            padding: 10px;
+            text-align: center;
+            z-index: 9999;
+            box-shadow: 0 0 20px rgba(255, 0, 0, 0.5);
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <!-- Impersonation Bar -->
+    <div id="impersonateBar" class="impersonate-bar">
+        ⚠️ Impersonating <span id="impersonateUser"></span> - 
+        <button onclick="exitImpersonate()" class="underline font-bold">Exit God Mode</button>
+    </div>
 
-<?php include 'footer.php'; ?>
+    <div class="container mx-auto px-4 py-8 <?php echo isset($_SESSION['admin_origin']) ? 'mt-12' : ''; ?>">
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <h1 class="text-5xl font-bold neon-text mb-2">
+                <i class="fas fa-satellite-dish"></i> COMMAND CENTRE
+            </h1>
+            <p class="text-cyan-400">System Status: <span class="text-green-400">OPERATIONAL</span></p>
+            <a href="index.php" class="text-sm text-slate-400 hover:text-cyan-400">
+                <i class="fas fa-arrow-left"></i> Back to Main
+            </a>
+        </div>
+
+        <!-- Stats Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <!-- Online Users -->
+            <div class="glass-card rounded-lg p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-xl font-bold text-green-400">
+                        <i class="fas fa-circle status-pulse status-online"></i> ONLINE
+                    </h3>
+                    <span id="onlineCount" class="text-3xl font-bold text-green-400">0</span>
+                </div>
+                <div id="onlineUsers" class="space-y-2"></div>
+            </div>
+
+            <!-- Idle Users -->
+            <div class="glass-card rounded-lg p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-xl font-bold text-amber-400">
+                        <i class="fas fa-circle status-pulse status-idle"></i> IDLE
+                    </h3>
+                    <span id="idleCount" class="text-3xl font-bold text-amber-400">0</span>
+                </div>
+                <div id="idleUsers" class="space-y-2"></div>
+            </div>
+
+            <!-- Offline Users -->
+            <div class="glass-card rounded-lg p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-xl font-bold text-slate-400">
+                        <i class="fas fa-circle status-pulse status-offline"></i> OFFLINE
+                    </h3>
+                    <span id="offlineCount" class="text-3xl font-bold text-slate-400">0</span>
+                </div>
+                <div id="offlineUsers" class="space-y-2"></div>
+            </div>
+        </div>
+
+        <!-- Live Activity Ticker & Trending Shows -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- Activity Feed -->
+            <div class="glass-card rounded-lg p-6">
+                <h3 class="text-2xl font-bold neon-text mb-4">
+                    <i class="fas fa-terminal"></i> LIVE ACTIVITY STREAM
+                </h3>
+                <div id="activityFeed" class="activity-ticker space-y-2">
+                    <p class="text-slate-500 text-center">Initializing feed...</p>
+                </div>
+            </div>
+
+            <!-- Trending Shows -->
+            <div class="glass-card rounded-lg p-6">
+                <h3 class="text-2xl font-bold neon-text mb-4">
+                    <i class="fas fa-fire"></i> TRENDING SHOWS
+                </h3>
+                <div id="trendingShows" class="space-y-4">
+                    <p class="text-slate-500 text-center">Loading data...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let lastActivityId = 0;
+        let impersonating = <?php echo isset($_SESSION['admin_origin']) ? 'true' : 'false'; ?>;
+
+        // Load users
+        async function loadUsers() {
+            try {
+                const response = await fetch('api_online_count.php');
+                const data = await response.json();
+                
+                // Update counts
+                document.getElementById('onlineCount').textContent = data.online.length;
+                document.getElementById('idleCount').textContent = data.idle.length;
+                document.getElementById('offlineCount').textContent = data.offline.length;
+                
+                // Render user lists
+                renderUsers('onlineUsers', data.online, 'green');
+                renderUsers('idleUsers', data.idle, 'amber');
+                renderUsers('offlineUsers', data.offline, 'slate');
+            } catch (error) {
+                console.error('Failed to load users:', error);
+            }
+        }
+
+        function renderUsers(containerId, users, color) {
+            const container = document.getElementById(containerId);
+            if (users.length === 0) {
+                container.innerHTML = '<p class="text-sm text-slate-500">None</p>';
+                return;
+            }
+            
+            container.innerHTML = users.map(user => `
+                <div class="flex items-center justify-between p-2 rounded hover:bg-${color}-500/10">
+                    <div class="flex items-center gap-2">
+                        <img src="${user.avatar}" class="w-8 h-8 rounded-full">
+                        <span class="text-sm">${user.username}</span>
+                    </div>
+                    <button onclick="impersonate(${user.id}, '${user.username.replace(/'/g, "\\'")}')" 
+                            class="text-xs text-cyan-400 hover:text-cyan-300">
+                        <i class="fas fa-user-secret"></i>
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        // Load activity feed
+        async function loadActivity() {
+            try {
+                const response = await fetch('api_admin.php?action=get_activity');
+                const data = await response.json();
+                
+                if (data.success && data.activities.length > 0) {
+                    const feed = document.getElementById('activityFeed');
+                    feed.innerHTML = data.activities.map(activity => `
+                        <div class="activity-item p-3 rounded bg-slate-900/50 border border-slate-700">
+                            <div class="flex items-center gap-2 mb-1">
+                                <img src="${activity.avatar}" class="w-6 h-6 rounded-full">
+                                <span class="text-sm text-cyan-400">${activity.username}</span>
+                                <span class="text-xs text-slate-500">${timeAgo(activity.created_at)}</span>
+                            </div>
+                            <p class="text-sm text-slate-300">${activity.action} <span class="text-white">${activity.show_title}</span></p>
+                        </div>
+                    `).join('');
+                } else {
+                    document.getElementById('activityFeed').innerHTML = '<p class="text-slate-500 text-center">No activity yet</p>';
+                }
+            } catch (error) {
+                console.error('Failed to load activity:', error);
+            }
+        }
+
+        // Load trending shows
+        async function loadTrending() {
+            try {
+                const response = await fetch('api_admin.php?action=get_trending');
+                const data = await response.json();
+                
+                if (data.success && data.trending.length > 0) {
+                    const container = document.getElementById('trendingShows');
+                    container.innerHTML = data.trending.map((show, index) => {
+                        const completedPercent = (show.completed / show.total_fans) * 100;
+                        const watchingPercent = (show.watching / show.total_fans) * 100;
+                        
+                        return `
+                            <div class="p-3 rounded bg-slate-900/50 border border-slate-700">
+                                <div class="flex justify-between mb-2">
+                                    <span class="text-sm font-bold ${index === 0 ? 'text-yellow-400' : 'text-white'}">
+                                        ${index + 1}. ${show.title}
+                                    </span>
+                                    <span class="text-sm text-cyan-400">${show.total_fans} fans</span>
+                                </div>
+                                <div class="space-y-1">
+                                    <div class="flex items-center gap-2">
+                                        <span class="text-xs text-green-400 w-20">Completed:</span>
+                                        <div class="flex-1 bg-slate-800 rounded h-2">
+                                            <div class="progress-bar rounded h-full" style="width: ${completedPercent}%"></div>
+                                        </div>
+                                        <span class="text-xs text-slate-400">${show.completed}</span>
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <span class="text-xs text-amber-400 w-20">Watching:</span>
+                                        <div class="flex-1 bg-slate-800 rounded h-2">
+                                            <div class="progress-bar rounded h-full" style="width: ${watchingPercent}%"></div>
+                                        </div>
+                                        <span class="text-xs text-slate-400">${show.watching}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+                } else {
+                    document.getElementById('trendingShows').innerHTML = '<p class="text-slate-500 text-center">No shows tracked yet</p>';
+                }
+            } catch (error) {
+                console.error('Failed to load trending:', error);
+            }
+        }
+
+        // Impersonate user
+        async function impersonate(userId, username) {
+            if (!confirm(`Enter God Mode as ${username}?`)) return;
+            
+            try {
+                const response = await fetch('api_admin.php?action=impersonate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ user_id: userId })
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    window.location.href = 'index.php';
+                }
+            } catch (error) {
+                console.error('Impersonation failed:', error);
+                alert('Impersonation failed!');
+            }
+        }
+
+        async function exitImpersonate() {
+            try {
+                await fetch('api_admin.php?action=exit_impersonate');
+                window.location.href = 'admin.php';
+            } catch (error) {
+                console.error('Exit failed:', error);
+            }
+        }
+
+        function timeAgo(timestamp) {
+            const seconds = Math.floor((new Date() - new Date(timestamp)) / 1000);
+            if (seconds < 60) return 'just now';
+            if (seconds < 3600) return Math.floor(seconds / 60) + 'm ago';
+            if (seconds < 86400) return Math.floor(seconds / 3600) + 'h ago';
+            return Math.floor(seconds / 86400) + 'd ago';
+        }
+
+        // Auto-refresh
+        loadUsers();
+        loadActivity();
+        loadTrending();
+        
+        setInterval(loadUsers, 5000);
+        setInterval(loadActivity, 10000);
+        setInterval(loadTrending, 30000);
+        
+        // Check if impersonating
+        if (impersonating) {
+            document.getElementById('impersonateBar').style.display = 'block';
+            <?php
+            if (isset($_SESSION['admin_origin'])) {
+                $stmt = getDB()->prepare("SELECT username FROM users WHERE id = ?");
+                $stmt->execute([$_SESSION['user_id']]);
+                $impersonatedUser = $stmt->fetchColumn();
+                echo "document.getElementById('impersonateUser').textContent = '" . htmlspecialchars($impersonatedUser) . "';";
+            }
+            ?>
+        }
+    </script>
+</body>
+</html>
