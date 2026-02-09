@@ -49,10 +49,29 @@ if ($action === 'upload' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     
     // Move uploaded file
     if (move_uploaded_file($file['tmp_name'], $uploadPath)) {
+        // Verify file exists
+        if (!file_exists($uploadPath)) {
+            echo json_encode(['success' => false, 'message' => 'File upload succeeded but file disappeared', 'debug_path' => $uploadPath]);
+            exit;
+        }
+        
         $avatarUrl = 'uploads/avatars/' . $filename;
         
         // Save to session
         $_SESSION['user_avatar'] = $avatarUrl;
+        
+        // Update MySQL database
+        try {
+            require_once __DIR__ . '/db.php';
+            $db = getDB();
+            if ($db && isset($_SESSION['user_id'])) {
+                $stmt = $db->prepare("UPDATE users SET avatar = ? WHERE id = ?");
+                $stmt->execute([$avatarUrl, $_SESSION['user_id']]);
+            }
+        } catch (Exception $e) {
+            // Log but don't fail - session has it
+            error_log("Avatar DB update failed: " . $e->getMessage());
+        }
         
         // Update global users if exists
         if (isset($_SESSION['global_users'][$userId])) {
@@ -62,10 +81,12 @@ if ($action === 'upload' && $_SERVER['REQUEST_METHOD'] === 'POST') {
         echo json_encode([
             'success' => true,
             'message' => 'Avatar uploaded successfully',
-            'avatar_url' => $avatarUrl
+            'avatar_url' => $avatarUrl,
+            'file_exists' => file_exists($uploadPath),
+            'debug_path' => $uploadPath
         ]);
     } else {
-        echo json_encode(['success' => false, 'message' => 'Failed to save file']);
+        echo json_encode(['success' => false, 'message' => 'Failed to save file', 'debug_tmp' => $file['tmp_name'], 'debug_target' => $uploadPath]);
     }
 } elseif ($action === 'set' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     // Set avatar from URL or preset

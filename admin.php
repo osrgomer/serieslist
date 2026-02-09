@@ -294,6 +294,33 @@ $page_title = 'Command Centre - SeriesList';
                 <!-- Bubbles will spawn here -->
             </div>
         </div>
+        
+        <!-- FILE UPLOAD MANAGER -->
+        <div class="glass-card rounded-lg p-6 mt-6">
+            <h3 class="text-2xl font-bold neon-text mb-4">
+                <i class="fas fa-upload"></i> FILE UPLOAD MANAGER
+            </h3>
+            
+            <form id="uploadForm" class="mb-6 flex gap-4 items-end">
+                <div class="flex-1">
+                    <label class="block text-sm font-medium text-slate-300 mb-2">Title</label>
+                    <input type="text" id="uploadTitle" placeholder="Enter file title" required
+                           class="w-full px-4 py-2 bg-slate-800 border border-slate-600 rounded-lg text-white focus:border-cyan-500 focus:outline-none">
+                </div>
+                <div class="flex-1">
+                    <label class="block text-sm font-medium text-slate-300 mb-2">File (Image or Text)</label>
+                    <input type="file" id="uploadImage" accept="image/*,.txt,.md,.csv,.json,.xml,.log" required
+                           class="w-full px-4 py-2 bg-slate-800 border border-slate-600 rounded-lg text-white focus:border-cyan-500 focus:outline-none">
+                </div>
+                <button type="submit" class="px-6 py-2 bg-gradient-to-r from-cyan-500 to-indigo-500 text-white font-bold rounded-lg hover:shadow-lg hover:shadow-cyan-500/50 transition-all">
+                    <i class="fas fa-upload mr-2"></i>Upload
+                </button>
+            </form>
+            
+            <div id="uploadsList" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <p class="text-slate-500 text-center col-span-full">Loading uploads...</p>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -415,7 +442,7 @@ $page_title = 'Command Centre - SeriesList';
                 bubble.innerHTML = `
                     <div class="relative">
                         <div class="status-ring ${ringColor} ${pulseClass}"></div>
-                        <img src="${user.avatar}" 
+                        <img src="${user.avatar_url}" 
                              class="w-14 h-14 rounded-full border-2 border-white/40 relative z-10 transition-transform hover:scale-110" 
                              alt="${user.username}">
                         <div class="absolute -bottom-8 left-1/2 -translate-x-1/2 text-[10px] text-white opacity-0 hover:opacity-100 whitespace-nowrap bg-black/80 px-2 py-1 rounded transition-opacity pointer-events-none">
@@ -442,7 +469,7 @@ $page_title = 'Command Centre - SeriesList';
             container.innerHTML = users.map(user => `
                 <div class="flex items-center justify-between p-2 rounded hover:bg-${color}-500/10">
                     <div class="flex items-center gap-2">
-                        <img src="${user.avatar}" class="w-8 h-8 rounded-full">
+                        <img src="${user.avatar_url}" class="w-8 h-8 rounded-full">
                         <span class="text-sm">${user.username}</span>
                     </div>
                     <button onclick="impersonate(${user.id}, '${user.username.replace(/'/g, "\\'")}')" 
@@ -459,7 +486,7 @@ $page_title = 'Command Centre - SeriesList';
             feed.innerHTML = activities.map(activity => `
                 <div class="activity-item p-3 rounded bg-slate-900/50 border border-slate-700">
                     <div class="flex items-center gap-2 mb-1">
-                        <img src="${activity.avatar}" class="w-6 h-6 rounded-full">
+                        <img src="${activity.avatar_url}" class="w-6 h-6 rounded-full">
                         <span class="text-sm text-cyan-400">${activity.username}</span>
                         <span class="text-xs text-slate-500">${timeAgo(activity.created_at)}</span>
                     </div>
@@ -545,6 +572,65 @@ $page_title = 'Command Centre - SeriesList';
         // Auto-refresh - ONE call for everything
         loadStats();
         setInterval(loadStats, 5000); // Every 5 seconds
+        
+        // Image Upload Manager
+        document.getElementById('uploadForm').onsubmit = async (e) => {
+            e.preventDefault();
+            const formData = new FormData();
+            formData.append('title', document.getElementById('uploadTitle').value);
+            formData.append('image', document.getElementById('uploadImage').files[0]);
+            
+            try {
+                const response = await fetch('api_admin_uploads.php', { method: 'POST', body: formData });
+                const result = await response.json();
+                
+                if (result.success) {
+                    alert('✓ Image uploaded successfully!');
+                    document.getElementById('uploadForm').reset();
+                    loadUploads();
+                } else {
+                    alert('✗ Upload failed: ' + result.error);
+                }
+            } catch (error) {
+                alert('✗ Upload error: ' + error.message);
+            }
+        };
+        
+        async function loadUploads() {
+            try {
+                const response = await fetch('api_admin_uploads.php');
+                const data = await response.json();
+                
+                if (data.success && data.uploads.length > 0) {
+                    document.getElementById('uploadsList').innerHTML = data.uploads.map(upload => {
+                        const isImage = upload.file_type && upload.file_type.startsWith('image/');
+                        return `
+                        <div class="bg-slate-900/50 border border-slate-700 rounded-lg overflow-hidden">
+                            ${isImage ? 
+                                `<img src="${upload.image_path}" class="w-full h-48 object-cover" alt="${upload.title}">` :
+                                `<div class="w-full h-48 bg-slate-800 flex items-center justify-center">
+                                    <i class="fas fa-file-alt text-6xl text-cyan-400"></i>
+                                </div>`
+                            }
+                            <div class="p-3">
+                                <h4 class="text-sm font-bold text-white">${upload.title}</h4>
+                                <p class="text-xs text-slate-400">${upload.username} • ${timeAgo(upload.uploaded_at)}</p>
+                                <a href="${upload.image_path}" target="_blank" class="text-xs text-cyan-400 hover:text-cyan-300">
+                                    <i class="fas fa-download"></i> Download
+                                </a>
+                            </div>
+                        </div>
+                        `;
+                    }).join('');
+                } else {
+                    document.getElementById('uploadsList').innerHTML = '<p class="text-slate-500 text-center col-span-full">No uploads yet</p>';
+                }
+            } catch (error) {
+                console.error('Failed to load uploads:', error);
+            }
+        }
+        
+        loadUploads();
         
         // Check if impersonating
         if (impersonating) {

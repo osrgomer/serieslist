@@ -36,7 +36,7 @@ switch ($action) {
         
         // 1. Latest activities
         $stmt = $db->prepare("
-            SELECT ua.*, u.username, u.avatar 
+            SELECT ua.*, u.username, u.avatar as user_avatar
             FROM user_activity ua
             JOIN users u ON ua.user_id = u.id
             ORDER BY ua.created_at DESC
@@ -44,6 +44,13 @@ switch ($action) {
         ");
         $stmt->execute();
         $activities = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        
+        // Normalize activities to have avatar_url
+        $activities = array_map(function($activity) {
+            $activity['avatar_url'] = $activity['user_avatar'] ?? 'https://ui-avatars.com/api/?name=' . urlencode($activity['username']);
+            unset($activity['user_avatar']);
+            return $activity;
+        }, $activities);
         
         // 2. Trending shows
         $stmt = $db->query("
@@ -88,7 +95,7 @@ switch ($action) {
             $bubbles[] = [
                 'id' => $user['id'],
                 'username' => $user['username'],
-                'avatar' => $user['avatar'],
+                'avatar_url' => $user['avatar'] ?? 'https://ui-avatars.com/api/?name=' . urlencode($user['username']),
                 'status' => $status,
                 'color' => $color,
                 'last_action' => $user['last_action'],
@@ -96,7 +103,18 @@ switch ($action) {
             ];
         }
         
-        $users = $allUsers; // Keep original for compatibility
+        // Normalize users array to match bubbles format
+        $users = array_map(function($user) {
+            return [
+                'id' => $user['id'],
+                'username' => $user['username'],
+                'email' => $user['email'],
+                'avatar_url' => $user['avatar'] ?? 'https://ui-avatars.com/api/?name=' . urlencode($user['username']),
+                'manual_status' => $user['manual_status'],
+                'last_active' => $user['last_active'],
+                'seconds_ago' => $user['seconds_ago']
+            ];
+        }, $allUsers);
         
         // 4. Server load (if available)
         $serverLoad = function_exists('sys_getloadavg') ? sys_getloadavg()[0] : 0;

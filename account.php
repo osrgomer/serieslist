@@ -73,8 +73,7 @@ include 'header.php';
             <aside class="w-full lg:w-64 space-y-6">
                 <div class="bg-white border border-slate-200 rounded-2xl p-6 text-center shadow-sm">
                     <div class="relative inline-block group cursor-pointer" onclick="openAvatarModal()">
-                        <img id="currentAvatar" src="<?php echo htmlspecialchars($user_avatar ?? 'https://ui-avatars.com/api/?name=User'); ?>" class="w-24 h-24 rounded-full border-4 border-indigo-500 shadow-lg mx-auto object-cover" />
-                        <img id="profileAvatar" src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=200&h=200&fit=crop" class="w-24 h-24 rounded-full border-4 border-slate-200 group-hover:border-indigo-300 transition-all object-cover" />
+                        <img id="profileAvatar" src="<?php echo htmlspecialchars($user_avatar ?? 'https://ui-avatars.com/api/?name=User'); ?>" class="w-24 h-24 rounded-full border-4 border-indigo-500 group-hover:border-indigo-600 shadow-lg mx-auto object-cover transition-all" />
                         <div class="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                             <i class="fas fa-camera text-white"></i>
                         </div>

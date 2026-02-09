@@ -72,7 +72,7 @@
                 <a href="/serieslist/trivia" class="px-3 py-2 text-sm font-medium <?php echo ($current_page ?? '') === 'trivia' ? 'text-indigo-600 bg-indigo-50 dark:bg-indigo-900/30' : 'text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-slate-50 dark:hover:bg-slate-700'; ?> rounded-lg transition-colors">Trivia</a>
                 <a href="/serieslist/voice" class="px-3 py-2 text-sm font-medium <?php echo ($current_page ?? '') === 'voice' ? 'text-indigo-600 bg-indigo-50 dark:bg-indigo-900/30' : 'text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-slate-50 dark:hover:bg-slate-700'; ?> rounded-lg transition-colors">Voice</a>
                 <a href="/serieslist/account" class="px-3 py-2 text-sm font-medium <?php echo ($current_page ?? '') === 'account' ? 'text-indigo-600 bg-indigo-50 dark:bg-indigo-900/30' : 'text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-slate-50 dark:hover:bg-slate-700'; ?> rounded-lg transition-colors">Account</a>
-                <?php if (isset($_SESSION['user_email']) && $_SESSION['user_email'] === 'omersr12@gmail.com'): ?>
+                <?php if ((isset($_SESSION['user_email']) && $_SESSION['user_email'] === 'omersr12@gmail.com') || isset($_SESSION['admin_origin'])): ?>
                 <a href="/serieslist/admin" class="px-3 py-2 text-sm font-medium <?php echo ($current_page ?? '') === 'admin' ? 'text-red-600 bg-red-50 dark:bg-red-900/30' : 'text-slate-600 dark:text-slate-300 hover:text-red-600 dark:hover:text-red-400 hover:bg-slate-50 dark:hover:bg-slate-700'; ?> rounded-lg transition-colors">
                     <i class="fas fa-shield-alt mr-1"></i>Admin
                 </a>
@@ -132,7 +132,7 @@
                         <a href="/serieslist/trivia" class="block px-4 py-2 text-sm font-medium <?php echo ($current_page ?? '') === 'trivia' ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700'; ?>">Trivia</a>
                         <a href="/serieslist/voice" class="block px-4 py-2 text-sm font-medium <?php echo ($current_page ?? '') === 'voice' ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700'; ?>">Voice</a>
                         <a href="/serieslist/account" class="block px-4 py-2 text-sm font-medium <?php echo ($current_page ?? '') === 'account' ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700'; ?>">Account</a>
-                        <?php if (isset($_SESSION['user_email']) && $_SESSION['user_email'] === 'omersr12@gmail.com'): ?>
+                        <?php if ((isset($_SESSION['user_email']) && $_SESSION['user_email'] === 'omersr12@gmail.com') || isset($_SESSION['admin_origin'])): ?>
                         <a href="/serieslist/admin" class="block px-4 py-2 text-sm font-medium <?php echo ($current_page ?? '') === 'admin' ? 'text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/30' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700'; ?>">
                             <i class="fas fa-shield-alt mr-1"></i>Admin
                         </a>
