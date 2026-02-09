@@ -5,8 +5,22 @@ if (session_status() === PHP_SESSION_NONE) {
 
 header('Content-Type: application/json');
 
-// Check admin access
-if (!isset($_SESSION['user_email']) || $_SESSION['user_email'] !== 'omersr12@gmail.com') {
+// Check admin access - allow if ORIGINAL user is admin (even when impersonating)
+$isAdmin = false;
+if (isset($_SESSION['admin_origin'])) {
+    // User is in God Mode - check if they were originally admin
+    $originalUserId = $_SESSION['admin_origin'];
+    $db = getDB();
+    $stmt = $db->prepare("SELECT email FROM users WHERE id = ?");
+    $stmt->execute([$originalUserId]);
+    $email = $stmt->fetchColumn();
+    $isAdmin = ($email === 'omersr12@gmail.com');
+} elseif (isset($_SESSION['user_email'])) {
+    // Normal mode - check current user
+    $isAdmin = ($_SESSION['user_email'] === 'omersr12@gmail.com');
+}
+
+if (!$isAdmin) {
     echo json_encode(['success' => false, 'error' => 'Unauthorized']);
     exit;
 }
