@@ -126,6 +126,42 @@ $page_title = 'Command Centre - SeriesList';
             box-shadow: 0 0 20px rgba(255, 0, 0, 0.5);
             display: none;
         }
+        
+        /* BUBBLE MAP STYLES */
+        .user-bubble {
+            position: absolute;
+            transition: all 0.3s ease-in-out;
+            animation: float 6s infinite ease-in-out;
+            cursor: pointer;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) translateX(0px); }
+            50% { transform: translateY(-20px) translateX(10px); }
+        }
+        
+        .status-ring {
+            position: absolute;
+            inset: -8px;
+            border-radius: 50%;
+            opacity: 0.3;
+            animation: pulse-ring 2s infinite;
+        }
+        
+        @keyframes pulse-ring {
+            0% { transform: scale(1); opacity: 0.3; }
+            50% { transform: scale(1.5); opacity: 0.1; }
+            100% { transform: scale(1); opacity: 0.3; }
+        }
+        
+        .user-bubble:hover {
+            transform: scale(1.2);
+            z-index: 10;
+        }
+        
+        .user-bubble:hover .status-ring {
+            opacity: 0.6;
+        }
     </style>
 </head>
 <body>
@@ -224,7 +260,7 @@ $page_title = 'Command Centre - SeriesList';
         </div>
 
         <!-- Live Activity Ticker & Trending Shows -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
             <!-- Activity Feed -->
             <div class="glass-card rounded-lg p-6">
                 <h3 class="text-2xl font-bold neon-text mb-4">
@@ -243,6 +279,19 @@ $page_title = 'Command Centre - SeriesList';
                 <div id="trendingShows" class="space-y-4">
                     <p class="text-slate-500 text-center">Loading data...</p>
                 </div>
+            </div>
+        </div>
+        
+        <!-- BUBBLE MAP - God View -->
+        <div class="glass-card rounded-lg p-6">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-2xl font-bold neon-text">
+                    <i class="fas fa-globe"></i> LIVE USER MAP
+                </h3>
+                <span class="text-xs tracking-widest text-cyan-500 uppercase bg-cyan-500/10 px-3 py-1 rounded">SYSTEM LIVE VIEW</span>
+            </div>
+            <div id="userStage" class="relative w-full h-96 bg-slate-950 rounded-2xl border border-white/5 overflow-hidden">
+                <!-- Bubbles will spawn here -->
             </div>
         </div>
     </div>
@@ -319,9 +368,63 @@ $page_title = 'Command Centre - SeriesList';
                     renderTrending(data.trending);
                 }
                 
+                // Update bubble map
+                if (data.bubbles) {
+                    renderBubbleMap(data.bubbles);
+                }
+                
             } catch (error) {
                 console.error('Failed to load stats:', error);
             }
+        }
+        
+        // Render the BUBBLE MAP
+        function renderBubbleMap(bubbles) {
+            const stage = document.getElementById('userStage');
+            
+            bubbles.forEach((user, index) => {
+                let bubble = document.getElementById(`bubble-${user.id}`);
+                
+                // Create bubble if it doesn't exist
+                if (!bubble) {
+                    bubble = document.createElement('div');
+                    bubble.id = `bubble-${user.id}`;
+                    bubble.className = 'user-bubble';
+                    
+                    // Spread bubbles across the stage (not random, grid-like but offset)
+                    const col = index % 5;
+                    const row = Math.floor(index / 5);
+                    bubble.style.left = `${col * 18 + 10}%`;
+                    bubble.style.top = `${row * 30 + 10}%`;
+                    
+                    bubble.onclick = () => {
+                        if (confirm(`Jump into ${user.username}'s account?`)) {
+                            impersonate(user.id, user.username);
+                        }
+                    };
+                    
+                    stage.appendChild(bubble);
+                }
+                
+                // Update bubble content and color
+                const ringColor = user.color === 'green' ? 'bg-green-500' : 
+                                 user.color === 'amber' ? 'bg-amber-500' : 'bg-slate-600';
+                
+                const pulseClass = user.last_action ? 'animate-pulse' : '';
+                
+                bubble.innerHTML = `
+                    <div class="relative">
+                        <div class="status-ring ${ringColor} ${pulseClass}"></div>
+                        <img src="${user.avatar}" 
+                             class="w-14 h-14 rounded-full border-2 border-white/40 relative z-10 transition-transform hover:scale-110" 
+                             alt="${user.username}">
+                        <div class="absolute -bottom-8 left-1/2 -translate-x-1/2 text-[10px] text-white opacity-0 hover:opacity-100 whitespace-nowrap bg-black/80 px-2 py-1 rounded transition-opacity pointer-events-none">
+                            ${user.username}
+                            ${user.last_action ? `<br><span class="text-cyan-400">${user.last_action}</span>` : ''}
+                        </div>
+                    </div>
+                `;
+            });
         }
         
         // Kept for backwards compatibility

@@ -46,14 +46,43 @@ switch ($action) {
         ");
         $trending = $stmt->fetchAll(PDO::FETCH_ASSOC);
         
-        // 3. All users with status
+        // 3. All users with status (for bubble map)
         $stmt = $db->query("
-            SELECT id, username, email, avatar, manual_status, last_active,
-                   TIMESTAMPDIFF(SECOND, last_active, NOW()) as seconds_ago
-            FROM users 
-            ORDER BY last_active DESC
+            SELECT u.id, u.username, u.email, u.avatar, u.manual_status, u.last_active,
+                   TIMESTAMPDIFF(SECOND, u.last_active, NOW()) as seconds_ago,
+                   (SELECT ua.action FROM user_activity ua WHERE ua.user_id = u.id ORDER BY ua.created_at DESC LIMIT 1) as last_action
+            FROM users u
+            ORDER BY u.last_active DESC
         ");
-        $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $allUsers = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        
+        // Categorize for bubble colors
+        $bubbles = [];
+        foreach ($allUsers as $user) {
+            $secondsAgo = $user['seconds_ago'];
+            $status = 'offline';
+            $color = 'slate';
+            
+            if ($secondsAgo < 120 || $user['manual_status'] === 'online') {
+                $status = 'online';
+                $color = 'green';
+            } elseif ($secondsAgo < 300 && $user['manual_status'] !== 'offline') {
+                $status = 'idle';
+                $color = 'amber';
+            }
+            
+            $bubbles[] = [
+                'id' => $user['id'],
+                'username' => $user['username'],
+                'avatar' => $user['avatar'],
+                'status' => $status,
+                'color' => $color,
+                'last_action' => $user['last_action'],
+                'seconds_ago' => $secondsAgo
+            ];
+        }
+        
+        $users = $allUsers; // Keep original for compatibility
         
         // 4. Server load (if available)
         $serverLoad = function_exists('sys_getloadavg') ? sys_getloadavg()[0] : 0;
@@ -68,6 +97,7 @@ switch ($action) {
             'activities' => $activities,
             'trending' => $trending,
             'users' => $users,
+            'bubbles' => $bubbles,
             'server_load' => $serverLoad,
             'stats' => [
                 'total_users' => $totalUsers,
