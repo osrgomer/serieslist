@@ -189,6 +189,7 @@ switch ($action) {
             unset($_SESSION['admin_origin']);
             
             // Restore admin credentials
+            $db = getDB(); // MUST create $db here!
             $stmt = $db->prepare("SELECT email, username FROM users WHERE id = ?");
             $stmt->execute([$_SESSION['user_id']]);
             $admin = $stmt->fetch(PDO::FETCH_ASSOC);
