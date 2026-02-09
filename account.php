@@ -24,16 +24,34 @@ if (!isset($_SESSION['username']) && isset($_SESSION['user_email'])) {
     $_SESSION['username'] = $_SESSION['user_email'];
 }
 
-// Update last active timestamp in database
+// Get current user info from DATABASE
 if (isset($_SESSION['user_id'])) {
     require_once 'db.php';
     updateLastActive($_SESSION['user_id']);
+    
+    $db = getDB();
+    $stmt = $db->prepare("SELECT username, email, avatar FROM users WHERE id = ?");
+    $stmt->execute([$_SESSION['user_id']]);
+    $userData = $stmt->fetch(PDO::FETCH_ASSOC);
+    
+    if ($userData) {
+        $current_user = $userData['username'];
+        $user_email = $userData['email'];
+        $user_name = $userData['username'];
+        $user_avatar = $userData['avatar'];
+    } else {
+        // Fallback
+        $current_user = $_SESSION['username'] ?? 'guest';
+        $user_email = $_SESSION['user_email'] ?? 'user@example.com';
+        $user_name = $_SESSION['user_name'] ?? 'User';
+        $user_avatar = 'https://ui-avatars.com/api/?name=' . urlencode($user_name);
+    }
+} else {
+    $current_user = $_SESSION['username'] ?? 'guest';
+    $user_email = $_SESSION['user_email'] ?? 'user@example.com';
+    $user_name = $_SESSION['user_name'] ?? 'User';
+    $user_avatar = 'https://ui-avatars.com/api/?name=' . urlencode($user_name);
 }
-
-// Get current user info
-$current_user = $_SESSION['username'] ?? 'guest';
-$user_email = $_SESSION['user_email'] ?? 'user@example.com';
-$user_name = $_SESSION['user_name'] ?? 'User';
 
 $current_page = 'account';
 $page_title = 'Account - SeriesList';
@@ -48,6 +66,7 @@ include 'header.php';
             <aside class="w-full lg:w-64 space-y-6">
                 <div class="bg-white border border-slate-200 rounded-2xl p-6 text-center shadow-sm">
                     <div class="relative inline-block group cursor-pointer" onclick="openAvatarModal()">
+                        <img id="currentAvatar" src="<?php echo htmlspecialchars($user_avatar ?? 'https://ui-avatars.com/api/?name=User'); ?>" class="w-24 h-24 rounded-full border-4 border-indigo-500 shadow-lg mx-auto object-cover" />
                         <img id="profileAvatar" src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=200&h=200&fit=crop" class="w-24 h-24 rounded-full border-4 border-slate-200 group-hover:border-indigo-300 transition-all object-cover" />
                         <div class="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                             <i class="fas fa-camera text-white"></i>

@@ -27,7 +27,30 @@
 </head>
 <body class="bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 min-h-screen">
 
-    <header class="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 sticky top-0 z-30 shadow-sm">
+    <?php if (isset($_SESSION['admin_origin'])): ?>
+    <!-- GOD MODE WARNING BAR -->
+    <div class="fixed top-0 left-0 right-0 z-50 bg-gradient-to-r from-red-600 to-orange-600 text-white text-center py-2 shadow-lg">
+        <div class="flex items-center justify-center gap-4">
+            <i class="fas fa-user-secret"></i>
+            <span class="font-bold">GOD MODE: Viewing as <?php echo htmlspecialchars($_SESSION['username'] ?? 'User'); ?></span>
+            <button onclick="exitGodMode()" class="bg-white/20 hover:bg-white/30 px-4 py-1 rounded text-sm font-bold">
+                Exit & Return to Admin
+            </button>
+        </div>
+    </div>
+    <script>
+        async function exitGodMode() {
+            try {
+                await fetch('/serieslist/api_admin.php?action=exit_impersonate');
+                window.location.href = '/serieslist/admin.php';
+            } catch (error) {
+                console.error('Exit failed:', error);
+            }
+        }
+    </script>
+    <?php endif; ?>
+
+    <header class="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 <?php echo isset($_SESSION['admin_origin']) ? 'mt-10' : ''; ?> sticky top-0 z-30 shadow-sm">
         <div class="max-w-5xl mx-auto px-4 h-16 flex items-center justify-between">
             <div class="flex items-center gap-2">
                 <div class="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white font-bold shadow-indigo-200 shadow-lg">L</div>
