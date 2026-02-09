@@ -25,6 +25,9 @@ if (!isset($_SESSION['username']) && isset($_SESSION['user_email'])) {
 }
 
 // Get current user info from DATABASE
+echo "<!-- DEBUG: user_id in session: " . ($_SESSION['user_id'] ?? 'NOT SET') . " -->";
+echo "<!-- DEBUG: admin_origin: " . ($_SESSION['admin_origin'] ?? 'NOT SET') . " -->";
+
 if (isset($_SESSION['user_id'])) {
     require_once 'db.php';
     updateLastActive($_SESSION['user_id']);
@@ -33,6 +36,8 @@ if (isset($_SESSION['user_id'])) {
     $stmt = $db->prepare("SELECT username, email, avatar FROM users WHERE id = ?");
     $stmt->execute([$_SESSION['user_id']]);
     $userData = $stmt->fetch(PDO::FETCH_ASSOC);
+    
+    echo "<!-- DEBUG: Database returned: " . print_r($userData, true) . " -->";
     
     if ($userData) {
         $current_user = $userData['username'];
@@ -52,6 +57,8 @@ if (isset($_SESSION['user_id'])) {
     $user_name = $_SESSION['user_name'] ?? 'User';
     $user_avatar = 'https://ui-avatars.com/api/?name=' . urlencode($user_name);
 }
+
+echo "<!-- DEBUG: Final values - user: $current_user, email: $user_email, avatar: $user_avatar -->";
 
 $current_page = 'account';
 $page_title = 'Account - SeriesList';
