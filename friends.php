@@ -141,24 +141,21 @@ include 'header.php';
         }
 
         async function loadActivity() {
-            // TEMPORARILY DISABLED - Activity feed has syntax errors
-            // Will fix after toggle is working
-            const feed = document.getElementById('activityFeed');
-            if (feed) {
-                feed.innerHTML = '<p class="text-slate-500 dark:text-slate-400 italic">Activity feed temporarily disabled</p>';
-            }
-            /*
             try {
                 const response = await fetch('api_users.php?action=get_activity');
                 const data = await response.json();
+                
                 if (data.success) {
                     activities = data.activities;
-                    renderActivity();
+                    renderActivity(activities);
                 }
             } catch (error) {
                 console.error('Error loading activity:', error);
+                const feed = document.getElementById('activityFeed');
+                if (feed) {
+                    feed.innerHTML = '<p class="text-slate-500 dark:text-slate-400 italic">Error loading activity feed</p>';
+                }
             }
-            */
         }
 
         // Search functionality - search real users
@@ -267,10 +264,52 @@ include 'header.php';
             `).join('');
         }
 
-        // Render activity feed - TEMPORARILY DISABLED
-        function renderActivity() {
+        // Render activity feed
+        function renderActivity(activities) {
             const feed = document.getElementById('activityFeed');
-            feed.innerHTML = '<p class="text-slate-500 dark:text-slate-400 italic">Activity feed temporarily disabled</p>';
+            
+            if (!activities || activities.length === 0) {
+                feed.innerHTML = '<p class="text-slate-500 dark:text-slate-400 italic">No activity yet. Add friends to see their updates!</p>';
+                return;
+            }
+            
+            feed.innerHTML = activities.map(activity => {
+                const timeAgo = getTimeAgo(activity.timestamp);
+                let activityText = '';
+                
+                if (activity.action === 'completed') {
+                    activityText = `completed <strong>${activity.showTitle}</strong>`;
+                    if (activity.rating) {
+                        activityText += ` and rated it ${activity.rating}/10`;
+                    }
+                } else if (activity.action === 'added to watchlist') {
+                    activityText = `added <strong>${activity.showTitle}</strong> to their watchlist`;
+                } else if (activity.action === 'updated progress on') {
+                    activityText = `updated progress on <strong>${activity.showTitle}</strong>`;
+                } else {
+                    activityText = `${activity.action} <strong>${activity.showTitle}</strong>`;
+                }
+                
+                return `
+                    <div class="flex items-start gap-3 p-3 rounded-lg bg-slate-50 dark:bg-slate-700/50">
+                        <img src="${activity.avatar}" class="w-10 h-10 rounded-full">
+                        <div class="flex-1">
+                            <p class="text-sm text-slate-700 dark:text-slate-200">
+                                <span class="font-medium">${activity.username}</span> ${activityText}
+                            </p>
+                            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">${timeAgo}</p>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        function getTimeAgo(timestamp) {
+            const seconds = Math.floor((Date.now() - timestamp) / 1000);
+            if (seconds < 60) return 'just now';
+            if (seconds < 3600) return Math.floor(seconds / 60) + 'm ago';
+            if (seconds < 86400) return Math.floor(seconds / 3600) + 'h ago';
+            return Math.floor(seconds / 86400) + 'd ago';
         }
 
         // Update stats

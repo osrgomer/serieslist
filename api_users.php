@@ -167,8 +167,39 @@ switch ($action) {
         exit;
         
     case 'get_activity':
-        // Activity feed not yet migrated to MySQL
-        echo json_encode(['success' => true, 'activities' => []]);
+        // Get activity feed from MySQL
+        $db = getDB();
+        $currentUserId = $_SESSION['user_id'];
+        
+        // Get activities from friends only
+        $stmt = $db->prepare("
+            SELECT ua.*, u.username, u.avatar
+            FROM user_activity ua
+            JOIN users u ON ua.user_id = u.id
+            JOIN friendships f ON (f.friend_id = ua.user_id AND f.user_id = ?)
+            ORDER BY ua.created_at DESC
+            LIMIT 20
+        ");
+        $stmt->execute([$currentUserId]);
+        $activities = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        
+        // Format activities
+        $formattedActivities = [];
+        foreach ($activities as $activity) {
+            $formattedActivities[] = [
+                'id' => $activity['id'],
+                'userId' => $activity['user_id'],
+                'username' => $activity['username'],
+                'avatar' => $activity['avatar'],
+                'action' => $activity['action'],
+                'showTitle' => $activity['show_title'],
+                'rating' => $activity['rating'],
+                'progress' => $activity['progress'],
+                'timestamp' => strtotime($activity['created_at']) * 1000 // Convert to JS timestamp
+            ];
+        }
+        
+        echo json_encode(['success' => true, 'activities' => $formattedActivities]);
         exit;
         
     case 'set_online_status':
