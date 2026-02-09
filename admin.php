@@ -148,6 +148,46 @@ $page_title = 'Command Centre - SeriesList';
         </div>
 
         <!-- Stats Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <!-- Server Load -->
+            <div class="glass-card rounded-lg p-6">
+                <div class="mb-4">
+                    <h3 class="text-xs font-bold tracking-widest text-slate-400 uppercase mb-2">
+                        <i class="fas fa-server"></i> SERVER LOAD
+                    </h3>
+                    <div id="serverLoad" class="text-2xl font-bold text-cyan-400">--</div>
+                </div>
+                <div class="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
+                    <div id="serverLoadBar" class="h-full bg-gradient-to-r from-cyan-500 to-green-500 transition-all duration-500" style="width: 0%"></div>
+                </div>
+            </div>
+            
+            <!-- Total Users -->
+            <div class="glass-card rounded-lg p-6">
+                <h3 class="text-xs font-bold tracking-widest text-slate-400 uppercase mb-2">
+                    <i class="fas fa-users"></i> TOTAL USERS
+                </h3>
+                <div id="totalUsers" class="text-3xl font-bold text-green-400">0</div>
+            </div>
+            
+            <!-- Total Shows -->
+            <div class="glass-card rounded-lg p-6">
+                <h3 class="text-xs font-bold tracking-widest text-slate-400 uppercase mb-2">
+                    <i class="fas fa-tv"></i> TOTAL SHOWS
+                </h3>
+                <div id="totalShows" class="text-3xl font-bold text-purple-400">0</div>
+            </div>
+            
+            <!-- Total Friendships -->
+            <div class="glass-card rounded-lg p-6">
+                <h3 class="text-xs font-bold tracking-widest text-slate-400 uppercase mb-2">
+                    <i class="fas fa-heart"></i> FRIENDSHIPS
+                </h3>
+                <div id="totalFriendships" class="text-3xl font-bold text-pink-400">0</div>
+            </div>
+        </div>
+
+        <!-- Online/Idle/Offline Users -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             <!-- Online Users -->
             <div class="glass-card rounded-lg p-6">
@@ -211,24 +251,71 @@ $page_title = 'Command Centre - SeriesList';
         let lastActivityId = 0;
         let impersonating = <?php echo isset($_SESSION['admin_origin']) ? 'true' : 'false'; ?>;
 
-        // Load users
-        async function loadUsers() {
+        // Load ALL stats in one call
+        async function loadStats() {
             try {
-                const response = await fetch('api_online_count.php');
+                const response = await fetch('api_admin.php?action=get_stats');
                 const data = await response.json();
                 
-                // Update counts
-                document.getElementById('onlineCount').textContent = data.online.length;
-                document.getElementById('idleCount').textContent = data.idle.length;
-                document.getElementById('offlineCount').textContent = data.offline.length;
+                if (!data.success) return;
                 
-                // Render user lists
-                renderUsers('onlineUsers', data.online, 'green');
-                renderUsers('idleUsers', data.idle, 'amber');
-                renderUsers('offlineUsers', data.offline, 'slate');
+                // Update server load
+                const load = data.server_load || 0;
+                document.getElementById('serverLoad').textContent = load.toFixed(2);
+                const loadPercent = Math.min((load / 2) * 100, 100); // Cap at 2.0 = 100%
+                document.getElementById('serverLoadBar').style.width = loadPercent + '%';
+                if (load > 1.5) {
+                    document.getElementById('serverLoadBar').className = 'h-full bg-gradient-to-r from-red-500 to-orange-500 transition-all duration-500';
+                } else if (load > 0.8) {
+                    document.getElementById('serverLoadBar').className = 'h-full bg-gradient-to-r from-amber-500 to-yellow-500 transition-all duration-500';
+                } else {
+                    document.getElementById('serverLoadBar').className = 'h-full bg-gradient-to-r from-cyan-500 to-green-500 transition-all duration-500';
+                }
+                
+                // Update totals
+                document.getElementById('totalUsers').textContent = data.stats.total_users;
+                document.getElementById('totalShows').textContent = data.stats.total_shows;
+                document.getElementById('totalFriendships').textContent = data.stats.total_friendships;
+                
+                // Update users (categorize by status)
+                const online = [], idle = [], offline = [];
+                data.users.forEach(user => {
+                    const secondsAgo = user.seconds_ago;
+                    if (secondsAgo < 120 || user.manual_status === 'online') {
+                        online.push(user);
+                    } else if (secondsAgo < 300 && user.manual_status !== 'offline') {
+                        idle.push(user);
+                    } else {
+                        offline.push(user);
+                    }
+                });
+                
+                document.getElementById('onlineCount').textContent = online.length;
+                document.getElementById('idleCount').textContent = idle.length;
+                document.getElementById('offlineCount').textContent = offline.length;
+                
+                renderUsers('onlineUsers', online, 'green');
+                renderUsers('idleUsers', idle, 'amber');
+                renderUsers('offlineUsers', offline, 'slate');
+                
+                // Update activity feed
+                if (data.activities.length > 0) {
+                    renderActivity(data.activities);
+                }
+                
+                // Update trending
+                if (data.trending.length > 0) {
+                    renderTrending(data.trending);
+                }
+                
             } catch (error) {
-                console.error('Failed to load users:', error);
+                console.error('Failed to load stats:', error);
             }
+        }
+        
+        // Kept for backwards compatibility
+        async function loadUsers() {
+            await loadStats();
         }
 
         function renderUsers(containerId, users, color) {
@@ -253,76 +340,54 @@ $page_title = 'Command Centre - SeriesList';
         }
 
         // Load activity feed
-        async function loadActivity() {
-            try {
-                const response = await fetch('api_admin.php?action=get_activity');
-                const data = await response.json();
-                
-                if (data.success && data.activities.length > 0) {
-                    const feed = document.getElementById('activityFeed');
-                    feed.innerHTML = data.activities.map(activity => `
-                        <div class="activity-item p-3 rounded bg-slate-900/50 border border-slate-700">
-                            <div class="flex items-center gap-2 mb-1">
-                                <img src="${activity.avatar}" class="w-6 h-6 rounded-full">
-                                <span class="text-sm text-cyan-400">${activity.username}</span>
-                                <span class="text-xs text-slate-500">${timeAgo(activity.created_at)}</span>
-                            </div>
-                            <p class="text-sm text-slate-300">${activity.action} <span class="text-white">${activity.show_title}</span></p>
-                        </div>
-                    `).join('');
-                } else {
-                    document.getElementById('activityFeed').innerHTML = '<p class="text-slate-500 text-center">No activity yet</p>';
-                }
-            } catch (error) {
-                console.error('Failed to load activity:', error);
-            }
+        function renderActivity(activities) {
+            const feed = document.getElementById('activityFeed');
+            feed.innerHTML = activities.map(activity => `
+                <div class="activity-item p-3 rounded bg-slate-900/50 border border-slate-700">
+                    <div class="flex items-center gap-2 mb-1">
+                        <img src="${activity.avatar}" class="w-6 h-6 rounded-full">
+                        <span class="text-sm text-cyan-400">${activity.username}</span>
+                        <span class="text-xs text-slate-500">${timeAgo(activity.created_at)}</span>
+                    </div>
+                    <p class="text-sm text-slate-300">${activity.action} <span class="text-white">${activity.show_title}</span></p>
+                </div>
+            `).join('');
         }
 
         // Load trending shows
-        async function loadTrending() {
-            try {
-                const response = await fetch('api_admin.php?action=get_trending');
-                const data = await response.json();
+        function renderTrending(trending) {
+            const container = document.getElementById('trendingShows');
+            container.innerHTML = trending.map((show, index) => {
+                const completedPercent = (show.completed / show.total_fans) * 100;
+                const watchingPercent = (show.watching / show.total_fans) * 100;
                 
-                if (data.success && data.trending.length > 0) {
-                    const container = document.getElementById('trendingShows');
-                    container.innerHTML = data.trending.map((show, index) => {
-                        const completedPercent = (show.completed / show.total_fans) * 100;
-                        const watchingPercent = (show.watching / show.total_fans) * 100;
-                        
-                        return `
-                            <div class="p-3 rounded bg-slate-900/50 border border-slate-700">
-                                <div class="flex justify-between mb-2">
-                                    <span class="text-sm font-bold ${index === 0 ? 'text-yellow-400' : 'text-white'}">
-                                        ${index + 1}. ${show.title}
-                                    </span>
-                                    <span class="text-sm text-cyan-400">${show.total_fans} fans</span>
+                return `
+                    <div class="p-3 rounded bg-slate-900/50 border border-slate-700">
+                        <div class="flex justify-between mb-2">
+                            <span class="text-sm font-bold ${index === 0 ? 'text-yellow-400' : 'text-white'}">
+                                ${index + 1}. ${show.title}
+                            </span>
+                            <span class="text-sm text-cyan-400">${show.total_fans} fans</span>
+                        </div>
+                        <div class="space-y-1">
+                            <div class="flex items-center gap-2">
+                                <span class="text-xs text-green-400 w-20">Completed:</span>
+                                <div class="flex-1 bg-slate-800 rounded h-2">
+                                    <div class="progress-bar rounded h-full" style="width: ${completedPercent}%"></div>
                                 </div>
-                                <div class="space-y-1">
-                                    <div class="flex items-center gap-2">
-                                        <span class="text-xs text-green-400 w-20">Completed:</span>
-                                        <div class="flex-1 bg-slate-800 rounded h-2">
-                                            <div class="progress-bar rounded h-full" style="width: ${completedPercent}%"></div>
-                                        </div>
-                                        <span class="text-xs text-slate-400">${show.completed}</span>
-                                    </div>
-                                    <div class="flex items-center gap-2">
-                                        <span class="text-xs text-amber-400 w-20">Watching:</span>
-                                        <div class="flex-1 bg-slate-800 rounded h-2">
-                                            <div class="progress-bar rounded h-full" style="width: ${watchingPercent}%"></div>
-                                        </div>
-                                        <span class="text-xs text-slate-400">${show.watching}</span>
-                                    </div>
-                                </div>
+                                <span class="text-xs text-slate-400">${show.completed}</span>
                             </div>
-                        `;
-                    }).join('');
-                } else {
-                    document.getElementById('trendingShows').innerHTML = '<p class="text-slate-500 text-center">No shows tracked yet</p>';
-                }
-            } catch (error) {
-                console.error('Failed to load trending:', error);
-            }
+                            <div class="flex items-center gap-2">
+                                <span class="text-xs text-amber-400 w-20">Watching:</span>
+                                <div class="flex-1 bg-slate-800 rounded h-2">
+                                    <div class="progress-bar rounded h-full" style="width: ${watchingPercent}%"></div>
+                                </div>
+                                <span class="text-xs text-slate-400">${show.watching}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
         }
 
         // Impersonate user
@@ -363,14 +428,9 @@ $page_title = 'Command Centre - SeriesList';
             return Math.floor(seconds / 86400) + 'd ago';
         }
 
-        // Auto-refresh
-        loadUsers();
-        loadActivity();
-        loadTrending();
-        
-        setInterval(loadUsers, 5000);
-        setInterval(loadActivity, 10000);
-        setInterval(loadTrending, 30000);
+        // Auto-refresh - ONE call for everything
+        loadStats();
+        setInterval(loadStats, 5000); // Every 5 seconds
         
         // Check if impersonating
         if (impersonating) {

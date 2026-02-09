@@ -17,6 +17,66 @@ $action = $_GET['action'] ?? '';
 $db = getDB();
 
 switch ($action) {
+    case 'get_stats':
+        // Get ALL stats in one call for efficiency
+        
+        // 1. Latest activities
+        $stmt = $db->prepare("
+            SELECT ua.*, u.username, u.avatar 
+            FROM user_activity ua
+            JOIN users u ON ua.user_id = u.id
+            ORDER BY ua.created_at DESC
+            LIMIT 20
+        ");
+        $stmt->execute();
+        $activities = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        
+        // 2. Trending shows
+        $stmt = $db->query("
+            SELECT 
+                title,
+                COUNT(*) as total_fans,
+                SUM(CASE WHEN status = 'Completed' THEN 1 ELSE 0 END) as completed,
+                SUM(CASE WHEN status = 'Watching' THEN 1 ELSE 0 END) as watching
+            FROM series
+            GROUP BY title
+            HAVING COUNT(*) > 0
+            ORDER BY total_fans DESC
+            LIMIT 5
+        ");
+        $trending = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        
+        // 3. All users with status
+        $stmt = $db->query("
+            SELECT id, username, email, avatar, manual_status, last_active,
+                   TIMESTAMPDIFF(SECOND, last_active, NOW()) as seconds_ago
+            FROM users 
+            ORDER BY last_active DESC
+        ");
+        $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        
+        // 4. Server load (if available)
+        $serverLoad = function_exists('sys_getloadavg') ? sys_getloadavg()[0] : 0;
+        
+        // 5. Total counts
+        $totalUsers = $db->query("SELECT COUNT(*) FROM users")->fetchColumn();
+        $totalShows = $db->query("SELECT COUNT(*) FROM series")->fetchColumn();
+        $totalFriendships = $db->query("SELECT COUNT(*) FROM friendships")->fetchColumn() / 2; // Bidirectional
+        
+        echo json_encode([
+            'success' => true,
+            'activities' => $activities,
+            'trending' => $trending,
+            'users' => $users,
+            'server_load' => $serverLoad,
+            'stats' => [
+                'total_users' => $totalUsers,
+                'total_shows' => $totalShows,
+                'total_friendships' => $totalFriendships
+            ]
+        ]);
+        break;
+        
     case 'get_activity':
         // Get latest 20 activities
         $stmt = $db->prepare("
