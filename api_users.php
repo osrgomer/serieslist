@@ -86,89 +86,23 @@ switch ($action) {
         // Friends system not yet migrated to MySQL
         echo json_encode(['success' => false, 'message' => 'Friends feature coming soon']);
         exit;
-        break;
-                        'avatar' => $currentUserData['avatar'],
-                        'online' => isUserOnline($currentUserData['id']),
-                        'addedAt' => time() * 1000
-                    ];
-                }
-            }
-            
-            echo json_encode([
-                'success' => true,
-                'message' => "You're now friends with {$friendData['username']}!"
-            ]);
-        }
-        break;
         
     case 'remove_friend':
-        if ($method === 'POST') {
-            $data = json_decode(file_get_contents('php://input'), true);
-            $friendId = $data['friend_id'] ?? null;
-            
-            if ($friendId) {
-                $_SESSION['friends_data']['friends'] = array_values(
-                    array_filter($_SESSION['friends_data']['friends'], function($f) use ($friendId) {
-                        return $f['id'] != $friendId;
-                    })
-                );
-                
-                echo json_encode([
-                    'success' => true,
-                    'message' => 'Friend removed'
-                ]);
-            } else {
-                echo json_encode([
-                    'success' => false,
-                    'message' => 'Invalid friend ID'
-                ]);
-            }
-        }
-        break;
+        // Friends system not yet migrated to MySQL
+        echo json_encode(['success' => false, 'message' => 'Friends feature coming soon']);
+        exit;
         
     case 'get_activity':
         // Activity feed not yet migrated to MySQL
         echo json_encode(['success' => true, 'activities' => []]);
         exit;
-        break;
         
     case 'set_online_status':
-        if ($method === 'POST') {
-            require_once 'db.php';
-            
-            $data = json_decode(file_get_contents('php://input'), true);
-            $status = $data['status'] ?? 'auto';
-            
-            if (!isset($_SESSION['user_id'])) {
-                echo json_encode(['success' => false, 'message' => 'User not logged in']);
-                exit;
-            }
-            
-            if (!in_array($status, ['online', 'offline', 'auto'])) {
-                echo json_encode(['success' => false, 'message' => 'Invalid status']);
-                exit;
-            }
-            
-            try {
-                $userId = $_SESSION['user_id'];
-                $result = updateUserStatus($userId, $status);
-                
-                if ($result) {
-                    echo json_encode(['success' => true, 'status' => $status]);
-                } else {
-                    echo json_encode(['success' => false, 'message' => 'Update failed']);
-                }
-            } catch (Exception $e) {
-                echo json_encode(['success' => false, 'message' => $e->getMessage()]);
-            }
-        } else {
-            echo json_encode(['success' => false, 'message' => 'POST required']);
-        }
+        // Use api_set_status.php instead (this is duplicate)
+        echo json_encode(['success' => false, 'message' => 'Use api_set_status.php']);
         exit;
-        break;
         
     default:
         http_response_code(400);
         echo json_encode(['error' => 'Invalid action']);
-        break;
 }
